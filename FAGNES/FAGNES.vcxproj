@@ -76,9 +76,9 @@
     <LibraryPath>C:\Users\PC\source\repos\FAGNES\Libraries\lib;C:\Users\PC\source\repos\FAGNES\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\PC\source\repos\FAGNES\Libraries\include;C:\Users\PC\source\repos\FAGNES\Libraries\include\glad;C:\Users\Admin\source\repos\FAGNES\Libraries\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\chomp\source\repos\FAGNES\Libraries\include;C:\Users\chomp\source\repos\FAGNES\Libraries\include\glad;C:\Users\chomp\source\repos\FAGNES\Libraries\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Users\PC\source\repos\FAGNES\Libraries\lib;C:\Users\PC\source\repos\FAGNES\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\chomp\source\repos\FAGNES\Libraries\lib;C:\Users\chomp\source\repos\FAGNES\Libraries\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>C:\Users\PC\source\repos\FAGNES\Libraries\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
@@ -131,13 +131,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\PC\source\repos\FAGNES\Libraries\include;C:\Users\PC\source\repos\Libraries\include\SDL2;C:\Users\PC\source\repos\FAGNES\Libraries\include;C:\Users\PC\source\repos\FAGNES\Libraries\include\glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\chomp\source\repos\FGNES-Emu\Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\PC\source\repos\FAGNES\FAGNES\Libraries\lib;C:\Users\PC\source\repos\FAGNES\Libraries\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;user32.lib;gdi32.lib;shell32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\chomp\source\repos\FGNES-Emu\Libraries\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -164,11 +164,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CPU.cpp" />
-    <ClCompile Include="Display.cpp" />
-    <ClCompile Include="DisplayOld.cpp" />
-    <ClCompile Include="glad.c" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Memoria.cpp" />
+    <ClCompile Include="SDL_Backend.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

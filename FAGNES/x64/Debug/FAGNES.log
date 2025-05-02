@@ -1,17 +1,13 @@
-﻿  DisplayOld.cpp
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
-  (compiling source file 'DisplayOld.cpp')
-  C:\Users\PC\source\repos\FAGNES\Libraries\include\glad\glad.h(32,1):
-  see previous definition of 'APIENTRY'
+﻿  SDL_Backend.cpp
+C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\CPU.cpp(128,11): warning C4244: 'argument': conversion from 'DWord' to 'Byte', possible loss of data
+  (compiling source file 'SDL_Backend.cpp')
   
-C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(128,11): warning C4244: 'argument': conversion from 'DWord' to 'Byte', possible loss of data
-  (compiling source file 'DisplayOld.cpp')
+C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\CPU.cpp(129,11): warning C4244: 'argument': conversion from 'DWord' to 'Byte', possible loss of data
+  (compiling source file 'SDL_Backend.cpp')
   
-C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(129,11): warning C4244: 'argument': conversion from 'DWord' to 'Byte', possible loss of data
-  (compiling source file 'DisplayOld.cpp')
+C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\CPU.cpp(494,7): warning C4244: '=': conversion from 'DWord' to 'Byte', possible loss of data
+  (compiling source file 'SDL_Backend.cpp')
   
-C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(494,7): warning C4244: '=': conversion from 'DWord' to 'Byte', possible loss of data
-  (compiling source file 'DisplayOld.cpp')
-  
-C:\Users\PC\source\repos\FAGNES\FAGNES\DisplayOld.cpp(126,14): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
-  FAGNES.vcxproj -> C:\Users\PC\source\repos\FAGNES\x64\Debug\FAGNES.exe
+C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\SDL_Backend.cpp(102,14): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
+C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\SDL_Backend.cpp(141,22): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  FAGNES.vcxproj -> C:\Users\chomp\source\repos\FGNES-Emu\x64\Debug\FAGNES.exe
