@@ -69,7 +69,7 @@ struct CPU
 		N = (valor & 0x80) != 0;
 	}
 
-	// Instruções
+	// Instruï¿½ï¿½es
 	// Mais detalhes em https://www.nesdev.org/wiki/Instruction_reference
 
 	// ACCESS 
@@ -389,7 +389,7 @@ struct CPU
 		}
 	}
 	void JSR(Memoria& mem, DWord adr) {
-		// Decrementa SP e empilha o endereço de retorno (PC - 1), high byte depois low byte
+		// Decrementa SP e empilha o endereï¿½o de retorno (PC - 1), high byte depois low byte
 		DWord returnAdr = PC - 1;
 
 		writeByte(mem, 0x0100 + SP--, (returnAdr >> 8) & 0xFF); // high byte
@@ -410,7 +410,7 @@ struct CPU
 		PC = 0xFFFF; // TESTE
 		return; // TESTE
 
-		// Empilha o endereço de retorno (PC + 1) na pilha
+		// Empilha o endereï¿½o de retorno (PC + 1) na pilha
 		DWord returnAddress = PC + 1;
 
 		// Empilha o byte de retorno
@@ -421,11 +421,11 @@ struct CPU
 		Byte status = (N << 7) | (V << 6) | (B << 4) | (D << 3) | (I << 2) | (Z << 1) | C;
 		writeByte(mem, 0x0100 + SP--, status);
 
-		// Desativa interrupções (I = 1) e seta B flag (B = 1)
-		I = 1;  // Desabilita interrupções
+		// Desativa interrupï¿½ï¿½es (I = 1) e seta B flag (B = 1)
+		I = 1;  // Desabilita interrupï¿½ï¿½es
 		B = 1;  // Setar a flag de Break
 
-		// O endereço de interrupção de BRK é 0xFFFE e 0xFFFF
+		// O endereï¿½o de interrupï¿½ï¿½o de BRK ï¿½ 0xFFFE e 0xFFFF
 		PC = (readByte(mem, 0xFFFE) | (readByte(mem, 0xFFFF) << 8));
 
 	}
@@ -442,7 +442,7 @@ struct CPU
 		V = (status >> 6) & 0x01;
 		N = (status >> 7) & 0x01;
 
-		// Desempilha o endereço de retorno (low byte primeiro, depois high byte)
+		// Desempilha o endereï¿½o de retorno (low byte primeiro, depois high byte)
 		Byte low = readByte(mem, 0x0100 + ++SP);
 		Byte high = readByte(mem, 0x0100 + ++SP);
 
@@ -465,7 +465,7 @@ struct CPU
 		Byte status = 0;
 		status |= (N << 7);
 		status |= (V << 6);
-		status |= (1 << 5); // Bit 5 sempre é 1 quando empilhado
+		status |= (1 << 5); // Bit 5 sempre ï¿½ 1 quando empilhado
 		status |= (B << 4);
 		status |= (D << 3);
 		status |= (I << 2);
@@ -482,7 +482,7 @@ struct CPU
 		I = (status >> 2) & 0x01;
 		D = (status >> 3) & 0x01;
 		B = (status >> 4) & 0x01;
-		// Bit 5 é geralmente ignorado (sempre 1), pode pular
+		// Bit 5 ï¿½ geralmente ignorado (sempre 1), pode pular
 		V = (status >> 6) & 0x01;
 		N = (status >> 7) & 0x01;
 	}
@@ -526,7 +526,7 @@ struct CPU
 	}
 
 
-	// Modos de endereçamento 
+	// Modos de endereï¿½amento 
 	// Immediate - Retorna o valor
 	Byte immediate(Memoria& mem) {
 		return fetchByte(mem);
@@ -573,7 +573,7 @@ struct CPU
 		Byte high = fetchByte(mem);
 		DWord addr = (high << 8) | low;
 
-		// Emula o bug do 6502: se o addr cruza página (como 0x02FF), não pega 0x0300, pega 0x0200 + wrap
+		// Emula o bug do 6502: se o addr cruza pï¿½gina (como 0x02FF), nï¿½o pega 0x0300, pega 0x0200 + wrap
 		Byte lo = readByte(mem, addr);
 		Byte hi = readByte(mem, (addr & 0xFF00) | ((addr + 1) & 0x00FF));
 

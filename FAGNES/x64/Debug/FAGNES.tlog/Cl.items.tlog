@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp;C:\Users\PC\source\repos\FAGNES\FAGNES\x64\Debug\CPU.obj
 C:\Users\PC\source\repos\FAGNES\FAGNES\Display.cpp;C:\Users\PC\source\repos\FAGNES\FAGNES\x64\Debug\Display.obj
 C:\Users\PC\source\repos\FAGNES\FAGNES\DisplayOld.cpp;C:\Users\PC\source\repos\FAGNES\FAGNES\x64\Debug\DisplayOld.obj
@@ -5,3 +6,9 @@ C:\Users\PC\source\repos\FAGNES\FAGNES\glad.c;C:\Users\PC\source\repos\FAGNES\FA
 C:\Users\PC\source\repos\FAGNES\FAGNES\Main.cpp;C:\Users\PC\source\repos\FAGNES\FAGNES\x64\Debug\Main.obj
 C:\Users\PC\source\repos\FAGNES\FAGNES\Memoria.cpp;C:\Users\PC\source\repos\FAGNES\FAGNES\x64\Debug\Memoria.obj
 C:\Users\PC\source\repos\FAGNES\FAGNES\SDL.cpp;C:\Users\PC\source\repos\FAGNES\FAGNES\x64\Debug\SDL.obj
+=======
+C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\CPU.cpp;C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\x64\Debug\CPU.obj
+C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\Main.cpp;C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\x64\Debug\Main.obj
+C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\Memoria.cpp;C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\x64\Debug\Memoria.obj
+C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\SDL_Backend.cpp;C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\x64\Debug\SDL_Backend.obj
+>>>>>>> deceaced709ce6d32e13797e5036104c064ba7f2
