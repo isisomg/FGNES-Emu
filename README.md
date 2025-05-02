@@ -1,6 +1,6 @@
  <h1 align="center" width="500"><strong>Projeto Emulador F&GNES - PI 5º Semestre</strong></h1>
  <br> 
- Projeto de Emulador HighLevel de Nintendo Entertainment System, em C++ e SDL2 como Projeto Integrador do 5º semestre de Ciências da Computação do Institutuo Mauá - 2025 <br>
+ Projeto de Emulador High-Level de Nintendo Entertainment System, em C++ e SDL2 como Projeto Integrador do 5º semestre de Ciências da Computação do Institutuo Mauá de Tecnologia- 2025 <br>
 <p align="center"> 
  <img width="300" height="300" src="F&GNES logo.png">
 </p>
