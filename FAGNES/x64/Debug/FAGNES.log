@@ -1,17 +1,18 @@
-﻿  DisplayOld.cpp
-C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\minwindef.h(130,1): warning C4005: 'APIENTRY': macro redefinition
-  (compiling source file 'DisplayOld.cpp')
-  C:\Users\PC\source\repos\FAGNES\Libraries\include\glad\glad.h(32,1):
-  see previous definition of 'APIENTRY'
-  
-C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(128,11): warning C4244: 'argument': conversion from 'DWord' to 'Byte', possible loss of data
-  (compiling source file 'DisplayOld.cpp')
-  
+﻿  CPU.cpp
 C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(129,11): warning C4244: 'argument': conversion from 'DWord' to 'Byte', possible loss of data
-  (compiling source file 'DisplayOld.cpp')
+C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(130,11): warning C4244: 'argument': conversion from 'DWord' to 'Byte', possible loss of data
+C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(495,7): warning C4244: '=': conversion from 'DWord' to 'Byte', possible loss of data
+  SDL.cpp
+C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(129,11): warning C4244: 'argument': conversion from 'DWord' to 'Byte', possible loss of data
+  (compiling source file 'SDL.cpp')
   
-C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(494,7): warning C4244: '=': conversion from 'DWord' to 'Byte', possible loss of data
-  (compiling source file 'DisplayOld.cpp')
+C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(130,11): warning C4244: 'argument': conversion from 'DWord' to 'Byte', possible loss of data
+  (compiling source file 'SDL.cpp')
   
-C:\Users\PC\source\repos\FAGNES\FAGNES\DisplayOld.cpp(126,14): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
+C:\Users\PC\source\repos\FAGNES\FAGNES\CPU.cpp(495,7): warning C4244: '=': conversion from 'DWord' to 'Byte', possible loss of data
+  (compiling source file 'SDL.cpp')
+  
+C:\Users\PC\source\repos\FAGNES\FAGNES\SDL.cpp(105,14): warning C4244: 'initializing': conversion from 'std::streamoff' to 'int', possible loss of data
+C:\Users\PC\source\repos\FAGNES\FAGNES\SDL.cpp(151,22): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  Generating Code...
   FAGNES.vcxproj -> C:\Users\PC\source\repos\FAGNES\x64\Debug\FAGNES.exe

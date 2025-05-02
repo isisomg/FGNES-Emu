@@ -42,7 +42,8 @@ struct CPU
 		SP = 0xFF;
 
 		X = Y = A = 0x00;
-		N = V = B = D = I = Z = C = 0;
+		N = V = D = I = Z = C = 0;
+		B = 1;
 	}
 
 	Byte readByte(Memoria& mem, DWord adr) {
@@ -568,37 +569,40 @@ struct CPU
 	}
 	// Indirect - Retorna o adr
 	DWord indirect(Memoria& mem) {
-		Byte adrBase = fetchByte(mem);
+		Byte low = fetchByte(mem);
+		Byte high = fetchByte(mem);
+		DWord addr = (high << 8) | low;
 
-		Byte adrBaixa = readByte(mem, adrBase);
-		Byte adrAlta = readByte(mem, adrBase + 1);
+		// Emula o bug do 6502: se o addr cruza página (como 0x02FF), não pega 0x0300, pega 0x0200 + wrap
+		Byte lo = readByte(mem, addr);
+		Byte hi = readByte(mem, (addr & 0xFF00) | ((addr + 1) & 0x00FF));
 
-		DWord adr = (adrAlta << 8) | adrBaixa;
-		adr = (adr) & 0xFFFF;
-		return adr;
+		return (hi << 8) | lo;
 	}
+
 	// Indirect X - Retorna o adr
 	DWord indirectX(Memoria& mem) {
-		Byte adrBase = fetchByte(mem);
+		Byte base = fetchByte(mem);
+		Byte ptr = (base + X) & 0xFF;
 
-		Byte adrBaixa = readByte(mem, adrBase);
-		Byte adrAlta = readByte(mem, adrBase + 1);
+		Byte lo = readByte(mem, ptr);
+		Byte hi = readByte(mem, (ptr + 1) & 0xFF);
 
-		DWord adr = (adrAlta << 8) | adrBaixa;
-		adr = (adr + X) & 0xFFFF;
-		return adr;
+		return (hi << 8) | lo;
 	}
+
 	// Indirect Y - Retorna o adr
 	DWord indirectY(Memoria& mem) {
-		Byte adrBase = fetchByte(mem);
+		Byte base = fetchByte(mem);
+		Byte lo = readByte(mem, base);
+		Byte hi = readByte(mem, (base + 1) & 0xFF); 
 
-		Byte adrBaixa = readByte(mem, adrBase);
-		Byte adrAlta = readByte(mem, adrBase + 1);
+		DWord addr = (hi << 8) | lo;
+		addr = (addr + Y) & 0xFFFF;
 
-		DWord adr = (adrAlta << 8) | adrBaixa;
-		adr = (adr + Y) & 0xFFFF;
-		return adr;
+		return addr;
 	}
+
 
 	// fetch - decode - execute
 	void executar(Memoria& mem) {
