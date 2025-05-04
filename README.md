@@ -9,9 +9,9 @@
  isisomg/chompcomps - PPU e SDL2 Back-End <br> Thiago (Isis) Calabresi                        RA: 22.00388-6 <br> <br>
  Guthox - CPU e Memória <br> Augusto Henrique Leme de Oliveira                       RA: 17.00268-0 <br> <br>
  Cyro1234 - APU e Audio <br> Cyro Conde Garone Moreli                                RA: 22.00077-0 <br> <br>
- joaomarques04 - Leitor de ROMs e arquivos iNES <br> João Filipe Pinheiro Marques    RA: 21.00740-3 <br> <br>
+ joaoMarquess04 - Leitor de ROMs e arquivos iNES <br> João Filipe Pinheiro Marques    RA: 21.00740-3 <br> <br>
  WagnerSF13 - Control Map <br> Wagner Silva Filho                                    RA: 21.01511-2 <br> <br>
- nsalequis - Interface de usuário <br> Alexandre Noriyuki Sasaki                     RA: 22.00452-0 <br> <br>
+ ns-alexandre - Interface de usuário <br> Alexandre Noriyuki Sasaki                     RA: 22.00452-0 <br> <br>
 </p>
  <br>
  <br>
