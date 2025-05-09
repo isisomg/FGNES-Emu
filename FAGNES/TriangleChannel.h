@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include "Memoria.cpp"
 
 class TriangleChannel {
 public:
@@ -8,6 +9,7 @@ public:
     void setEnabled(bool on);
 
     float getSample() const;
+    void setMemoria(Memoria& memoria);
 
     void tick(); // Avança o tempo interno
 private:
@@ -16,7 +18,7 @@ private:
     bool enabled = true;
     float frequency = 440.0f; // Frequência padrão
     int phase = 0;
-
+    Memoria memoria;
 
     static const uint8_t triangleTable[32];
 };

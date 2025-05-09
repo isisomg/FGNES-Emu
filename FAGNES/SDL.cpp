@@ -6,9 +6,17 @@
 
 #include "CPU.cpp"
 #include "Memoria.cpp"
+#include "pulse_channel.h"
+#include "TriangleChannel.h"
+#include "NoiseChannel.h"
 
 CPU cpu;
 Memoria mem;
+
+PulseChannel pulse1;
+PulseChannel pulse2;
+TriangleChannel triangle;
+NoiseChannel noise;
 
 int TELA_HEIGHT = 32;
 int TELA_WIDTH = 32;
@@ -87,6 +95,23 @@ Pixel cores[] = {
 		{0x00,0x00,0x00}
 };
 
+void audioCallback(void* userdata, Uint8* stream, int len) {
+	float* buffer = (float*)stream;
+	int samples = len / sizeof(float);
+	for (int i = 0; i < samples; ++i) {
+		pulse1.tick();
+		pulse2.tick();
+		triangle.tick();
+		noise.tick();
+
+		float sample = /*pulse1.getSample() + pulse2.getSample() + triangle.getSample() + */noise.getSample();
+
+		// Clipping prevention simples
+		if (sample > 1.0f) sample = 1.0f;
+		buffer[i] = sample;
+	}
+}
+
 int main(int argc, char* argv[]) {
 
 	Memoria mem;
@@ -108,6 +133,51 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < tamanho; i++) {
 		input.read((char*)&mem[cpu.PC + i], sizeof(char));
 	}
+
+	if (SDL_Init(SDL_INIT_AUDIO) != 0) {
+		std::cerr << "Erro SDL: " << SDL_GetError() << "\n";
+		return 1;
+	}
+
+	/*AudioSystem audio;*/
+	//audio.pulse.setVolume(15);     // volume máximo
+	//audio.pulse.setDuty(2);        // 50%
+	//audio.pulse.setTimer(40);     // frequência ~ NES 441000 / 200 * 8, quanto menor, mais agudo, quanto maior, mais grave
+	//audio.pulse.resetPhase();
+	//audio.start();
+
+	SDL_AudioSpec want{};
+	want.freq = 44100; // frequencia em hertz do dispositivo de audio
+	want.format = AUDIO_F32;
+	want.channels = 1; // canal mono, o NES funcionava apenas com um canal de audio
+	want.samples = 512; // tamanho do buffer de audio, pede n amostras de audio por vez
+	want.callback = audioCallback;
+
+
+	SDL_AudioDeviceID device = SDL_OpenAudioDevice(nullptr, 0, &want, nullptr, 0);
+	if (!device) {
+		SDL_Log("Erro ao abrir o dispositivo de áudio: %s", SDL_GetError());
+		SDL_Quit();
+		return 1;
+	}
+
+	pulse1.setDuty(2);        // 50% duty
+	pulse1.setFrequency(440);
+	pulse1.setVolume(12);     // Volume razoável
+
+	pulse2.setDuty(1);        // 25%
+	pulse2.setFrequency(660);
+	pulse2.setVolume(8);      // Mais fraco
+
+	triangle.setEnabled(true);
+	triangle.setFrequency(220);
+
+	noise.setEnabled(true);
+	noise.setVolume(6);
+	noise.setMode(false);      // false = modo longo, true = curto
+	noise.setFrequency(4000);   // ou experimente com 100, 500, 1000 Hz
+
+	SDL_PauseAudioDevice(device, 0); // inicia audio
 
 	//for (int i = 0; i < tamanho; i++) {
 	//	printf("%x ", mem[cpu.PC + i]);
@@ -223,6 +293,7 @@ int main(int argc, char* argv[]) {
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+	SDL_CloseAudioDevice(device);
 	SDL_Quit();
 
 	return 0;

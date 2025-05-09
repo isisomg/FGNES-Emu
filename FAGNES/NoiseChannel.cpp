@@ -42,3 +42,7 @@ void NoiseChannel::setFrequency(float freq) {
     if (freq <= 0.0f) freq = 1.0f; // evita divisão por zero
     timerPeriod = 44100.0f / freq;
 }
+
+void NoiseChannel::setMemoria(Memoria& memoria) {
+	this->memoria = memoria; // isto permite que a classe NoiseChannel acesse a memória
+}

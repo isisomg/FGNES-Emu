@@ -29,3 +29,7 @@ void TriangleChannel::setFrequency(float freq) {
 void TriangleChannel::setEnabled(bool on) {
 	enabled = on;
 }
+
+void TriangleChannel::setMemoria(Memoria& memoria) {
+	this->memoria = memoria; // isto permite que a classe NoiseChannel acesse a memória
+}

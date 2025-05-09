@@ -13,8 +13,8 @@
 //TriangleChannel triangle;
 //NoiseChannel noise;
 //
-//std::ofstream triangleOut("triangle_samples.csv"); // isso é para gerar um .csv para visualizar se o formato das ondas está certo
-//std::ofstream pulseOut("pulse_samples.csv");
+////std::ofstream triangleOut("triangle_samples.csv"); // isso é para gerar um .csv para visualizar se o formato das ondas está certo
+////std::ofstream pulseOut("pulse_samples.csv");
 //
 ////void audioCallback(void* userdata, Uint8* stream, int len) {
 ////    float* buffer = (float*)stream;

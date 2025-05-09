@@ -62,3 +62,7 @@ void PulseChannel::setFrequency(float freq) {
 void PulseChannel::setEnabled(bool on) {
     enabled = on;
 }
+
+void PulseChannel::setMemoria(Memoria& memoria) {
+    this->memoria = memoria; // isto permite que a classe NoiseChannel acesse a memória
+}

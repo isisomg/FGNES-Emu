@@ -1,11 +1,22 @@
-﻿  teste_audio.cpp
-C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\pulse_channel.h(15,17): warning C4244: 'inicializando': conversão de 'float' para 'int', possível perda de dados
-  (compilando o arquivo fonte 'teste_audio.cpp')
+﻿  SDL.cpp
+C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\CPU.cpp(129,11): warning C4244: 'argumento': conversão de 'DWord' para 'Byte', possível perda de dados
+  (compilando o arquivo fonte 'SDL.cpp')
   
-C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\TriangleChannel.h(14,17): warning C4244: 'inicializando': conversão de 'float' para 'int', possível perda de dados
-  (compilando o arquivo fonte 'teste_audio.cpp')
+C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\CPU.cpp(130,11): warning C4244: 'argumento': conversão de 'DWord' para 'Byte', possível perda de dados
+  (compilando o arquivo fonte 'SDL.cpp')
   
-C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\NoiseChannel.h(16,17): warning C4244: 'inicializando': conversão de 'float' para 'int', possível perda de dados
-  (compilando o arquivo fonte 'teste_audio.cpp')
+C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\CPU.cpp(495,7): warning C4244: '=': conversão de 'DWord' para 'Byte', possível perda de dados
+  (compilando o arquivo fonte 'SDL.cpp')
   
+C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\pulse_channel.h(17,17): warning C4244: 'inicializando': conversão de 'float' para 'int', possível perda de dados
+  (compilando o arquivo fonte 'SDL.cpp')
+  
+C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\TriangleChannel.h(16,17): warning C4244: 'inicializando': conversão de 'float' para 'int', possível perda de dados
+  (compilando o arquivo fonte 'SDL.cpp')
+  
+C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\NoiseChannel.h(19,17): warning C4244: 'inicializando': conversão de 'float' para 'int', possível perda de dados
+  (compilando o arquivo fonte 'SDL.cpp')
+  
+C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\SDL.cpp(130,14): warning C4244: 'inicializando': conversão de 'std::streamoff' para 'int', possível perda de dados
+C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\SDL.cpp(221,22): warning C4244: 'argumento': conversão de 'time_t' para 'unsigned int', possível perda de dados
   FAGNES.vcxproj -> C:\Users\lilsiru\source\repos\FGNES-Emu3\x64\Debug\FAGNES.exe
