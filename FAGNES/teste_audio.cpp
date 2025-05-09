@@ -1,16 +1,47 @@
-// AQUI EH PRA TESTAR MEU AUDIO, FAVOR DESCOMENTAR PARA TESTES!!!!!! 
-
-
-
-
 //#define SDL_MAIN_HANDLED
 //#include <SDL.h>
 //#include <iostream>
 ////#include "audio.h"
+//#include <fstream>
+//#include <algorithm>
 //#include "pulse_channel.h"
+//#include "TriangleChannel.h"
+//#include "NoiseChannel.h"
 //
 //PulseChannel pulse1;
 //PulseChannel pulse2;
+//TriangleChannel triangle;
+//NoiseChannel noise;
+//
+//std::ofstream triangleOut("triangle_samples.csv"); // isso é para gerar um .csv para visualizar se o formato das ondas está certo
+//std::ofstream pulseOut("pulse_samples.csv");
+//
+////void audioCallback(void* userdata, Uint8* stream, int len) {
+////    float* buffer = (float*)stream;
+////    int samples = len / sizeof(float);
+////    for (int i = 0; i < samples; ++i) {
+////        pulse1.tick();
+////        pulse2.tick();
+////        triangle.tick();
+////        noise.tick();
+////
+////        float samplePulse = pulse1.getSample() + pulse2.getSample();
+////        float sampleTriangle = triangle.getSample();
+////        float mixed = (samplePulse + sampleTriangle) / 2.0f;
+////
+////        // Grava os samples de pulse em CSV
+////        if (i % 2 == 0 && pulseOut.is_open()) {
+////            pulseOut << samplePulse << "\n";
+////        }
+////
+////        // Grava triangle como antes
+////        if (i % 2 == 0 && triangleOut.is_open()) {
+////            triangleOut << sampleTriangle << "\n";
+////        }
+////
+////        buffer[i] = mixed;
+////    }
+////}
 //
 //void audioCallback(void* userdata, Uint8* stream, int len) {
 //    float* buffer = (float*)stream;
@@ -18,8 +49,14 @@
 //    for (int i = 0; i < samples; ++i) {
 //        pulse1.tick();
 //        pulse2.tick();
-//        float sample = pulse1.getSample() + pulse2.getSample();
-//        buffer[i] = sample > 1.0f ? 1.0f : sample; // evita clipping
+//        triangle.tick();
+//        noise.tick();
+//
+//        float sample = pulse1.getSample() + pulse2.getSample() + triangle.getSample() + noise.getSample();
+//
+//        // Clipping prevention simples
+//        if (sample > 1.0f) sample = 1.0f;
+//        buffer[i] = sample;
 //    }
 //}
 //
@@ -52,18 +89,26 @@
 //    }
 //
 //    pulse1.setDuty(2);        // 50% duty
-//    pulse1.setFrequency(440); // Nota A4
+//    pulse1.setFrequency(440); 
 //    pulse1.setVolume(12);     // Volume razoável
 //
 //    pulse2.setDuty(1);        // 25%
-//    pulse2.setFrequency(660); // Nota E5
+//    pulse2.setFrequency(660); 
 //    pulse2.setVolume(8);      // Mais fraco
+//
+//    triangle.setEnabled(true);
+//    triangle.setFrequency(220); 
+//
+//    noise.setEnabled(true);
+//    noise.setVolume(6);
+//    noise.setMode(false);      // false = modo longo, true = curto
+//    noise.setFrequency(4000);   // ou experimente com 100, 500, 1000 Hz
 //
 //    SDL_PauseAudioDevice(device, 0); // inicia audio
 //
 //    // OBS cria uma janela so pra eu poder testar mesmo, pode tirar isso depois
 //
-//    std::cout << "Tocando som... Pressione ESC ou feche a janela para sair.\n";
+//    std::cout << "Tocando som... Pressione Q ou feche a janela para sair.\n";
 //    SDL_Window* window = SDL_CreateWindow("Emulador APU NES",
 //        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 //        640, 480, SDL_WINDOW_SHOWN);

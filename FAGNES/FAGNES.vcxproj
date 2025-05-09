@@ -131,13 +131,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\PC\source\repos\FAGNES\Libraries\include;C:\Users\PC\source\repos\Libraries\include\SDL2;C:\Users\PC\source\repos\FAGNES\Libraries\include;C:\Users\PC\source\repos\FAGNES\Libraries\include\glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\lilsiru\source\repos\FGNES-Emu3\Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\PC\source\repos\FAGNES\FAGNES\Libraries\lib;C:\Users\PC\source\repos\FAGNES\Libraries\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>shell32.lib;user32.lib;SDL2.lib;SDL2main.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\lilsiru\source\repos\FGNES-Emu3\Libraries\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -168,7 +168,16 @@
     <ClCompile Include="DisplayOld.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Memoria.cpp" />
+    <ClCompile Include="NoiseChannel.cpp" />
+    <ClCompile Include="pulse_channel.cpp" />
     <ClCompile Include="SDL.cpp" />
+    <ClCompile Include="teste_audio.cpp" />
+    <ClCompile Include="TriangleChannel.cpp" />
+    <ClCompile Include="TriangleChannel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NoiseChannel.h" />
+    <ClInclude Include="pulse_channel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
