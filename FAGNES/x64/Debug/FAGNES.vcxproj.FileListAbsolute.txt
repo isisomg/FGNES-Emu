@@ -1,3 +1,0 @@
-C:\Users\PC\source\repos\FAGNES\FAGNES\x64\Debug\FAGNES.exe
-C:\Users\chomp\source\repos\FGNES-Emu\FAGNES\x64\Debug\FAGNES.exe
-C:\Users\lilsiru\source\repos\FGNES-Emu3\FAGNES\x64\Debug\FAGNES.exe

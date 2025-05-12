@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{63cda015-91d3-4e7f-915c-e6cda168b812}</ProjectGuid>
     <RootNamespace>FAGNES</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -71,22 +71,22 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\PC\source\repos\FAGNES\Libraries\include;C:\Users\PC\source\repos\FAGNES\Libraries\include\glad;C:\Users\Admin\source\repos\FAGNES\Libraries\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)libraries\include</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Users\PC\source\repos\FAGNES\Libraries\lib;C:\Users\PC\source\repos\FAGNES\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\PC\source\repos\FAGNES\Libraries\include;C:\Users\PC\source\repos\FAGNES\Libraries\include\glad;C:\Users\Admin\source\repos\FAGNES\Libraries\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)libraries\include</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Users\PC\source\repos\FAGNES\Libraries\lib;C:\Users\PC\source\repos\FAGNES\Libraries\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\PC\source\repos\FAGNES\Libraries\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>C:\Users\PC\source\repos\FAGNES\Libraries\lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
+    <IncludePath>$(SolutionDir)libraries\include</IncludePath>
+    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\PC\source\repos\FAGNES\Libraries\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>C:\Users\PC\source\repos\FAGNES\Libraries\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+    <IncludePath>$(SolutionDir)libraries\include</IncludePath>
+    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -99,12 +99,15 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\PC\source\repos\FAGNES\FAGNES\Libraries\lib;C:\Users\PC\source\repos\FAGNES\Libraries\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>shell32.lib;user32.lib;SDL2.lib;SDL2main.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
+    <PreBuildEvent>
+      <Command>echo $(WindowsSdkDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -121,9 +124,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>shell32.lib;user32.lib;SDL2.lib;SDL2main.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\PC\source\repos\FAGNES\FAGNES\Libraries\lib;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>echo $(WindowsSdkDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -136,12 +142,15 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\lilsiru\source\repos\FGNES-Emu3\Libraries\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
+    <PreBuildEvent>
+      <Command>echo $(WindowsSdkDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -158,9 +167,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>shell32.lib;user32.lib;SDL2.lib;SDL2main.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\PC\source\repos\FAGNES\FAGNES\Libraries\lib;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>echo $(WindowsSdkDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CPU.cpp" />
