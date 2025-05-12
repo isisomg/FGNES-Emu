@@ -175,12 +175,11 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Cores.cpp" />
     <ClCompile Include="CPU.cpp" />
-    <ClCompile Include="Display.cpp" />
-    <ClCompile Include="DisplayOld.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Memoria.cpp" />
     <ClCompile Include="NoiseChannel.cpp" />
+    <ClCompile Include="SDL_Display.cpp" />
     <ClCompile Include="pulse_channel.cpp" />
     <ClCompile Include="SDL.cpp" />
     <ClCompile Include="teste_audio.cpp" />
@@ -188,8 +187,12 @@
     <ClCompile Include="TriangleChannel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Cores.h" />
+    <ClInclude Include="CPU.h" />
+    <ClInclude Include="Memoria.h" />
     <ClInclude Include="NoiseChannel.h" />
     <ClInclude Include="pulse_channel.h" />
+    <ClInclude Include="SDL_Display.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

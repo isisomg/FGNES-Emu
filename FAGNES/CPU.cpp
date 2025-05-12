@@ -1,43 +1,13 @@
-#pragma once
+#include "CPU.h"
 
-#include <iostream>
-
-#include "Memoria.cpp"
-
-using Byte = unsigned char;
-using DWord = unsigned short;
-
-struct CPU
-{
-
-	DWord PC; // Program Counter
-	DWord SP; // Stack Pointer
-
-	// Registradores
-	Byte A;
-	Byte X;
-	Byte Y;
-
-
-	// Status Flag
-	Byte N : 1; // Negativo
-	Byte V : 1; // Overflow
-	Byte B : 1; // Break
-	Byte D : 1; // Decimal
-	Byte I : 1; // Interrupt
-	Byte Z : 1; // Zero
-	Byte C : 1; // Carry
-
-	bool atualizarGrafico = true;
-
-	void deveAtualizarGrafico(DWord adr) { // VERIFICAR POSICOES MEMORIA DE GRAFICO
+	void CPU::deveAtualizarGrafico(DWord adr) { // VERIFICAR POSICOES MEMORIA DE GRAFICO
 		if (adr >= 0x0200 && adr <= 0x0600) {
 			atualizarGrafico = true;
 		}
 	}
 
 	// Reseta para os valores iniciais
-	void inicializar() {
+	void CPU::inicializar() {
 		PC = 0x0600;
 		SP = 0xFF;
 
@@ -46,15 +16,15 @@ struct CPU
 		B = 1;
 	}
 
-	Byte readByte(Memoria& mem, DWord adr) {
+	Byte CPU::readByte(Memoria& mem, DWord adr) {
 		return mem[adr];
 	}
-	void writeByte(Memoria& mem, DWord adr, Byte valor) {
+	void CPU::writeByte(Memoria& mem, DWord adr, Byte valor) {
 		deveAtualizarGrafico(adr);
 		mem[adr] = valor;
 	}
 
-	Byte fetchByte(Memoria& mem) {
+	Byte CPU::fetchByte(Memoria& mem) {
 		if (PC >= 0xFFFF) {
 			return 0xEA; // NOP
 		}
@@ -62,66 +32,66 @@ struct CPU
 			return mem[PC++];
 		}
 	}
-	void ajustaZ(Byte valor) {
+	void CPU::ajustaZ(Byte valor) {
 		Z = (valor == 0);
 	}
-	void ajustaN(Byte valor) {
+	void CPU::ajustaN(Byte valor) {
 		N = (valor & 0x80) != 0;
 	}
 
-	// Instru��es
+	// Instrucoes
 	// Mais detalhes em https://www.nesdev.org/wiki/Instruction_reference
 
 	// ACCESS 
-	void LDA(Memoria& mem, DWord adr) {
+	void CPU::LDA(Memoria& mem, DWord adr) {
 		A = readByte(mem, adr);
 		ajustaZ(A);
 		ajustaN(A);
 	}
-	void STA(Memoria& mem, DWord adr) {
+	void CPU::STA(Memoria& mem, DWord adr) {
 		writeByte(mem, adr, A);
 	}
-	void LDX(Memoria& mem, DWord adr) {
+	void CPU::LDX(Memoria& mem, DWord adr) {
 		X = readByte(mem, adr);
 		ajustaZ(X);
 		ajustaN(X);
 	}
-	void STX(Memoria& mem, DWord adr) {
+	void CPU::STX(Memoria& mem, DWord adr) {
 		writeByte(mem, adr, X);
 	}
-	void LDY(Memoria& mem, DWord adr) {
+	void CPU::LDY(Memoria& mem, DWord adr) {
 		Y = readByte(mem, adr);
 		ajustaZ(Y);
 		ajustaN(Y);
 	}
-	void STY(Memoria& mem, DWord adr) {
+	void CPU::STY(Memoria& mem, DWord adr) {
 		writeByte(mem, adr, Y);
 	}
 
 	// TRANSFER
-	void TAX() {
+	void CPU::TAX() {
 		X = A;
 		ajustaN(X);
 		ajustaZ(X);
 	}
-	void TXA() {
+	void CPU::TXA() {
 		A = X;
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void TAY() {
+	void CPU::TAY() {
 		Y = A;
 		ajustaN(Y);
 		ajustaZ(Y);
 	}
-	void TYA() {
+	void CPU::TYA() {
 		A = Y;
 		ajustaN(A);
 		ajustaZ(A);
 	}
 
 	// ARITHMETIC
-	void ADC(Byte aux) {
+	void CPU::ADC(Byte aux) {
 		DWord soma = A + aux + C;
 
 		C = soma > 0xFF;
@@ -131,7 +101,7 @@ struct CPU
 
 		A = soma & 0xFF;
 	}
-	void SBC(Memoria& mem, DWord adr) {
+	void CPU::SBC(Memoria& mem, DWord adr) {
 		Byte valor = readByte(mem, adr);
 		Byte carryIn = C ? 0 : 1; // Inversor
 
@@ -147,43 +117,43 @@ struct CPU
 
 		A = resultado8;
 	}
-	void INC(Memoria& mem, DWord adr) {
+	void CPU::INC(Memoria& mem, DWord adr) {
 		Byte valor = readByte(mem, adr);
 		valor++;
 		ajustaN(valor);
 		ajustaZ(valor);
 		writeByte(mem, adr, valor);
 	}
-	void DEC(Memoria& mem, DWord adr) {
+	void CPU::DEC(Memoria& mem, DWord adr) {
 		Byte valor = readByte(mem, adr);
 		valor--;
 		ajustaN(valor);
 		ajustaZ(valor);
 		writeByte(mem, adr, valor);
 	}
-	void INX() {
+	void CPU::INX() {
 		X++;
 		ajustaZ(X);
 		ajustaN(X);
 	}
-	void DEX() {
+	void CPU::DEX() {
 		X--;
 		ajustaZ(X);
 		ajustaN(X);
 	}
-	void INY() {
+	void CPU::INY() {
 		Y++;
 		ajustaZ(Y);
 		ajustaN(Y);
 	}
-	void DEY() {
+	void CPU::DEY() {
 		Y--;
 		ajustaZ(Y);
 		ajustaN(Y);
 	}
 
 	// SHIFT
-	void ASL(Memoria& mem, DWord adr, bool acumulador = false) {
+	void CPU::ASL(Memoria& mem, DWord adr, bool acumulador) {
 		Byte valor;
 		if (acumulador) {
 			valor = A;
@@ -204,7 +174,7 @@ struct CPU
 			writeByte(mem, adr, novoValor);
 		}
 	}
-	void LSR(Memoria& mem, DWord adr, bool acumulador = false) {
+	void CPU::LSR(Memoria& mem, DWord adr, bool acumulador) {
 
 		Byte valor;
 		if (acumulador) {
@@ -227,7 +197,7 @@ struct CPU
 			writeByte(mem, adr, novoValor);
 		}
 	}
-	void ROL(Memoria& mem, DWord adr, bool acumulador = false) {
+	void CPU::ROL(Memoria& mem, DWord adr, bool acumulador) {
 		Byte valor;
 		if (acumulador) {
 			valor = A;
@@ -254,7 +224,7 @@ struct CPU
 			writeByte(mem, adr, valor);
 		}
 	}
-	void ROR(Memoria& mem, DWord adr, bool acumulador = false) {
+	void CPU::ROR(Memoria& mem, DWord adr, bool acumulador) {
 		Byte valor;
 		if (acumulador) {
 			valor = A;
@@ -283,25 +253,25 @@ struct CPU
 	}
 
 	// BITWISE
-	void AND(Memoria& mem, DWord adr) {
+	void CPU::AND(Memoria& mem, DWord adr) {
 		Byte valor = readByte(mem, adr);
 		A = A & valor;
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void ORA(Memoria& mem, DWord adr) {
+	void CPU::ORA(Memoria& mem, DWord adr) {
 		Byte valor = readByte(mem, adr);
 		A = A | valor;
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void EOR(Memoria& mem, DWord adr) {
+	void CPU::EOR(Memoria& mem, DWord adr) {
 		Byte valor = readByte(mem, adr);
 		A = A ^ valor;
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void BIT(Memoria& mem, DWord adr) { // REVISAR
+	void CPU::BIT(Memoria& mem, DWord adr) { // REVISAR
 		Byte valor = readByte(mem, adr);
 		Byte resultado = A & valor;
 		ajustaN(valor);
@@ -310,19 +280,19 @@ struct CPU
 	}
 
 	// COMPARE
-	void CMP(Memoria& mem, DWord adr) {
+	void CPU::CMP(Memoria& mem, DWord adr) {
 		Byte valor = readByte(mem, adr);
 		C = (A >= valor);
 		Z = (A == valor);
 		ajustaN(A - valor);
 	}
-	void CPX(Memoria& mem, DWord adr) {
+	void CPU::CPX(Memoria& mem, DWord adr) {
 		Byte valor = readByte(mem, adr);
 		C = (X >= valor);
 		Z = (X == valor);
 		ajustaN(X - valor);
 	}
-	void CPY(Memoria& mem, DWord adr) {
+	void CPU::CPY(Memoria& mem, DWord adr) {
 		Byte valor = readByte(mem, adr);
 		C = (Y >= valor);
 		Z = (Y == valor);
@@ -330,49 +300,49 @@ struct CPU
 	}
 
 	// BRANCH
-	void BCC(Memoria& mem) {
+	void CPU::BCC(Memoria& mem) {
 		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
 		if (C == 0) {
 			PC += offset;
 		}
 	}
-	void BCS(Memoria& mem) {
+	void CPU::BCS(Memoria& mem) {
 		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
 		if (C == 1) {
 			PC += offset;
 		}
 	}
-	void BEQ(Memoria& mem) {
+	void CPU::BEQ(Memoria& mem) {
 		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
 		if (Z == 1) {
 			PC += offset;
 		}
 	}
-	void BNE(Memoria& mem) {
+	void CPU::BNE(Memoria& mem) {
 		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
 		if (Z == 0) {
 			PC += offset;
 		}
 	}
-	void BPL(Memoria& mem) {
+	void CPU::BPL(Memoria& mem) {
 		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
 		if (N == 0) {
 			PC += offset;
 		}
 	}
-	void BMI(Memoria& mem) {
+	void CPU::BMI(Memoria& mem) {
 		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
 		if (N == 1) {
 			PC += offset;
 		}
 	}
-	void BVC(Memoria& mem) {
+	void CPU::BVC(Memoria& mem) {
 		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
 		if (V == 0) {
 			PC += offset;
 		}
 	}
-	void BVS(Memoria& mem) {
+	void CPU::BVS(Memoria& mem) {
 		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
 		if (V == 1) {
 			PC += offset;
@@ -380,7 +350,7 @@ struct CPU
 	}
 
 	// JUMP
-	void JMP(Memoria& mem, DWord adr, bool absoluto = false) {
+	void CPU::JMP(Memoria& mem, DWord adr, bool absoluto) {
 		if (absoluto) {
 			PC = adr;
 		}
@@ -388,7 +358,7 @@ struct CPU
 			PC = readByte(mem, adr);
 		}
 	}
-	void JSR(Memoria& mem, DWord adr) {
+	void CPU::JSR(Memoria& mem, DWord adr) {
 		// Decrementa SP e empilha o endere�o de retorno (PC - 1), high byte depois low byte
 		DWord returnAdr = PC - 1;
 
@@ -397,7 +367,7 @@ struct CPU
 
 		PC = adr;
 	}
-	void RTS(Memoria& mem) {
+	void CPU::RTS(Memoria& mem) {
 		Byte low = readByte(mem, 0x0100 + ++SP);
 		Byte high = readByte(mem, 0x0100 + ++SP);
 
@@ -405,7 +375,7 @@ struct CPU
 
 		PC = returnAddress + 1;
 	}
-	void BRK(Memoria& mem) { // AJUSTAR
+	void CPU::BRK(Memoria& mem) { // AJUSTAR
 
 		PC = 0xFFFF; // TESTE
 		return; // TESTE
@@ -429,7 +399,7 @@ struct CPU
 		PC = (readByte(mem, 0xFFFE) | (readByte(mem, 0xFFFF) << 8));
 
 	}
-	void RTI(Memoria& mem) {
+	void CPU::RTI(Memoria& mem) {
 		// Desempilha o byte de status (flags) primeiro
 		Byte status = readByte(mem, 0x0100 + ++SP);
 
@@ -451,17 +421,17 @@ struct CPU
 	}
 
 	// STACK
-	void PHA(Memoria& mem) {
+	void CPU::PHA(Memoria& mem) {
 		writeByte(mem, 0x0100 + SP, A);
 		SP--;
 	}
-	void PLA(Memoria& mem) {
+	void CPU::PLA(Memoria& mem) {
 		SP++;
 		A = readByte(mem, 0x0100 + SP);
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void PHP(Memoria& mem) {
+	void CPU::PHP(Memoria& mem) {
 		Byte status = 0;
 		status |= (N << 7);
 		status |= (V << 6);
@@ -474,7 +444,7 @@ struct CPU
 		writeByte(mem, 0x0100 + SP, status);
 		SP--;
 	}
-	void PLP(Memoria& mem) {
+	void CPU::PLP(Memoria& mem) {
 		SP++;
 		Byte status = readByte(mem, 0x0100 + SP);
 		C = status & 0x01;
@@ -488,87 +458,87 @@ struct CPU
 	}
 
 
-	void TXS() {
+	void CPU::TXS() {
 		SP = X;
 	}
-	void TSX() {
+	void CPU::TSX() {
 		X = SP;
 		ajustaN(X);
 		ajustaZ(X);
 	}
 
 	// FLAGS
-	void CLC() {
+	void CPU::CLC() {
 		C = 0;
 	}
-	void SEC() {
+	void CPU::SEC() {
 		C = 1;
 	}
-	void CLI() {
+	void CPU::CLI() {
 		I = 0;
 	}
-	void SEI() {
+	void CPU::SEI() {
 		I = 1;
 	}
-	void CLD() {
+	void CPU::CLD() {
 		D = 0;
 	}
-	void SED() {
+	void CPU::SED() {
 		D = 1;
 	}
-	void CLV() {
+	void CPU::CLV() {
 		V = 0;
 	}
 
 	// OTHER
-	void NOP() {
+	void CPU::NOP() {
 		;
 	}
 
 
 	// Modos de endere�amento 
 	// Immediate - Retorna o valor
-	Byte immediate(Memoria& mem) {
+	Byte CPU::immediate(Memoria& mem) {
 		return fetchByte(mem);
 	}
 	// ZeroPage - Retorna o address
-	Byte zeropage(Memoria& mem) {
+	Byte CPU::zeropage(Memoria& mem) {
 		return fetchByte(mem);
 	}
 	// ZeroPage,X - Retorna o address
-	Byte zeropageX(Memoria& mem) {
+	Byte CPU::zeropageX(Memoria& mem) {
 		Byte adrBase = fetchByte(mem);
 		Byte adr = (adrBase + X) & 0xFF;
 		return adr;
 	}
 	// ZeroPage,Y - Retorna o address
-	Byte zeropageY(Memoria& mem) {
+	Byte CPU::zeropageY(Memoria& mem) {
 		Byte adrBase = fetchByte(mem);
 		Byte adr = (adrBase + Y) & 0xFF;
 		return adr;
 	}
 	// Absolute - Retorna o address
-	DWord absolute(Memoria& mem) {
+	DWord CPU::absolute(Memoria& mem) {
 		Byte adrBase = fetchByte(mem);
 		DWord adr = (fetchByte(mem) << 8) | adrBase;
 		return adr;
 	}
 	// Absolute X - Retorna o address
-	DWord absoluteX(Memoria& mem) {
+	DWord CPU::absoluteX(Memoria& mem) {
 		Byte adrBase = fetchByte(mem);
 		DWord adrCompleto = (fetchByte(mem) << 8) | adrBase;
 		DWord adr = adrCompleto + X;
 		return adr;
 	}
 	// Absolute Y - Retorna o address
-	DWord absoluteY(Memoria& mem) {
+	DWord CPU::absoluteY(Memoria& mem) {
 		Byte adrBase = fetchByte(mem);
 		DWord adrCompleto = (fetchByte(mem) << 8) | adrBase;
 		DWord adr = adrCompleto + Y;
 		return adr;
 	}
 	// Indirect - Retorna o adr
-	DWord indirect(Memoria& mem) {
+	DWord CPU::indirect(Memoria& mem) {
 		Byte low = fetchByte(mem);
 		Byte high = fetchByte(mem);
 		DWord addr = (high << 8) | low;
@@ -581,7 +551,7 @@ struct CPU
 	}
 
 	// Indirect X - Retorna o adr
-	DWord indirectX(Memoria& mem) {
+	DWord CPU::indirectX(Memoria& mem) {
 		Byte base = fetchByte(mem);
 		Byte ptr = (base + X) & 0xFF;
 
@@ -592,7 +562,7 @@ struct CPU
 	}
 
 	// Indirect Y - Retorna o adr
-	DWord indirectY(Memoria& mem) {
+	DWord CPU::indirectY(Memoria& mem) {
 		Byte base = fetchByte(mem);
 		Byte lo = readByte(mem, base);
 		Byte hi = readByte(mem, (base + 1) & 0xFF); 
@@ -605,7 +575,7 @@ struct CPU
 
 
 	// fetch - decode - execute
-	void executar(Memoria& mem) {
+	void CPU::executar(Memoria& mem) {
 		Byte op = fetchByte(mem);
 		switch (op)
 		{
@@ -1481,5 +1451,4 @@ struct CPU
 		};
 	}
 
-};
 
