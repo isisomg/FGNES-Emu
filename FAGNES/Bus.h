@@ -1,9 +1,6 @@
 #pragma once
 #include "Memoria.h"
 
-using Byte = unsigned char;
-using DWord = unsigned short;
-
 class Bus {
 private:
 	Memoria<0x0800> memCPU;

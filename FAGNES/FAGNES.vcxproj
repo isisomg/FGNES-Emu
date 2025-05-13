@@ -176,6 +176,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Bus.cpp" />
+    <ClCompile Include="Cartucho.cpp" />
     <ClCompile Include="Cores.cpp" />
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="DMCChannel.cpp" />
@@ -190,6 +191,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bus.h" />
+    <ClInclude Include="Cartucho.h" />
     <ClInclude Include="Cores.h" />
     <ClInclude Include="CPU.h" />
     <ClInclude Include="DMCChannel.h" />
@@ -197,6 +199,7 @@
     <ClInclude Include="NoiseChannel.h" />
     <ClInclude Include="pulse_channel.h" />
     <ClInclude Include="SDL_Display.h" />
+    <ClInclude Include="Tipos.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,9 +1,7 @@
 #pragma once
 #include "Bus.h"
+#include "Tipos.h"
 #include <iostream>
-
-using Byte = unsigned char;
-using DWord = unsigned short;
 
 class CPU {
 public:

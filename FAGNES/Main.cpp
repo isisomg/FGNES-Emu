@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 		display.renderizar();
 		
 	}
-
+	
 	display.destroy();
 	delete bus;
 	return 0;
