@@ -1,11 +1,11 @@
 #include "CPU.h"
-#include "Memoria.h"
+#include "Bus.h"
 #include "SDL_Display.h"
 
 #include <iostream>
 #include <fstream>
 
-void carregarROM(Memoria& mem, CPU& cpu) {
+void carregarROM(CPU& cpu) { // APENAS PARA TESTE
 	std::string path = "snake.hex";
 	std::ifstream input(path, std::ios::in | std::ios::binary);
 	if (input.is_open() == false) {
@@ -18,20 +18,24 @@ void carregarROM(Memoria& mem, CPU& cpu) {
 	input.seekg(0, input.beg);
 
 	for (int i = 0; i < tamanho; i++) {
-		input.read((char*)&mem[cpu.PC + i], sizeof(char));
+		Byte valor;
+		input.read((char*) &valor, sizeof(char));
+		cpu.bus->write(0x0600 + i, valor);
 	}
 }
 
 int main(int argc, char* argv[]) {
 
-	Memoria mem;
-	CPU cpu;
-	cpu.inicializar();
-
+	Bus* bus = new Bus();
+	
 	SDL_Display display;
-	display.init();
-
-	carregarROM(mem, cpu);
+	display.init(bus);
+	
+	CPU cpu;
+	
+	cpu.inicializar(bus);
+	
+	carregarROM(cpu);
 
 	bool rodar = true;
 	SDL_Event event;
@@ -39,26 +43,26 @@ int main(int argc, char* argv[]) {
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT) rodar = false;
 			
-			display.processarEntrada(event, mem);
+			display.processarEntrada(event);
 		}
-
 
 		if (cpu.PC == 0xFFFF) {
 			break;
 		}
-		cpu.executar(mem);
+		cpu.executar();
 
 		// mudar RNG
-		mem[0x00FE] = rand() % 0xFF;
+		cpu.writeByte(0x00FE, rand() % 0xFF);
 
 		if (cpu.atualizarGrafico == false) {
 			continue;
 		}
 		cpu.atualizarGrafico = false;
-		display.renderizar(mem);
+		display.renderizar();
 		
 	}
 
 	display.destroy();
+	delete bus;
 	return 0;
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include "Memoria.cpp"
+#include "Memoria.h"
 
 class TriangleChannel {
 public:
@@ -22,4 +22,3 @@ private:
 
     static const uint8_t triangleTable[32];
 };
-#pragma once

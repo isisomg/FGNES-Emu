@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include "Memoria.cpp"
+#include "Memoria.h"
 
 class PulseChannel {
 public:
@@ -26,4 +26,4 @@ private:
 
     static const uint8_t dutyTable[4][8];
 };
-#pragma once
+

@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include "Memoria.cpp"
+#include "Memoria.h"
 
 
 class NoiseChannel {
@@ -23,4 +23,4 @@ private:
     bool mode = false; // no NES existem 2 modos, curto e longo, nesse caso to usando false pro longo, q eh um XOR entre o bit 0 e o 1, o bit curto eh um XOR entre o bit 0 e 6
     Memoria memoria;
 };
-#pragma once
+

@@ -1,7 +1,8 @@
 #pragma once
 #include "SDL_Display.h"
 
-void SDL_Display::init() {
+void SDL_Display::init(Bus* novoBus) {
+	bus = novoBus;
 	SDL_Init(SDL_INIT_VIDEO);
 	WINDOW = SDL_CreateWindow(
 		"FaGNES", SDL_WINDOWPOS_CENTERED,
@@ -27,30 +28,30 @@ void SDL_Display::init() {
 	}
 }
 
-void SDL_Display::processarEntrada(SDL_Event event, Memoria& mem) {
+void SDL_Display::processarEntrada(SDL_Event event) {
 	if (event.type == SDL_KEYDOWN) {
 		switch (event.key.keysym.sym) {
 		case SDLK_w:
 			printf("Botao apertado: w\n");
-			mem[0x00FF] = 0x77;
+			bus->write(0x00FF, 0x77);
 			break;
 		case SDLK_d:
 			printf("Botao apertado: d\n");
-			mem[0x00FF] = 0x64;
+			bus->write(0x00FF, 0x64);
 			break;
 		case SDLK_s:
 			printf("Botao apertado: s\n");
-			mem[0x00FF] = 0x73;
+			bus->write(0x00FF, 0x73);
 			break;
 		case SDLK_a:
 			printf("Botao apertado: a\n");
-			mem[0x00FF] = 0x61;
+			bus->write(0x00FF, 0x61);
 			break;
 		}
 	}
 }
 
-void SDL_Display::renderizar(Memoria& mem) {
+void SDL_Display::renderizar() {
 	void* pixels;
 	int pitch;
 	SDL_LockTexture(TEXTURE, nullptr, &pixels, &pitch);
@@ -60,7 +61,7 @@ void SDL_Display::renderizar(Memoria& mem) {
 		for (int x = 0; x < TELA_WIDTH; ++x) {
 			int index = y * (pitch / 4) + x;
 
-			int cor_index = mem[0x0200 + index];
+			int cor_index = bus->read(0x0200 + index);
 			Pixel cor = cores[cor_index];
 
 			pixel_ptr[index] = (255 << 24) | (cor.r << 16) | (cor.g << 8) | cor.b;

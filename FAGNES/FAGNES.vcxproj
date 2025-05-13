@@ -73,20 +73,20 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(SolutionDir)libraries\include</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
+    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.29.30133\lib\x64;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)libraries\include</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
-    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
+    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.29.30133\lib\x64;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)libraries\include</IncludePath>
-    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
+    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.29.30133\lib\x64;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)libraries\include</IncludePath>
-    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
+    <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.29.30133\lib\x64;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -175,6 +175,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Bus.cpp" />
     <ClCompile Include="Cores.cpp" />
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -187,6 +188,7 @@
     <ClCompile Include="TriangleChannel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bus.h" />
     <ClInclude Include="Cores.h" />
     <ClInclude Include="CPU.h" />
     <ClInclude Include="Memoria.h" />

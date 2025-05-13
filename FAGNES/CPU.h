@@ -1,13 +1,16 @@
 #pragma once
-#include "Memoria.h"
+#include "Bus.h"
 #include <iostream>
 
 using Byte = unsigned char;
 using DWord = unsigned short;
 
-struct CPU {
+class CPU {
+public:
 	DWord PC; // Program Counter
 	DWord SP; // Stack Pointer
+
+	Bus* bus;
 
 	// Registradores
 	Byte A;
@@ -26,19 +29,19 @@ struct CPU {
 	bool atualizarGrafico = true;
 
 	void deveAtualizarGrafico(DWord adr);
-	void inicializar();
-	Byte readByte(Memoria& mem, DWord adr);
-	void writeByte(Memoria& mem, DWord adr, Byte valor);
-	Byte fetchByte(Memoria& mem);
+	void inicializar(Bus* novoBus);
+	Byte readByte(DWord adr);
+	void writeByte(DWord adr, Byte valor);
+	Byte fetchByte();
 	void ajustaZ(Byte valor);
 	void ajustaN(Byte valor);
 
-	void LDA(Memoria& mem, DWord adr);
-	void STA(Memoria& mem, DWord adr);
-	void LDX(Memoria& mem, DWord adr);
-	void STX(Memoria& mem, DWord adr);
-	void LDY(Memoria& mem, DWord adr);
-	void STY(Memoria& mem, DWord adr);
+	void LDA(DWord adr);
+	void STA(DWord adr);
+	void LDX(DWord adr);
+	void STX(DWord adr);
+	void LDY(DWord adr);
+	void STY(DWord adr);
 
 	void TAX();
 	void TXA();
@@ -46,48 +49,48 @@ struct CPU {
 	void TYA();
 
 	void ADC(Byte aux);
-	void SBC(Memoria& mem, DWord adr);
-	void INC(Memoria& mem, DWord adr);
-	void DEC(Memoria& mem, DWord adr);
+	void SBC(DWord adr);
+	void INC(DWord adr);
+	void DEC(DWord adr);
 	void INX();
 	void DEX();
 	void INY();
 	void DEY();
 
-	void ASL(Memoria& mem, DWord adr, bool acumulador = false);
-	void LSR(Memoria& mem, DWord adr, bool acumulador = false);
-	void ROL(Memoria& mem, DWord adr, bool acumulador = false);
-	void ROR(Memoria& mem, DWord adr, bool acumulador = false);
+	void ASL(DWord adr, bool acumulador = false);
+	void LSR(DWord adr, bool acumulador = false);
+	void ROL(DWord adr, bool acumulador = false);
+	void ROR(DWord adr, bool acumulador = false);
 	
-	void AND(Memoria& mem, DWord adr);
-	void ORA(Memoria& mem, DWord adr);
-	void EOR(Memoria& mem, DWord adr);
-	void BIT(Memoria& mem, DWord adr);
+	void AND(DWord adr);
+	void ORA(DWord adr);
+	void EOR(DWord adr);
+	void BIT(DWord adr);
 
 
-	void CMP(Memoria& mem, DWord adr);
-	void CPX(Memoria& mem, DWord adr);
-	void CPY(Memoria& mem, DWord adr);
+	void CMP(DWord adr);
+	void CPX(DWord adr);
+	void CPY(DWord adr);
 
-	void BCC(Memoria& mem);
-	void BCS(Memoria& mem);
-	void BEQ(Memoria& mem);
-	void BNE(Memoria& mem);
-	void BPL(Memoria& mem);
-	void BMI(Memoria& mem);
-	void BVC(Memoria& mem);
-	void BVS(Memoria& mem);
+	void BCC();
+	void BCS();
+	void BEQ();
+	void BNE();
+	void BPL();
+	void BMI();
+	void BVC();
+	void BVS();
 
-	void JMP(Memoria& mem, DWord adr, bool absoluto = false);
-	void JSR(Memoria& mem, DWord adr);
-	void RTS(Memoria& mem);
-	void BRK(Memoria& mem);
-	void RTI(Memoria& mem);
+	void JMP(DWord adr, bool absoluto = false);
+	void JSR(DWord adr);
+	void RTS();
+	void BRK();
+	void RTI();
 
-	void PHA(Memoria& mem);
-	void PLA(Memoria& mem);
-	void PHP(Memoria& mem);
-	void PLP(Memoria& mem);
+	void PHA();
+	void PLA();
+	void PHP();
+	void PLP();
 	void TXS();
 	void TSX();
 
@@ -101,16 +104,16 @@ struct CPU {
 
 	void NOP();
 
-	Byte immediate(Memoria& mem);
-	Byte zeropage(Memoria& mem);
-	Byte zeropageX(Memoria& mem);
-	Byte zeropageY(Memoria& mem);
-	DWord absolute(Memoria& mem);
-	DWord absoluteX(Memoria& mem);
-	DWord absoluteY(Memoria& mem);
-	DWord indirect(Memoria& mem);
-	DWord indirectX(Memoria& mem);
-	DWord indirectY(Memoria& mem);
+	Byte immediate();
+	Byte zeropage();
+	Byte zeropageX();
+	Byte zeropageY();
+	DWord absolute();
+	DWord absoluteX();
+	DWord absoluteY();
+	DWord indirect();
+	DWord indirectX();
+	DWord indirectY();
 
-	void executar(Memoria& mem);
+	void executar();
 };

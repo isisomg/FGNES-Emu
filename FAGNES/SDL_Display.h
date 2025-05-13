@@ -1,7 +1,7 @@
 #pragma once
 #include <SDL.h>
 #include <iostream>
-#include "Memoria.h"
+#include "Bus.h"
 #include "Cores.h"
 
 class SDL_Display {
@@ -15,12 +15,14 @@ private:
     SDL_Texture* TEXTURE;
     SDL_Window* WINDOW;
 
+    Bus* bus;
+
 public:
     //SDL_Display();
 
-    void init();
-    void processarEntrada(SDL_Event event, Memoria& mem);
-    void renderizar(Memoria& mem);
+    void init(Bus* novoBus);
+    void processarEntrada(SDL_Event event);
+    void renderizar();
     void destroy();
 
     //~SDL_Display();

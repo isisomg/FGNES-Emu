@@ -1,35 +1,37 @@
 #include "CPU.h"
 
-	void CPU::deveAtualizarGrafico(DWord adr) { // VERIFICAR POSICOES MEMORIA DE GRAFICO
+	void CPU::deveAtualizarGrafico(DWord adr) { // VERIFICAR POSICOES ORIA DE GRAFICO
 		if (adr >= 0x0200 && adr <= 0x0600) {
 			atualizarGrafico = true;
 		}
 	}
 
 	// Reseta para os valores iniciais
-	void CPU::inicializar() {
+	void CPU::inicializar(Bus* novoBus) {
 		PC = 0x0600;
 		SP = 0xFF;
 
 		X = Y = A = 0x00;
 		N = V = D = I = Z = C = 0;
 		B = 1;
+
+		bus = novoBus;
 	}
 
-	Byte CPU::readByte(Memoria& mem, DWord adr) {
-		return mem[adr];
+	Byte CPU::readByte(DWord adr) {
+		return bus->read(adr);
 	}
-	void CPU::writeByte(Memoria& mem, DWord adr, Byte valor) {
+	void CPU::writeByte(DWord adr, Byte valor) {
 		deveAtualizarGrafico(adr);
-		mem[adr] = valor;
+		bus->write(adr, valor);
 	}
 
-	Byte CPU::fetchByte(Memoria& mem) {
+	Byte CPU::fetchByte() {
 		if (PC >= 0xFFFF) {
 			return 0xEA; // NOP
 		}
 		else {
-			return mem[PC++];
+			return readByte(PC++);
 		}
 	}
 	void CPU::ajustaZ(Byte valor) {
@@ -43,29 +45,29 @@
 	// Mais detalhes em https://www.nesdev.org/wiki/Instruction_reference
 
 	// ACCESS 
-	void CPU::LDA(Memoria& mem, DWord adr) {
-		A = readByte(mem, adr);
+	void CPU::LDA(DWord adr) {
+		A = readByte(adr);
 		ajustaZ(A);
 		ajustaN(A);
 	}
-	void CPU::STA(Memoria& mem, DWord adr) {
-		writeByte(mem, adr, A);
+	void CPU::STA(DWord adr) {
+		writeByte(adr, A);
 	}
-	void CPU::LDX(Memoria& mem, DWord adr) {
-		X = readByte(mem, adr);
+	void CPU::LDX(DWord adr) {
+		X = readByte(adr);
 		ajustaZ(X);
 		ajustaN(X);
 	}
-	void CPU::STX(Memoria& mem, DWord adr) {
-		writeByte(mem, adr, X);
+	void CPU::STX(DWord adr) {
+		writeByte(adr, X);
 	}
-	void CPU::LDY(Memoria& mem, DWord adr) {
-		Y = readByte(mem, adr);
+	void CPU::LDY(DWord adr) {
+		Y = readByte(adr);
 		ajustaZ(Y);
 		ajustaN(Y);
 	}
-	void CPU::STY(Memoria& mem, DWord adr) {
-		writeByte(mem, adr, Y);
+	void CPU::STY(DWord adr) {
+		writeByte(adr, Y);
 	}
 
 	// TRANSFER
@@ -101,8 +103,8 @@
 
 		A = soma & 0xFF;
 	}
-	void CPU::SBC(Memoria& mem, DWord adr) {
-		Byte valor = readByte(mem, adr);
+	void CPU::SBC(DWord adr) {
+		Byte valor = readByte(adr);
 		Byte carryIn = C ? 0 : 1; // Inversor
 
 		DWord resultado16 = A - valor - carryIn;
@@ -117,19 +119,19 @@
 
 		A = resultado8;
 	}
-	void CPU::INC(Memoria& mem, DWord adr) {
-		Byte valor = readByte(mem, adr);
+	void CPU::INC(DWord adr) {
+		Byte valor = readByte(adr);
 		valor++;
 		ajustaN(valor);
 		ajustaZ(valor);
-		writeByte(mem, adr, valor);
+		writeByte(adr, valor);
 	}
-	void CPU::DEC(Memoria& mem, DWord adr) {
-		Byte valor = readByte(mem, adr);
+	void CPU::DEC(DWord adr) {
+		Byte valor = readByte(adr);
 		valor--;
 		ajustaN(valor);
 		ajustaZ(valor);
-		writeByte(mem, adr, valor);
+		writeByte(adr, valor);
 	}
 	void CPU::INX() {
 		X++;
@@ -153,13 +155,13 @@
 	}
 
 	// SHIFT
-	void CPU::ASL(Memoria& mem, DWord adr, bool acumulador) {
+	void CPU::ASL(DWord adr, bool acumulador) {
 		Byte valor;
 		if (acumulador) {
 			valor = A;
 		}
 		else {
-			valor = readByte(mem, adr);
+			valor = readByte(adr);
 		}
 
 		Byte novoValor = valor << 1;
@@ -171,17 +173,17 @@
 			A = novoValor;
 		}
 		else {
-			writeByte(mem, adr, novoValor);
+			writeByte(adr, novoValor);
 		}
 	}
-	void CPU::LSR(Memoria& mem, DWord adr, bool acumulador) {
+	void CPU::LSR(DWord adr, bool acumulador) {
 
 		Byte valor;
 		if (acumulador) {
 			valor = A;
 		}
 		else {
-			valor = readByte(mem, adr);
+			valor = readByte(adr);
 		}
 
 		C = (valor & 0x01);
@@ -194,16 +196,16 @@
 			A = novoValor;
 		}
 		else {
-			writeByte(mem, adr, novoValor);
+			writeByte(adr, novoValor);
 		}
 	}
-	void CPU::ROL(Memoria& mem, DWord adr, bool acumulador) {
+	void CPU::ROL(DWord adr, bool acumulador) {
 		Byte valor;
 		if (acumulador) {
 			valor = A;
 		}
 		else {
-			valor = readByte(mem, adr);
+			valor = readByte(adr);
 		}
 
 		bool novoC = (valor & 0x80) != 0;
@@ -221,16 +223,16 @@
 			A = valor;
 		}
 		else {
-			writeByte(mem, adr, valor);
+			writeByte(adr, valor);
 		}
 	}
-	void CPU::ROR(Memoria& mem, DWord adr, bool acumulador) {
+	void CPU::ROR(DWord adr, bool acumulador) {
 		Byte valor;
 		if (acumulador) {
 			valor = A;
 		}
 		else {
-			valor = readByte(mem, adr);
+			valor = readByte(adr);
 		}
 
 		bool novoC = (valor & 0x01) != 0;
@@ -248,31 +250,31 @@
 			A = valor;
 		}
 		else {
-			writeByte(mem, adr, valor);
+			writeByte(adr, valor);
 		}
 	}
 
 	// BITWISE
-	void CPU::AND(Memoria& mem, DWord adr) {
-		Byte valor = readByte(mem, adr);
+	void CPU::AND(DWord adr) {
+		Byte valor = readByte(adr);
 		A = A & valor;
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void CPU::ORA(Memoria& mem, DWord adr) {
-		Byte valor = readByte(mem, adr);
+	void CPU::ORA(DWord adr) {
+		Byte valor = readByte(adr);
 		A = A | valor;
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void CPU::EOR(Memoria& mem, DWord adr) {
-		Byte valor = readByte(mem, adr);
+	void CPU::EOR(DWord adr) {
+		Byte valor = readByte(adr);
 		A = A ^ valor;
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void CPU::BIT(Memoria& mem, DWord adr) { // REVISAR
-		Byte valor = readByte(mem, adr);
+	void CPU::BIT(DWord adr) { // REVISAR
+		Byte valor = readByte(adr);
 		Byte resultado = A & valor;
 		ajustaN(valor);
 		ajustaZ(resultado);
@@ -280,102 +282,102 @@
 	}
 
 	// COMPARE
-	void CPU::CMP(Memoria& mem, DWord adr) {
-		Byte valor = readByte(mem, adr);
+	void CPU::CMP(DWord adr) {
+		Byte valor = readByte(adr);
 		C = (A >= valor);
 		Z = (A == valor);
 		ajustaN(A - valor);
 	}
-	void CPU::CPX(Memoria& mem, DWord adr) {
-		Byte valor = readByte(mem, adr);
+	void CPU::CPX(DWord adr) {
+		Byte valor = readByte(adr);
 		C = (X >= valor);
 		Z = (X == valor);
 		ajustaN(X - valor);
 	}
-	void CPU::CPY(Memoria& mem, DWord adr) {
-		Byte valor = readByte(mem, adr);
+	void CPU::CPY(DWord adr) {
+		Byte valor = readByte(adr);
 		C = (Y >= valor);
 		Z = (Y == valor);
 		ajustaN(Y - valor);
 	}
 
 	// BRANCH
-	void CPU::BCC(Memoria& mem) {
-		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
+	void CPU::BCC() {
+		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
 		if (C == 0) {
 			PC += offset;
 		}
 	}
-	void CPU::BCS(Memoria& mem) {
-		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
+	void CPU::BCS() {
+		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
 		if (C == 1) {
 			PC += offset;
 		}
 	}
-	void CPU::BEQ(Memoria& mem) {
-		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
+	void CPU::BEQ() {
+		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
 		if (Z == 1) {
 			PC += offset;
 		}
 	}
-	void CPU::BNE(Memoria& mem) {
-		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
+	void CPU::BNE() {
+		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
 		if (Z == 0) {
 			PC += offset;
 		}
 	}
-	void CPU::BPL(Memoria& mem) {
-		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
+	void CPU::BPL() {
+		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
 		if (N == 0) {
 			PC += offset;
 		}
 	}
-	void CPU::BMI(Memoria& mem) {
-		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
+	void CPU::BMI() {
+		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
 		if (N == 1) {
 			PC += offset;
 		}
 	}
-	void CPU::BVC(Memoria& mem) {
-		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
+	void CPU::BVC() {
+		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
 		if (V == 0) {
 			PC += offset;
 		}
 	}
-	void CPU::BVS(Memoria& mem) {
-		int8_t offset = static_cast<int8_t> (fetchByte(mem)); // Faz cast por causa do sinal
+	void CPU::BVS() {
+		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
 		if (V == 1) {
 			PC += offset;
 		}
 	}
 
 	// JUMP
-	void CPU::JMP(Memoria& mem, DWord adr, bool absoluto) {
+	void CPU::JMP(DWord adr, bool absoluto) {
 		if (absoluto) {
 			PC = adr;
 		}
 		else {
-			PC = readByte(mem, adr);
+			PC = readByte(adr);
 		}
 	}
-	void CPU::JSR(Memoria& mem, DWord adr) {
+	void CPU::JSR(DWord adr) {
 		// Decrementa SP e empilha o endere�o de retorno (PC - 1), high byte depois low byte
 		DWord returnAdr = PC - 1;
 
-		writeByte(mem, 0x0100 + SP--, (returnAdr >> 8) & 0xFF); // high byte
-		writeByte(mem, 0x0100 + SP--, returnAdr & 0xFF);     // low byte
+		writeByte(0x0100 + SP--, (returnAdr >> 8) & 0xFF); // high byte
+		writeByte(0x0100 + SP--, returnAdr & 0xFF);     // low byte
 
 		PC = adr;
 	}
-	void CPU::RTS(Memoria& mem) {
-		Byte low = readByte(mem, 0x0100 + ++SP);
-		Byte high = readByte(mem, 0x0100 + ++SP);
+	void CPU::RTS() {
+		Byte low = readByte(0x0100 + ++SP);
+		Byte high = readByte(0x0100 + ++SP);
 
 		DWord returnAddress = (high << 8) | low;
 
 		PC = returnAddress + 1;
 	}
-	void CPU::BRK(Memoria& mem) { // AJUSTAR
+	void CPU::BRK() { // AJUSTAR
 
 		PC = 0xFFFF; // TESTE
 		return; // TESTE
@@ -384,24 +386,24 @@
 		DWord returnAddress = PC + 1;
 
 		// Empilha o byte de retorno
-		writeByte(mem, 0x0100 + SP--, (returnAddress >> 8) & 0xFF);  // Empilha o byte alto
-		writeByte(mem, 0x0100 + SP--, returnAddress & 0xFF);         // Empilha o byte baixo
+		writeByte(0x0100 + SP--, (returnAddress >> 8) & 0xFF);  // Empilha o byte alto
+		writeByte(0x0100 + SP--, returnAddress & 0xFF);         // Empilha o byte baixo
 
 		// Empilha o status de flags
 		Byte status = (N << 7) | (V << 6) | (B << 4) | (D << 3) | (I << 2) | (Z << 1) | C;
-		writeByte(mem, 0x0100 + SP--, status);
+		writeByte(0x0100 + SP--, status);
 
 		// Desativa interrup��es (I = 1) e seta B flag (B = 1)
 		I = 1;  // Desabilita interrup��es
 		B = 1;  // Setar a flag de Break
 
 		// O endere�o de interrup��o de BRK � 0xFFFE e 0xFFFF
-		PC = (readByte(mem, 0xFFFE) | (readByte(mem, 0xFFFF) << 8));
+		PC = (readByte(0xFFFE) | (readByte(0xFFFF) << 8));
 
 	}
-	void CPU::RTI(Memoria& mem) {
+	void CPU::RTI() {
 		// Desempilha o byte de status (flags) primeiro
-		Byte status = readByte(mem, 0x0100 + ++SP);
+		Byte status = readByte(0x0100 + ++SP);
 
 		// Restaura as flags do processador
 		C = status & 0x01;
@@ -413,25 +415,25 @@
 		N = (status >> 7) & 0x01;
 
 		// Desempilha o endere�o de retorno (low byte primeiro, depois high byte)
-		Byte low = readByte(mem, 0x0100 + ++SP);
-		Byte high = readByte(mem, 0x0100 + ++SP);
+		Byte low = readByte(0x0100 + ++SP);
+		Byte high = readByte(0x0100 + ++SP);
 
 		// Restaura o PC
 		PC = (high << 8) | low;
 	}
 
 	// STACK
-	void CPU::PHA(Memoria& mem) {
-		writeByte(mem, 0x0100 + SP, A);
+	void CPU::PHA() {
+		writeByte(0x0100 + SP, A);
 		SP--;
 	}
-	void CPU::PLA(Memoria& mem) {
+	void CPU::PLA() {
 		SP++;
-		A = readByte(mem, 0x0100 + SP);
+		A = readByte(0x0100 + SP);
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void CPU::PHP(Memoria& mem) {
+	void CPU::PHP() {
 		Byte status = 0;
 		status |= (N << 7);
 		status |= (V << 6);
@@ -441,12 +443,12 @@
 		status |= (I << 2);
 		status |= (Z << 1);
 		status |= (C << 0);
-		writeByte(mem, 0x0100 + SP, status);
+		writeByte(0x0100 + SP, status);
 		SP--;
 	}
-	void CPU::PLP(Memoria& mem) {
+	void CPU::PLP() {
 		SP++;
-		Byte status = readByte(mem, 0x0100 + SP);
+		Byte status = readByte(0x0100 + SP);
 		C = status & 0x01;
 		Z = (status >> 1) & 0x01;
 		I = (status >> 2) & 0x01;
@@ -498,74 +500,74 @@
 
 	// Modos de endere�amento 
 	// Immediate - Retorna o valor
-	Byte CPU::immediate(Memoria& mem) {
-		return fetchByte(mem);
+	Byte CPU::immediate() {
+		return fetchByte();
 	}
 	// ZeroPage - Retorna o address
-	Byte CPU::zeropage(Memoria& mem) {
-		return fetchByte(mem);
+	Byte CPU::zeropage() {
+		return fetchByte();
 	}
 	// ZeroPage,X - Retorna o address
-	Byte CPU::zeropageX(Memoria& mem) {
-		Byte adrBase = fetchByte(mem);
+	Byte CPU::zeropageX() {
+		Byte adrBase = fetchByte();
 		Byte adr = (adrBase + X) & 0xFF;
 		return adr;
 	}
 	// ZeroPage,Y - Retorna o address
-	Byte CPU::zeropageY(Memoria& mem) {
-		Byte adrBase = fetchByte(mem);
+	Byte CPU::zeropageY() {
+		Byte adrBase = fetchByte();
 		Byte adr = (adrBase + Y) & 0xFF;
 		return adr;
 	}
 	// Absolute - Retorna o address
-	DWord CPU::absolute(Memoria& mem) {
-		Byte adrBase = fetchByte(mem);
-		DWord adr = (fetchByte(mem) << 8) | adrBase;
+	DWord CPU::absolute() {
+		Byte adrBase = fetchByte();
+		DWord adr = (fetchByte() << 8) | adrBase;
 		return adr;
 	}
 	// Absolute X - Retorna o address
-	DWord CPU::absoluteX(Memoria& mem) {
-		Byte adrBase = fetchByte(mem);
-		DWord adrCompleto = (fetchByte(mem) << 8) | adrBase;
+	DWord CPU::absoluteX() {
+		Byte adrBase = fetchByte();
+		DWord adrCompleto = (fetchByte() << 8) | adrBase;
 		DWord adr = adrCompleto + X;
 		return adr;
 	}
 	// Absolute Y - Retorna o address
-	DWord CPU::absoluteY(Memoria& mem) {
-		Byte adrBase = fetchByte(mem);
-		DWord adrCompleto = (fetchByte(mem) << 8) | adrBase;
+	DWord CPU::absoluteY() {
+		Byte adrBase = fetchByte();
+		DWord adrCompleto = (fetchByte() << 8) | adrBase;
 		DWord adr = adrCompleto + Y;
 		return adr;
 	}
 	// Indirect - Retorna o adr
-	DWord CPU::indirect(Memoria& mem) {
-		Byte low = fetchByte(mem);
-		Byte high = fetchByte(mem);
+	DWord CPU::indirect() {
+		Byte low = fetchByte();
+		Byte high = fetchByte();
 		DWord addr = (high << 8) | low;
 
 		// Emula o bug do 6502: se o addr cruza p�gina (como 0x02FF), n�o pega 0x0300, pega 0x0200 + wrap
-		Byte lo = readByte(mem, addr);
-		Byte hi = readByte(mem, (addr & 0xFF00) | ((addr + 1) & 0x00FF));
+		Byte lo = readByte(addr);
+		Byte hi = readByte((addr & 0xFF00) | ((addr + 1) & 0x00FF));
 
 		return (hi << 8) | lo;
 	}
 
 	// Indirect X - Retorna o adr
-	DWord CPU::indirectX(Memoria& mem) {
-		Byte base = fetchByte(mem);
+	DWord CPU::indirectX() {
+		Byte base = fetchByte();
 		Byte ptr = (base + X) & 0xFF;
 
-		Byte lo = readByte(mem, ptr);
-		Byte hi = readByte(mem, (ptr + 1) & 0xFF);
+		Byte lo = readByte(ptr);
+		Byte hi = readByte((ptr + 1) & 0xFF);
 
 		return (hi << 8) | lo;
 	}
 
 	// Indirect Y - Retorna o adr
-	DWord CPU::indirectY(Memoria& mem) {
-		Byte base = fetchByte(mem);
-		Byte lo = readByte(mem, base);
-		Byte hi = readByte(mem, (base + 1) & 0xFF); 
+	DWord CPU::indirectY() {
+		Byte base = fetchByte();
+		Byte lo = readByte(base);
+		Byte hi = readByte((base + 1) & 0xFF); 
 
 		DWord addr = (hi << 8) | lo;
 		addr = (addr + Y) & 0xFFFF;
@@ -575,63 +577,63 @@
 
 
 	// fetch - decode - execute
-	void CPU::executar(Memoria& mem) {
-		Byte op = fetchByte(mem);
+	void CPU::executar() {
+		Byte op = fetchByte();
 		switch (op)
 		{
 
 			// CASOS ADC ********************************************
 		case 0x69: // ADC Immediate
 		{
-			ADC(immediate(mem));
+			ADC(immediate());
 			break;
 		}
 
 		case 0x65: // ADC ZeroPage
 		{
-			Byte valorAdr = zeropage(mem);
-			ADC(readByte(mem, valorAdr));
+			Byte valorAdr = zeropage();
+			ADC(readByte(valorAdr));
 			break;
 		}
 
 		case 0x75: // ADC ZeroPage,X
 		{
-			Byte valorAdr = zeropageX(mem);
-			ADC(readByte(mem, valorAdr));
+			Byte valorAdr = zeropageX();
+			ADC(readByte(valorAdr));
 			break;
 		}
 
 		case 0x6D: // ADC Absolute
 		{
-			DWord valorAdr = absolute(mem);
-			ADC(readByte(mem, valorAdr));
+			DWord valorAdr = absolute();
+			ADC(readByte(valorAdr));
 			break;
 		}
 
 		case 0x7D: // ADC Absolute X
 		{
-			DWord valorAdr = absoluteX(mem);
-			ADC(readByte(mem, valorAdr));
+			DWord valorAdr = absoluteX();
+			ADC(readByte(valorAdr));
 			break;
 		}
 
 		case 0x79: // ADC Absolute Y
 		{
-			DWord valorAdr = absoluteY(mem);
-			ADC(readByte(mem, valorAdr));
+			DWord valorAdr = absoluteY();
+			ADC(readByte(valorAdr));
 			break;
 		}
 
 		case 0x61: // ADC Indirect X
 		{
-			DWord valorAdr = indirectX(mem);
-			ADC(readByte(mem, valorAdr));
+			DWord valorAdr = indirectX();
+			ADC(readByte(valorAdr));
 			break;
 		}
 		case 0x71: // ADC Indirect Y
 		{
-			DWord valorAdr = indirectY(mem);
-			ADC(readByte(mem, valorAdr));
+			DWord valorAdr = indirectY();
+			ADC(readByte(valorAdr));
 			break;
 		}
 
@@ -639,111 +641,111 @@
 		// CASOS LDA ********************************************
 		case 0xA9:
 		{
-			LDA(mem, PC++);
+			LDA(PC++);
 			break;
 		}
 		case 0xA5:
 		{
-			DWord adr = zeropage(mem);
-			LDA(mem, adr);
+			DWord adr = zeropage();
+			LDA(adr);
 			break;
 		}
 		case 0xB5:
 		{
-			DWord adr = zeropageX(mem);
-			LDA(mem, adr);
+			DWord adr = zeropageX();
+			LDA(adr);
 			break;
 		}
 		case 0xAD:
 		{
-			DWord adr = absolute(mem);
-			LDA(mem, adr);
+			DWord adr = absolute();
+			LDA(adr);
 			break;
 		}
 		case 0xBD:
 		{
-			DWord adr = absoluteX(mem);
-			LDA(mem, adr);
+			DWord adr = absoluteX();
+			LDA(adr);
 			break;
 		}
 		case 0xB9:
 		{
-			DWord adr = absoluteY(mem);
-			LDA(mem, adr);
+			DWord adr = absoluteY();
+			LDA(adr);
 			break;
 		}
 		case 0xA1:
 		{
-			DWord adr = indirectX(mem);
-			LDA(mem, adr);
+			DWord adr = indirectX();
+			LDA(adr);
 			break;
 		}
 		case 0xB1:
 		{
-			DWord adr = indirectY(mem);
-			LDA(mem, adr);
+			DWord adr = indirectY();
+			LDA(adr);
 			break;
 		}
 
 		// CASOS LDX ********************************************
 		case 0xA2:
 		{
-			LDX(mem, PC++);
+			LDX(PC++);
 			break;
 		}
 		case 0xA6:
 		{
-			DWord adr = zeropage(mem);
-			LDX(mem, adr);
+			DWord adr = zeropage();
+			LDX(adr);
 			break;
 		}
 		case 0xB6:
 		{
-			DWord adr = zeropageY(mem);
-			LDX(mem, adr);
+			DWord adr = zeropageY();
+			LDX(adr);
 			break;
 		}
 		case 0xAE:
 		{
-			DWord adr = absolute(mem);
-			LDX(mem, adr);
+			DWord adr = absolute();
+			LDX(adr);
 			break;
 		}
 		case 0xBE:
 		{
-			DWord adr = absoluteY(mem);
-			LDX(mem, adr);
+			DWord adr = absoluteY();
+			LDX(adr);
 			break;
 		}
 
 		// CASOS LDY ********************************************
 		case 0xA0:
 		{
-			LDY(mem, PC++);
+			LDY(PC++);
 			break;
 		}
 		case 0xA4:
 		{
-			DWord adr = zeropage(mem);
-			LDY(mem, adr);
+			DWord adr = zeropage();
+			LDY(adr);
 			break;
 		}
 		case 0xB4:
 		{
-			DWord adr = zeropageX(mem);
-			LDY(mem, adr);
+			DWord adr = zeropageX();
+			LDY(adr);
 			break;
 		}
 		case 0xAC:
 		{
-			DWord adr = absolute(mem);
-			LDY(mem, adr);
+			DWord adr = absolute();
+			LDY(adr);
 			break;
 		}
 		case 0xBC:
 		{
-			DWord adr = absoluteX(mem);
-			LDY(mem, adr);
+			DWord adr = absoluteX();
+			LDY(adr);
 			break;
 		}
 
@@ -781,7 +783,7 @@
 		// CASOS BRK
 		case 0x00:
 		{
-			BRK(mem);
+			BRK();
 			break;
 		}
 		// CASO DEX
@@ -800,160 +802,160 @@
 		// CASOS STA ********************************************
 		case 0x85:
 		{
-			DWord adr = zeropage(mem);
-			STA(mem, adr);
+			DWord adr = zeropage();
+			STA(adr);
 			break;
 		}
 		case 0x95:
 		{
-			DWord adr = zeropageX(mem);
-			STA(mem, adr);
+			DWord adr = zeropageX();
+			STA(adr);
 			break;
 		}
 		case 0x8D:
 		{
-			DWord adr = absolute(mem);
-			STA(mem, adr);
+			DWord adr = absolute();
+			STA(adr);
 			break;
 		}
 		case 0x9D:
 		{
-			DWord adr = absoluteX(mem);
-			STA(mem, adr);
+			DWord adr = absoluteX();
+			STA(adr);
 			break;
 		}
 		case 0x99:
 		{
-			DWord adr = absoluteY(mem);
-			STA(mem, adr);
+			DWord adr = absoluteY();
+			STA(adr);
 			break;
 		}
 		case 0x81:
 		{
-			DWord adr = indirectX(mem);
-			STA(mem, adr);
+			DWord adr = indirectX();
+			STA(adr);
 			break;
 		}
 		case 0x91:
 		{
-			DWord adr = indirectY(mem);
-			STA(mem, adr);
+			DWord adr = indirectY();
+			STA(adr);
 			break;
 		}
 		// CASOS STX ********************************************
 		case 0x86:
 		{
-			STX(mem, zeropage(mem));
+			STX(zeropage());
 			break;
 		}
 		case 0x96:
 		{
-			STX(mem, zeropageY(mem));
+			STX(zeropageY());
 			break;
 		}
 		case 0x8E:
 		{
-			STX(mem, absolute(mem));
+			STX(absolute());
 			break;
 		}
 		// CASOS STY ********************************************
 		case 0x84:
 		{
-			STY(mem, zeropage(mem));
+			STY(zeropage());
 			break;
 		}
 		case 0x94:
 		{
-			STY(mem, zeropageX(mem));
+			STY(zeropageX());
 			break;
 		}
 		case 0x8C:
 		{
-			STY(mem, absolute(mem));
+			STY(absolute());
 			break;
 		}
 
 		// CASOS AND ********************************************
 		case 0x29:
 		{
-			AND(mem, PC++);
+			AND(PC++);
 			break;
 		}
 		case 0x25:
 		{
-			AND(mem, zeropage(mem));
+			AND(zeropage());
 			break;
 		}
 		case 0x35:
 		{
-			AND(mem, zeropageX(mem));
+			AND(zeropageX());
 			break;
 		}
 		case 0x2D:
 		{
-			AND(mem, absolute(mem));
+			AND(absolute());
 			break;
 		}
 		case 0x3D:
 		{
-			AND(mem, absoluteX(mem));
+			AND(absoluteX());
 			break;
 		}
 		case 0x39:
 		{
-			AND(mem, absoluteY(mem));
+			AND(absoluteY());
 			break;
 		}
 		case 0x21:
 		{
-			AND(mem, indirectX(mem));
+			AND(indirectX());
 			break;
 		}
 		case 0x31:
 		{
-			AND(mem, indirectY(mem));
+			AND(indirectY());
 			break;
 		}
 
 		// CASOS EOR ********************************************
 		case 0x49:
 		{
-			EOR(mem, PC++);
+			EOR(PC++);
 			break;
 		}
 		case 0x45:
 		{
-			EOR(mem, zeropage(mem));
+			EOR(zeropage());
 			break;
 		}
 		case 0x55:
 		{
-			EOR(mem, zeropageX(mem));
+			EOR(zeropageX());
 			break;
 		}
 		case 0x4D:
 		{
-			EOR(mem, absolute(mem));
+			EOR(absolute());
 			break;
 		}
 		case 0x5D:
 		{
-			EOR(mem, absoluteX(mem));
+			EOR(absoluteX());
 			break;
 		}
 		case 0x59:
 		{
-			EOR(mem, absoluteY(mem));
+			EOR(absoluteY());
 			break;
 		}
 		case 0x41:
 		{
-			EOR(mem, indirectX(mem));
+			EOR(indirectX());
 			break;
 		}
 		case 0x51:
 		{
-			EOR(mem, indirectY(mem));
+			EOR(indirectY());
 			break;
 		}
 
@@ -973,12 +975,12 @@
 		// CASOS JMP ********************************************
 		case 0x4C:
 		{
-			JMP(mem, absolute(mem), true);
+			JMP(absolute(), true);
 			break;
 		}
 		case 0x6C:
 		{
-			JMP(mem, indirect(mem));
+			JMP(indirect());
 			break;
 		}
 
@@ -992,42 +994,42 @@
 		// CASOS ORA ********************************************
 		case 0x09:
 		{
-			ORA(mem, PC++);
+			ORA(PC++);
 			break;
 		}
 		case 0x05:
 		{
-			ORA(mem, zeropage(mem));
+			ORA(zeropage());
 			break;
 		}
 		case 0x15:
 		{
-			ORA(mem, zeropageX(mem));
+			ORA(zeropageX());
 			break;
 		}
 		case 0x0D:
 		{
-			ORA(mem, absolute(mem));
+			ORA(absolute());
 			break;
 		}
 		case 0x1D:
 		{
-			ORA(mem, absoluteX(mem));
+			ORA(absoluteX());
 			break;
 		}
 		case 0x019:
 		{
-			ORA(mem, absoluteY(mem));
+			ORA(absoluteY());
 			break;
 		}
 		case 0x01:
 		{
-			ORA(mem, indirectX(mem));
+			ORA(indirectX());
 			break;
 		}
 		case 0x11:
 		{
-			ORA(mem, indirectY(mem));
+			ORA(indirectY());
 			break;
 		}
 
@@ -1085,363 +1087,363 @@
 		// CASOS CMP ********************************************
 		case 0xC9:
 		{
-			CMP(mem, PC++);
+			CMP(PC++);
 			break;
 		}
 		case 0xC5:
 		{
-			CMP(mem, zeropage(mem));
+			CMP(zeropage());
 			break;
 		}
 		case 0xD5:
 		{
-			CMP(mem, zeropageX(mem));
+			CMP(zeropageX());
 			break;
 		}
 		case 0xCD:
 		{
-			CMP(mem, absolute(mem));
+			CMP(absolute());
 			break;
 		}
 		case 0xDD:
 		{
-			CMP(mem, absoluteX(mem));
+			CMP(absoluteX());
 			break;
 		}
 		case 0xD9:
 		{
-			CMP(mem, absoluteY(mem));
+			CMP(absoluteY());
 			break;
 		}
 		case 0xC1:
 		{
-			CMP(mem, indirectX(mem));
+			CMP(indirectX());
 			break;
 		}
 		case 0xD1:
 		{
-			CMP(mem, indirectY(mem));
+			CMP(indirectY());
 			break;
 		}
 
 		// CASOS CPX ********************************************
 		case 0xE0:
 		{
-			CPX(mem, PC++);
+			CPX(PC++);
 			break;
 		}
 		case 0xE4:
 		{
-			CPX(mem, zeropage(mem));
+			CPX(zeropage());
 			break;
 		}
 		case 0xEC:
 		{
-			CPX(mem, absolute(mem));
+			CPX(absolute());
 			break;
 		}
 
 		// CASOS CPY ********************************************
 		case 0xC0:
 		{
-			CPY(mem, PC++);
+			CPY(PC++);
 			break;
 		}
 		case 0xC4:
 		{
-			CPY(mem, zeropage(mem));
+			CPY(zeropage());
 			break;
 		}
 		case 0xCC:
 		{
-			CPY(mem, absolute(mem));
+			CPY(absolute());
 			break;
 		}
 
 		// CASOS INC ********************************************
 		case 0xE6:
 		{
-			INC(mem, zeropage(mem));
+			INC(zeropage());
 			break;
 		}
 		case 0xF6:
 		{
-			INC(mem, zeropageX(mem));
+			INC(zeropageX());
 			break;
 		}
 		case 0xEE:
 		{
-			INC(mem, absolute(mem));
+			INC(absolute());
 			break;
 		}
 		case 0xFE:
 		{
-			INC(mem, absoluteX(mem));
+			INC(absoluteX());
 			break;
 		}
 
 		// CASOS DEC ********************************************
 		case 0xC6:
 		{
-			DEC(mem, zeropage(mem));
+			DEC(zeropage());
 			break;
 		}
 		case 0xD6:
 		{
-			DEC(mem, zeropageX(mem));
+			DEC(zeropageX());
 			break;
 		}
 		case 0xCE:
 		{
-			DEC(mem, absolute(mem));
+			DEC(absolute());
 			break;
 		}
 		case 0xDE:
 		{
-			DEC(mem, absoluteX(mem));
+			DEC(absoluteX());
 			break;
 		}
 
 		// CASOS BIT ********************************************
 		case 0x24:
 		{
-			BIT(mem, zeropage(mem));
+			BIT(zeropage());
 			break;
 		}
 		case 0x2C:
 		{
-			BIT(mem, absolute(mem));
+			BIT(absolute());
 			break;
 		}
 		// CASOS ASL ********************************************
 		case 0x0A:
 		{
-			ASL(mem, PC, true);
+			ASL(PC, true);
 			break;
 		}
 		case 0x06:
 		{
-			ASL(mem, zeropage(mem));
+			ASL(zeropage());
 			break;
 		}
 		case 0x16:
 		{
-			ASL(mem, zeropageX(mem));
+			ASL(zeropageX());
 			break;
 		}
 		case 0x0E:
 		{
-			ASL(mem, absolute(mem));
+			ASL(absolute());
 			break;
 		}
 		case 0x1E:
 		{
-			ASL(mem, absoluteX(mem));
+			ASL(absoluteX());
 			break;
 		}
 
 		// CASOS LSR ********************************************
 		case 0x4A:
 		{
-			LSR(mem, PC, true);
+			LSR(PC, true);
 			break;
 		}
 		case 0x46:
 		{
-			LSR(mem, zeropage(mem));
+			LSR(zeropage());
 			break;
 		}
 		case 0x56:
 		{
-			LSR(mem, zeropageX(mem));
+			LSR(zeropageX());
 			break;
 		}
 		case 0x4E:
 		{
-			LSR(mem, absolute(mem));
+			LSR(absolute());
 			break;
 		}
 		case 0x5E:
 		{
-			LSR(mem, absoluteX(mem));
+			LSR(absoluteX());
 			break;
 		}
 
 		// CASOS ROL ********************************************
 		case 0x2A:
 		{
-			ROL(mem, PC, true);
+			ROL(PC, true);
 			break;
 		}
 		case 0x26:
 		{
-			ROL(mem, zeropage(mem));
+			ROL(zeropage());
 			break;
 		}
 		case 0x36:
 		{
-			ROL(mem, zeropageX(mem));
+			ROL(zeropageX());
 			break;
 		}
 		case 0x2E:
 		{
-			ROL(mem, absolute(mem));
+			ROL(absolute());
 			break;
 		}
 		case 0x3E:
 		{
-			ROL(mem, absoluteX(mem));
+			ROL(absoluteX());
 			break;
 		}
 
 		// CASOS ROR ********************************************
 		case 0x6A:
 		{
-			ROR(mem, PC, true);
+			ROR(PC, true);
 			break;
 		}
 		case 0x66:
 		{
-			ROR(mem, zeropage(mem));
+			ROR(zeropage());
 			break;
 		}
 		case 0x76:
 		{
-			ROR(mem, zeropageX(mem));
+			ROR(zeropageX());
 			break;
 		}
 		case 0x6E:
 		{
-			ROR(mem, absolute(mem));
+			ROR(absolute());
 			break;
 		}
 		case 0x7E:
 		{
-			ROR(mem, absoluteX(mem));
+			ROR(absoluteX());
 			break;
 		}
 
 		// CASOS SBC
 		case 0xE9:
 		{
-			SBC(mem, PC++);
+			SBC(PC++);
 			break;
 		}
 		case 0xE5:
 		{
-			SBC(mem, zeropage(mem));
+			SBC(zeropage());
 			break;
 		}
 		case 0xF5:
 		{
-			SBC(mem, zeropageX(mem));
+			SBC(zeropageX());
 			break;
 		}
 		case 0xED:
 		{
-			SBC(mem, absolute(mem));
+			SBC(absolute());
 			break;
 		}
 		case 0xFD:
 		{
-			SBC(mem, absoluteX(mem));
+			SBC(absoluteX());
 			break;
 		}
 		case 0xF9:
 		{
-			SBC(mem, absoluteY(mem));
+			SBC(absoluteY());
 			break;
 		}
 		case 0xE1:
 		{
-			SBC(mem, indirectX(mem));
+			SBC(indirectX());
 			break;
 		}
 		case 0xF1:
 		{
-			SBC(mem, indirectY(mem));
+			SBC(indirectY());
 			break;
 		}
 
 		// Caso PLP
 		case 0x28:
 		{
-			PLP(mem);
+			PLP();
 			break;
 		}
 		// Caso PLA
 		case 0x68:
 		{
-			PLA(mem);
+			PLA();
 			break;
 		}
 		// Caso PHP
 		case 0x08:
 		{
-			PHP(mem);
+			PHP();
 			break;
 		}
 		// Caso PHA
 		case 0x48:
 		{
-			PHA(mem);
+			PHA();
 			break;
 		}
 
 		case 0x90:
 		{
-			BCC(mem);
+			BCC();
 			break;
 		}
 		case 0xB0:
 		{
-			BCS(mem);
+			BCS();
 			break;
 		}
 		case 0xF0:
 		{
-			BEQ(mem);
+			BEQ();
 			break;
 		}
 		case 0xD0:
 		{
-			BNE(mem);
+			BNE();
 			break;
 		}
 		case 0x10:
 		{
-			BPL(mem);
+			BPL();
 			break;
 		}
 		case 0x30:
 		{
-			BMI(mem);
+			BMI();
 			break;
 		}
 		case 0x50:
 		{
-			BVC(mem);
+			BVC();
 			break;
 		}
 		case 0x70:
 		{
-			BVS(mem);
+			BVS();
 			break;
 		}
 
 		case 0x20:
 		{
-			JSR(mem, absolute(mem));
+			JSR(absolute());
 			break;
 		}
 		case 0x60:
 		{
-			RTS(mem);
+			RTS();
 			break;
 		}
 		case 0x40:
 		{
-			RTI(mem);
+			RTI();
 			break;
 		}
 
