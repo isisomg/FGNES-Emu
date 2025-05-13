@@ -6,7 +6,8 @@ using DWord = unsigned short;
 
 class Bus {
 private:
-	Memoria mem;
+	Memoria<0x0800> memCPU;
+	Memoria<0x4000> memPPU;
 
 public:
 	void write(DWord adr, Byte dado);

@@ -30,6 +30,6 @@ void TriangleChannel::setEnabled(bool on) {
 	enabled = on;
 }
 
-void TriangleChannel::setMemoria(Memoria& memoria) {
-	this->memoria = memoria; // isto permite que a classe NoiseChannel acesse a memória
+void TriangleChannel::setBus(Bus* busNovo) {
+	this->bus = busNovo; // isto permite que a classe NoiseChannel acesse a memória
 }

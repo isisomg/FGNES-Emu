@@ -63,6 +63,6 @@ void PulseChannel::setEnabled(bool on) {
     enabled = on;
 }
 
-void PulseChannel::setMemoria(Memoria& memoria) {
-    this->memoria = memoria; // isto permite que a classe NoiseChannel acesse a memória
+void PulseChannel::setBus(Bus* busNovo) {
+    this->bus = busNovo; // isto permite que a classe NoiseChannel acesse a memória
 }

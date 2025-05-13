@@ -43,6 +43,6 @@ void NoiseChannel::setFrequency(float freq) {
     timerPeriod = 44100.0f / freq;
 }
 
-void NoiseChannel::setMemoria(Memoria& memoria) {
-	this->memoria = memoria; // isto permite que a classe NoiseChannel acesse a memória
+void NoiseChannel::setBus(Bus* busNovo) {
+    this->bus = busNovo; // isto permite que a classe NoiseChannel acesse a memória
 }

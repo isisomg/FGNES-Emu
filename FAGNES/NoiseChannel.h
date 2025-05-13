@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-#include "Memoria.h"
+#include "Bus.h"
 
 
 class NoiseChannel {
@@ -9,7 +9,7 @@ public:
     void setVolume(int vol);
     void setMode(bool m);
     void setEnabled(bool on);
-    void setMemoria(Memoria& memoria);
+    void setBus(Bus* memoria);
 
     float getSample() const;
 
@@ -21,6 +21,6 @@ private:
     bool enabled = true;
     int volume = 15; //volume maximo do NES
     bool mode = false; // no NES existem 2 modos, curto e longo, nesse caso to usando false pro longo, q eh um XOR entre o bit 0 e o 1, o bit curto eh um XOR entre o bit 0 e 6
-    Memoria memoria;
+    Bus* bus;
 };
 
