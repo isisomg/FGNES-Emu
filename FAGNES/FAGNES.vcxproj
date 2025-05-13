@@ -181,6 +181,7 @@
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="DMCChannel.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Mapper0.cpp" />
     <ClCompile Include="NoiseChannel.cpp" />
     <ClCompile Include="SDL_Display.cpp" />
     <ClCompile Include="pulse_channel.cpp" />
@@ -195,6 +196,8 @@
     <ClInclude Include="Cores.h" />
     <ClInclude Include="CPU.h" />
     <ClInclude Include="DMCChannel.h" />
+    <ClInclude Include="Mapper.h" />
+    <ClInclude Include="Mapper0.h" />
     <ClInclude Include="Memoria.h" />
     <ClInclude Include="NoiseChannel.h" />
     <ClInclude Include="pulse_channel.h" />

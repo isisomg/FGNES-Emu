@@ -21,40 +21,35 @@ void Cartucho::init(const std::string& path) {
 
 	bool saveRAM = (header[6] & 0x02) != 0;  // verifica se tem funcionalidade de save no cartucho
 
-	Cartucho::prgROM.resize(prgBanks * 0x4000); // aloca memoria para os bancos prg
-	arquivo.read(reinterpret_cast<char*>(Cartucho::prgROM.data()), Cartucho::prgROM.size());
+	prgROM.resize(prgBanks * 0x4000); // aloca memoria para os bancos prg
+	arquivo.read(reinterpret_cast<char*>(prgROM.data()), prgROM.size());
 
 	if (chrBanks > 0) { // aloca memoria para bancos chr
-		Cartucho::chrROM.resize(chrBanks * 0x2000);
-		arquivo.read(reinterpret_cast<char*>(Cartucho::chrROM.data()), Cartucho::chrROM.size());
+		chrROM.resize(chrBanks * 0x2000);
+		arquivo.read(reinterpret_cast<char*>(chrROM.data()), chrROM.size());
 	}
 	else { // se nao tem banco, aloca como ram
-		Cartucho::chrRAM.resize(0x2000);
+		chrRAM.resize(0x2000);
 	}
 	
 	arquivo.close();
 
-	// Inicializar os mappers quando tiver.
+	// Pegando o mapper correto
+	Byte valorMapper = header[7];
+	if (valorMapper == 0) { // mapper 0 
+		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM);
+	}
 }
 
-// REQUER MAPPERS PARA IMPLEMENTAR
-//Byte Cartucho::readCHR(DWord adr) {
-//	if (!Cartucho::chrROM.empty()) { // usa ROM
-//		return 
-//	}
-//	else // usa RAM
-//	{
-//		return 
-//	}
-//}
-//void Cartucho::writeCHR(DWord adr) { 
-//	if (!chrRAM.size() > 0) { // apenas se for RAM
-//
-//	}
-//}
-//Byte Cartucho::readCHR(DWord adr) {
-//	return 
-//}
-//void Cartucho::writeCHR(DWord adr) {
-//	
-//}
+Byte Cartucho::readPRG(DWord adr) {
+	return mapper->cpuRead(adr);
+}
+void Cartucho::writePRG(DWord adr, Byte dado) { 
+	mapper->cpuWrite(adr, dado);
+}
+Byte Cartucho::readCHR(DWord adr) {
+	return mapper->ppuRead(adr);
+}
+void Cartucho::writeCHR(DWord adr, Byte dado) {
+	mapper->ppuWrite(adr, dado);
+}
