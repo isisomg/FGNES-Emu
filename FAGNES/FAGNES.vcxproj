@@ -178,6 +178,7 @@
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="Cores.cpp" />
     <ClCompile Include="CPU.cpp" />
+    <ClCompile Include="DMCChannel.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="NoiseChannel.cpp" />
     <ClCompile Include="SDL_Display.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="Bus.h" />
     <ClInclude Include="Cores.h" />
     <ClInclude Include="CPU.h" />
+    <ClInclude Include="DMCChannel.h" />
     <ClInclude Include="Memoria.h" />
     <ClInclude Include="NoiseChannel.h" />
     <ClInclude Include="pulse_channel.h" />
