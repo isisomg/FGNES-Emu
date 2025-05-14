@@ -3,6 +3,9 @@
 #include <iostream>
 #include "Bus.h"
 #include "Cores.h"
+#include <imgui.h>
+#include <backends/imgui_impl_sdl2.h>
+#include <backends/imgui_impl_sdlrenderer2.h>
 
 class SDL_Display {
 private:
@@ -11,13 +14,13 @@ private:
     int ZOOM = 8;
     const int FPS = 30;
 
-    SDL_Renderer* RENDERER;
     SDL_Texture* TEXTURE;
     SDL_Window* WINDOW;
 
     Bus* bus;
 
 public:
+    SDL_Renderer* RENDERER;
     //SDL_Display();
 
     void init(Bus* novoBus);

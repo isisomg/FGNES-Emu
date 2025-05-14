@@ -142,8 +142,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);C:\Users\alexa\source\repos\FGNES-Emu\Libraries\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;opengl32.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -175,6 +175,12 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Libraries\include\backends\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="..\Libraries\include\backends\imgui_impl_sdlrenderer2.cpp" />
+    <ClCompile Include="..\Libraries\include\imgui.cpp" />
+    <ClCompile Include="..\Libraries\include\imgui_draw.cpp" />
+    <ClCompile Include="..\Libraries\include\imgui_tables.cpp" />
+    <ClCompile Include="..\Libraries\include\imgui_widgets.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="Cartucho.cpp" />
     <ClCompile Include="Cores.cpp" />

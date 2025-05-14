@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
 	SDL_Event event;
 	while (rodar) {
 		while (SDL_PollEvent(&event)) {
+			ImGui_ImplSDL2_ProcessEvent(&event);
 			if (event.type == SDL_QUIT) rodar = false;
 			
 			display.processarEntrada(event);
@@ -61,7 +62,8 @@ int main(int argc, char* argv[]) {
 		display.renderizar();
 		
 	}
-	
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
 	display.destroy();
 	delete bus;
 	return 0;

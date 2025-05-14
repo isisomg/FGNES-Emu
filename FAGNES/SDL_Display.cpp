@@ -12,6 +12,16 @@ void SDL_Display::init(Bus* novoBus) {
 		SDL_WINDOW_SHOWN);
 
 	RENDERER = SDL_CreateRenderer(WINDOW, -1, SDL_RENDERER_ACCELERATED);
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui_ImplSDL2_InitForSDLRenderer(WINDOW, RENDERER);
+	ImGui_ImplSDLRenderer2_Init(RENDERER);
+
+
+	
+
 	TEXTURE = SDL_CreateTexture(RENDERER, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, TELA_WIDTH, TELA_HEIGHT);
 
 	if (!WINDOW) {
@@ -69,11 +79,33 @@ void SDL_Display::renderizar() {
 	}
 	SDL_UnlockTexture(TEXTURE);
 
+	ImGui_ImplSDLRenderer2_NewFrame();
+	ImGui_ImplSDL2_NewFrame();
+	ImGui::NewFrame();
+
+	// Define a posição e o tamanho da janela fixa no topo
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2((float)TELA_WIDTH * ZOOM, 50)); // Altura de 50 pixels para o menu
+
+	// Flags para manter a janela fixa e não redimensionável
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
+
+	ImGui::Begin("Menu", nullptr, flags);
+	ImGui::Text("Menu de Opções");
+	if (ImGui::Button("Configurações")) {
+		printf("Clicou em Configurações\n");
+	}
+	if (ImGui::Button("Abrir")) {
+		printf("Clicou em Abrir\n");
+	}
+	ImGui::End();
+	ImGui::Render();
 
 	SDL_RenderClear(RENDERER);
 
 	SDL_Rect dstRect = { 0, 0, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM };
 	SDL_RenderCopy(RENDERER, TEXTURE, nullptr, &dstRect);
+	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), RENDERER);
 
 	SDL_RenderPresent(RENDERER);
 	SDL_Delay(32);
