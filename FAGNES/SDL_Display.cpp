@@ -112,6 +112,12 @@ void SDL_Display::renderizar() {
 }
 
 void SDL_Display::destroy() {
+	// Shutdown do ImGui
+	ImGui_ImplSDLRenderer2_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
+
+	// Shutdown do SDL
 	SDL_DestroyTexture(TEXTURE);
 	SDL_DestroyRenderer(RENDERER);
 	SDL_DestroyWindow(WINDOW);

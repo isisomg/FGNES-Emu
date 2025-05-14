@@ -95,12 +95,13 @@
       <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\PC\source\repos\FAGNES\Libraries\include;C:\Users\PC\source\repos\Libraries\include\SDL2;C:\Users\PC\source\repos\FAGNES\Libraries\include;C:\Users\PC\source\repos\FAGNES\Libraries\include\glad;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -118,13 +119,14 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\PC\source\repos\FAGNES\Libraries\include;</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
@@ -138,12 +140,13 @@
       <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\lilsiru\source\repos\FGNES-Emu3\Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);C:\Users\alexa\source\repos\FGNES-Emu\Libraries\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -161,13 +164,14 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\PC\source\repos\FAGNES\Libraries\include;</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
@@ -175,12 +179,6 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Libraries\include\backends\imgui_impl_sdl2.cpp" />
-    <ClCompile Include="..\Libraries\include\backends\imgui_impl_sdlrenderer2.cpp" />
-    <ClCompile Include="..\Libraries\include\imgui.cpp" />
-    <ClCompile Include="..\Libraries\include\imgui_draw.cpp" />
-    <ClCompile Include="..\Libraries\include\imgui_tables.cpp" />
-    <ClCompile Include="..\Libraries\include\imgui_widgets.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="Cartucho.cpp" />
     <ClCompile Include="Cores.cpp" />

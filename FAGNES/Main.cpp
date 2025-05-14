@@ -62,8 +62,7 @@ int main(int argc, char* argv[]) {
 		display.renderizar();
 		
 	}
-	ImGui_ImplSDL2_Shutdown();
-	ImGui::DestroyContext();
+	
 	display.destroy();
 	delete bus;
 	return 0;
