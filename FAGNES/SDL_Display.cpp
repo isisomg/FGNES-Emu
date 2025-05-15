@@ -1,7 +1,9 @@
 #pragma once
 #include "SDL_Display.h"
+#include "AbrirRom.h"
 
-void SDL_Display::init(Bus* novoBus) {
+void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo) {
+	cartucho = cartuchoNovo;
 	bus = novoBus;
 	SDL_Init(SDL_INIT_VIDEO);
 	WINDOW = SDL_CreateWindow(
@@ -67,6 +69,8 @@ void SDL_Display::renderizar() {
 	SDL_LockTexture(TEXTURE, nullptr, &pixels, &pitch);
 	uint32_t* pixel_ptr = static_cast<uint32_t*>(pixels);
 
+	// Ajustar para fazer a renderizacao da PPU corretamente
+	// APENAS PARA TESTE DO SNAKE
 	for (int y = 0; y < TELA_HEIGHT; ++y) {
 		for (int x = 0; x < TELA_WIDTH; ++x) {
 			int index = y * (pitch / 4) + x;
@@ -77,6 +81,7 @@ void SDL_Display::renderizar() {
 			pixel_ptr[index] = (255 << 24) | (cor.r << 16) | (cor.g << 8) | cor.b;
 		}
 	}
+
 	SDL_UnlockTexture(TEXTURE);
 
 	ImGui_ImplSDLRenderer2_NewFrame();
@@ -91,12 +96,10 @@ void SDL_Display::renderizar() {
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse;
 
 	ImGui::Begin("Menu", nullptr, flags);
-	ImGui::Text("Menu de Opções");
-	if (ImGui::Button("Configurações")) {
-		printf("Clicou em Configurações\n");
-	}
 	if (ImGui::Button("Abrir")) {
-		printf("Clicou em Abrir\n");
+		std::string arquivoROM = AbrirArquivo();
+		cartucho->init(arquivoROM);
+		jogoRodando = true;
 	}
 	ImGui::End();
 	ImGui::Render();

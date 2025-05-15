@@ -15,8 +15,9 @@ private:
 	std::vector<Byte> chrRAM;   // CHR-RAM (se não houver CHR-ROM)
 	// Mapper quando tiver aqui
 	std::unique_ptr<Mapper> mapper;
+	
 public:
-
+	DWord adrPCinicial = 0x0000;
 	void init(const std::string& pathROM); // Define valores padroes e carrega a rom
 	Byte readPRG(DWord adr);
 	void writePRG(DWord adr, Byte dado);

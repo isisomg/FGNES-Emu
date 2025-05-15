@@ -101,7 +101,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -126,7 +126,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
@@ -146,7 +146,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);C:\Users\alexa\source\repos\FGNES-Emu\Libraries\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -171,7 +171,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
@@ -195,6 +195,7 @@
     <ClCompile Include="TriangleChannel.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AbrirRom.h" />
     <ClInclude Include="Bus.h" />
     <ClInclude Include="Cartucho.h" />
     <ClInclude Include="Cores.h" />

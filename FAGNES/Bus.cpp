@@ -5,7 +5,12 @@ Byte Bus::read(DWord adr) {
 		return Bus::memCPU[adr % 0x0800]; // Usa o modulo para nao precisar espelhar a memoria
 	}
 	else if (adr >= 0x2000 && adr <= 0x3FFF) {
+		Bus::write(0x2002, 0xFF); // SIMULA VBLANK APENAS PARA TESTE ANTES DE FAZER A PPU
 		return Bus::memPPU[(adr - 0x2000) % 8]; // Tira a necessidade de espelhar a cada 8 bytes.
+	}
+	else if (adr >= 0x8000 && adr <= 0xFFFF) { // Ta na PGR ROM
+		if (cartucho) // mapper0 read
+			return cartucho->readPRG(adr);
 	}
 	return 0xFF; // Leitura fora do endereço. Retorna qualquer coisa 
 }
@@ -16,4 +21,12 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 	else if (adr >= 0x2000 && adr <= 0x3FFF) {
 		Bus::memPPU[(adr - 0x2000) % 8] = dado; 
 	}
+}
+
+bool Bus::checkNMI() { // IMPLEMENTAR CORRETAMENTE EM CONJUNTO COM PPU
+	return false;
+}
+
+void Bus::setCartucho(Cartucho * cart) {
+	cartucho = cart;
 }

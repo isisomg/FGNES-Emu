@@ -24,8 +24,10 @@ public:
 	Byte Z : 1; // Zero
 	Byte C : 1; // Carry
 
+	bool iniciou = false;
 	bool atualizarGrafico = true;
 
+	void handleNMI();
 	void deveAtualizarGrafico(DWord adr);
 	void inicializar(Bus* novoBus);
 	Byte readByte(DWord adr);

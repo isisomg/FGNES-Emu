@@ -1,5 +1,10 @@
 #include "CPU.h"
 
+void CPU::handleNMI() { // Implementar corretamente
+	;
+}
+
+
 	void CPU::deveAtualizarGrafico(DWord adr) { // VERIFICAR POSICOES ORIA DE GRAFICO
 		if (adr >= 0x0200 && adr <= 0x0600) {
 			atualizarGrafico = true;
@@ -16,6 +21,7 @@
 		B = 1;
 
 		bus = novoBus;
+		iniciou = true;
 	}
 
 	Byte CPU::readByte(DWord adr) {
@@ -578,6 +584,9 @@
 
 	// fetch - decode - execute
 	void CPU::executar() {
+		if (bus->checkNMI()) {
+			handleNMI();
+		}
 		Byte op = fetchByte();
 		switch (op)
 		{
@@ -1448,7 +1457,7 @@
 		}
 
 		default:
-			std::cout << "Instrucao nao encontrada" << std::endl;
+			std::cout << "Instrucao nao encontrada " << std::hex << (int)op << std::endl;
 			break;
 		};
 	}

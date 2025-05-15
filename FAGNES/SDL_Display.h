@@ -6,6 +6,7 @@
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_sdlrenderer2.h>
+#include "Cartucho.h"
 
 class SDL_Display {
 private:
@@ -18,12 +19,15 @@ private:
     SDL_Window* WINDOW;
 
     Bus* bus;
+    Cartucho* cartucho;
 
 public:
-    SDL_Renderer* RENDERER;
-    //SDL_Display();
+    bool jogoRodando = false;
 
-    void init(Bus* novoBus);
+    SDL_Renderer* RENDERER;
+
+    //SDL_Display();
+    void init(Bus* novoBus, Cartucho* cartucho);
     void processarEntrada(SDL_Event event);
     void renderizar();
     void destroy();

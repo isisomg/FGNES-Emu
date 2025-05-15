@@ -38,7 +38,9 @@ void Cartucho::init(const std::string& path) {
 	Byte valorMapper = header[7];
 	if (valorMapper == 0) { // mapper 0 
 		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM);
+		adrPCinicial = prgROM[prgROM.size() - 6] | (prgROM[prgROM.size() - 5] << 8); // endereco PC inicial ARRUMAR
 	}
+	std::cout << "Jogo carregado. Mapper" << (int)valorMapper << " sendo usado. PC inicial: " << std::hex << (int)adrPCinicial << std::endl;
 }
 
 Byte Cartucho::readPRG(DWord adr) {

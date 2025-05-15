@@ -1,6 +1,7 @@
 #include "CPU.h"
 #include "Bus.h"
 #include "SDL_Display.h"
+#include "Cartucho.h"
 
 #include <iostream>
 #include <fstream>
@@ -27,15 +28,16 @@ void carregarROM(CPU& cpu) { // APENAS PARA TESTE
 int main(int argc, char* argv[]) {
 
 	Bus* bus = new Bus();
-	
+	Cartucho cartucho;
+
 	SDL_Display display;
-	display.init(bus);
+	display.init(bus, &cartucho);
 	
 	CPU cpu;
-	
 	cpu.inicializar(bus);
 	
-	carregarROM(cpu);
+	carregarROM(cpu); // remover quando for testar ROM. APENAS PARA TESTAR SNAKE
+	display.jogoRodando = true; //  APENAS PARA TESTAR SNAKE
 
 	bool rodar = true;
 	SDL_Event event;
@@ -43,21 +45,32 @@ int main(int argc, char* argv[]) {
 		while (SDL_PollEvent(&event)) {
 			ImGui_ImplSDL2_ProcessEvent(&event);
 			if (event.type == SDL_QUIT) rodar = false;
-			
+
 			display.processarEntrada(event);
 		}
 
-		if (cpu.PC == 0xFFFF) {
-			break;
-		}
-		cpu.executar();
+		if (display.jogoRodando) {
+			//if (cpu.iniciou == false) { // inicializacoes necessarias para o jogo
+			//	cpu.inicializar(bus);
+			//	// cpu.PC = cartucho.adrPCinicial; // Verificar se esta certo
+			//	cpu.PC = 0x8000; // PC inicial mapper0 smb. Retirar apos descobrir se instrucao acima esta correta.
+			//	bus->setCartucho(&cartucho);
+			//}
 
-		// mudar RNG
-		cpu.writeByte(0x00FE, rand() % 0xFF);
+			if (cpu.PC == 0xFFFF) {
+				break;
+			}
+			cpu.executar();
 
-		if (cpu.atualizarGrafico == false) {
-			continue;
+			// mudar RNG. USADO APENAS NA SNAKE PARA TESTE
+			cpu.writeByte(0x00FE, rand() % 0xFF);
+			//std::cout << std::hex << cpu.PC << " " << cpu.atualizarGrafico << std::endl;
+
+			if (cpu.atualizarGrafico == false) {
+				continue;
+			}
 		}
+		
 		cpu.atualizarGrafico = false;
 		display.renderizar();
 		
