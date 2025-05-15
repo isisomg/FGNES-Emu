@@ -41,23 +41,36 @@ void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo) {
 }
 
 void SDL_Display::processarEntrada(SDL_Event event) {
-	if (event.type == SDL_KEYDOWN) {
+	if (!bus) return;
+	Controles* controles = bus->getControles(); //pega o ponteiro pros controles
+
+	if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+		bool pressionado = (event.type == SDL_KEYDOWN);
+
 		switch (event.key.keysym.sym) {
-		case SDLK_w:
-			printf("Botao apertado: w\n");
-			bus->write(0x00FF, 0x77);
+		case SDLK_z:
+			pressionado ? controles->pressionar(A) : controles->soltar(A);
+			break;
+		case SDLK_x:
+			pressionado ? controles->pressionar(B) : controles->soltar(B);
 			break;
 		case SDLK_d:
-			printf("Botao apertado: d\n");
-			bus->write(0x00FF, 0x64);
+			pressionado ? controles->pressionar(START) : controles->soltar(START);
 			break;
-		case SDLK_s:
-			printf("Botao apertado: s\n");
-			bus->write(0x00FF, 0x73);
+		case SDLK_f:
+			pressionado ? controles->pressionar(SELECT) : controles->soltar(SELECT);
 			break;
-		case SDLK_a:
-			printf("Botao apertado: a\n");
-			bus->write(0x00FF, 0x61);
+		case SDLK_UP:
+			pressionado ? controles->pressionar(UP) : controles->soltar(UP);
+			break;
+		case SDLK_DOWN:
+			pressionado ? controles->pressionar(DOWN) : controles->soltar(DOWN);
+			break;
+		case SDLK_LEFT:
+			pressionado ? controles->pressionar(LEFT) : controles->soltar(LEFT);
+			break;
+		case SDLK_RIGHT:
+			pressionado ? controles->pressionar(RIGHT) : controles->soltar(RIGHT);
 			break;
 		}
 	}

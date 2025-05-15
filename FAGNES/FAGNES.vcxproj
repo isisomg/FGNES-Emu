@@ -145,7 +145,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);C:\Users\alexa\source\repos\FGNES-Emu\Libraries\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64;$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);C:\Users\alexa\source\repos\FGNES-Emu\Libraries\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
@@ -181,6 +181,7 @@
   <ItemGroup>
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="Cartucho.cpp" />
+    <ClCompile Include="Controles.cpp" />
     <ClCompile Include="Cores.cpp" />
     <ClCompile Include="CPU.cpp" />
     <ClCompile Include="DMCChannel.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="AbrirRom.h" />
     <ClInclude Include="Bus.h" />
     <ClInclude Include="Cartucho.h" />
+    <ClInclude Include="Controles.h" />
     <ClInclude Include="Cores.h" />
     <ClInclude Include="CPU.h" />
     <ClInclude Include="DMCChannel.h" />
