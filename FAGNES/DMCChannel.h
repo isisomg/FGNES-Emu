@@ -16,6 +16,8 @@ public:
     void setIRQEnabled(bool irq);
     void setSampleData(const uint8_t* data, size_t size);
 
+    static const uint8_t fakeSample[32];
+
 private:
     const uint8_t* sampleData = nullptr;
     size_t sampleDataSize = 0;
@@ -36,6 +38,4 @@ private:
     bool irqEnabled;
     uint16_t sampleStartAddress;
     uint16_t sampleLength;
-
-    static const uint8_t fakeSample[16];
 };

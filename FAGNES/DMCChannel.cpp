@@ -1,4 +1,6 @@
 #include "DMCChannel.h"
+#include <stdio.h>
+#include <iostream>
 
 // Tabela de períodos (em número de ciclos da CPU) para cada índice de taxa
 static const float DMC_RATE_TABLE[16] = {
@@ -7,10 +9,14 @@ static const float DMC_RATE_TABLE[16] = {
 };
 
 // so pra testar o canal de audio
-const uint8_t fakeSample[] = {
+const uint8_t DMCChannel::fakeSample[32] = {
+    64, 80, 96, 112, 127, 112, 96, 80,
+    64, 48, 32, 16, 0, 16, 32, 48,
     64, 80, 96, 112, 127, 112, 96, 80,
     64, 48, 32, 16, 0, 16, 32, 48
 };
+
+//const uint8_t DMCChannel::fakeSample[1] = { 0xAA };  // padrão binário 10101010
 
 
 DMCChannel::DMCChannel()
@@ -64,48 +70,112 @@ void DMCChannel::restartSample() {
 void DMCChannel::setSampleData(const uint8_t* data, size_t size) { // simula a memória do sample pro funcionamento do tick, mais tarde vai dar pra tirar provavelmente, ou adaptar
     sampleData = data;
     sampleDataSize = size;
+    std::cout << "restartSample() chamado! Endereço: " << sampleStartAddress
+        << ", comprimento: " << sampleLength << "\n";
 }
+
+//void DMCChannel::tick() {
+//    if (!enabled) return;
+//
+//    timer -= 1.0f;
+//    if (timer <= 0.0f) {
+//        timer += timerPeriod;
+//
+//        printf("tick: %d\n", deltaCounter);
+//
+//        if (!sampleBufferEmpty) {
+//            if ((shiftRegister & 1) == 1) {
+//                if (deltaCounter <= 125) deltaCounter += 2;
+//            }
+//            else {
+//                if (deltaCounter >= 2) deltaCounter -= 2;
+//            }
+//            shiftRegister >>= 1;
+//            bitCounter--;
+//
+//            if (bitCounter == 0) {
+//                if (!sampleBufferEmpty) {
+//                    shiftRegister = sampleBuffer;
+//                    bitCounter = 8;
+//                    sampleBufferEmpty = true;
+//                }
+//            }
+//        }
+//
+//        if (sampleBufferEmpty && bytesRemaining > 0) {
+//            // Leitura da "memória"
+//            if (currentAddress < sampleDataSize) {
+//                sampleBuffer = sampleData[currentAddress];
+//                sampleBufferEmpty = false;
+//                currentAddress++;
+//                bytesRemaining--;
+//                if (bytesRemaining == 0 && loopFlag) {
+//                    restartSample();
+//                }
+//            }
+//        }
+//    }
+//}
 
 void DMCChannel::tick() {
     if (!enabled) return;
 
     timer -= 1.0f;
-    if (timer <= 0.0f) {
-        timer += timerPeriod;
+    if (timer > 0.0f) return;
+    timer += timerPeriod;
 
+    if (bitCounter == 0) {
         if (!sampleBufferEmpty) {
-            if ((shiftRegister & 1) == 1) {
-                if (deltaCounter <= 125) deltaCounter += 2;
-            }
-            else {
-                if (deltaCounter >= 2) deltaCounter -= 2;
-            }
-            shiftRegister >>= 1;
-            bitCounter--;
+            shiftRegister = sampleBuffer;
+            sampleBufferEmpty = true;
+            bitCounter = 8;
 
-            if (bitCounter == 0) {
-                if (!sampleBufferEmpty) {
-                    shiftRegister = sampleBuffer;
-                    bitCounter = 8;
-                    sampleBufferEmpty = true;
-                }
-            }
-        }
-
-        if (sampleBufferEmpty && bytesRemaining > 0) {
-            // Leitura da "memória"
-            if (currentAddress < sampleDataSize) {
-                sampleBuffer = sampleData[currentAddress];
-                sampleBufferEmpty = false;
-                currentAddress++;
-                bytesRemaining--;
-                if (bytesRemaining == 0 && loopFlag) {
-                    restartSample();
-                }
-            }
+            std::cout << "Novo byte carregado no shiftRegister: " << (int)shiftRegister << "\n";
         }
     }
+
+    if (bitCounter > 0) {
+        if (shiftRegister & 0x01) {
+            if (deltaCounter <= 125) deltaCounter += 2;
+        }
+        else {
+            if (deltaCounter >= 2) deltaCounter -= 2;
+        }
+
+        shiftRegister >>= 1;
+        bitCounter--;
+
+        std::cout << "Bit processado. deltaCounter: " << (int)deltaCounter
+            << ", shiftRegister: " << (int)shiftRegister
+            << ", bits restantes: " << (int)bitCounter << "\n";
+    }
+
+    if (sampleBufferEmpty) {
+        if (bytesRemaining == 0) {
+            if (loopFlag) {
+                restartSample();
+                std::cout << "Looping sample: reiniciando endereço e bytes\n";
+            }
+            else {
+                // Sem loop, nada mais a fazer
+                return;
+            }
+        }
+
+        if (currentAddress < sampleDataSize && bytesRemaining > 0) {
+            sampleBuffer = sampleData[currentAddress];
+            sampleBufferEmpty = false;
+            currentAddress++;
+            bytesRemaining--;
+
+            std::cout << "Sample lido da memória: " << (int)sampleBuffer
+                << ", endereço: " << currentAddress - 1
+                << ", restantes: " << bytesRemaining << "\n";
+        }
+    }
+
 }
+
 
 float DMCChannel::getSample() const {
     return enabled ? (deltaCounter / 127.0f) : 0.0f;

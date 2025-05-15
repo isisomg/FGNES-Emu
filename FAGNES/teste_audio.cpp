@@ -7,19 +7,18 @@
 //#include "pulse_channel.h"
 //#include "TriangleChannel.h"
 //#include "NoiseChannel.h"
-////#include "DMCChannel.h"
-////#include "DMCChannel.cpp"
-////
-////DMCChannel dmc;
-////
-////void setupDMC() {
-////    dmc.setSampleData(fakeSample, sizeof(fakeSample));
-////    dmc.setSampleAddress(0);       // índice inicial do sample
-////    dmc.setSampleLength(sizeof(fakeSample));
-////    //dmc.setTimerPeriod(428);       // ~44100 Hz para teste
-////    //dmc.setLoopFlag(true);         // loop para continuar tocando
-////    dmc.setEnabled(true);
-////}
+//#include "DMCChannel.h"
+//
+//DMCChannel dmc;
+//
+//void setupDMC() {
+//    dmc.setSampleData(DMCChannel::fakeSample, sizeof(DMCChannel::fakeSample));
+//    dmc.setSampleAddress(0);       // índice inicial do sample
+//    dmc.setSampleLength(sizeof(DMCChannel::fakeSample));
+//    dmc.setRate(0);        // index 0 = 428 ciclos (o mesmo valor que você queria)
+//    dmc.setLoop(true);     // usa o nome correto do método
+//    dmc.setEnabled(true);
+//}
 //
 //PulseChannel pulse1;
 //PulseChannel pulse2;
@@ -60,13 +59,13 @@
 //    float* buffer = (float*)stream;
 //    int samples = len / sizeof(float);
 //    for (int i = 0; i < samples; ++i) {
-//        pulse1.tick();
+//        /*pulse1.tick();
 //        pulse2.tick();
-//        /*triangle.tick();*/ // por algum motivo o triangle n ta funcionando mais, deixei desabilitado por enquanto, o DMC tbm n ta funcionando direito eu vou explodir, EU NEM MEXI NO TRIANGLE EU N SEI OQ ACONTECEU SOCORRO
-//        noise.tick();
-//        /*dmc.tick();*/
+//        triangle.tick();
+//        noise.tick();*/
+//        dmc.tick();
 //
-//        float sample = pulse1.getSample() + pulse2.getSample() /*+ triangle.getSample()*/ + noise.getSample() /*+ dmc.getSample()*/;
+//        float sample = /*pulse1.getSample() + pulse2.getSample() + triangle.getSample() + noise.getSample() + */dmc.getSample();
 //
 //        // Clipping prevention simples
 //        if (sample > 1.0f) sample = 1.0f;
@@ -110,13 +109,15 @@
 //    pulse2.setFrequency(660); 
 //    pulse2.setVolume(8);      // Mais fraco
 //
-//    /*triangle.setEnabled(true);
-//    triangle.setFrequency(220); */
+//    triangle.setEnabled(true);
+//    triangle.setFrequency(220); 
 //
 //    noise.setEnabled(true);
 //    noise.setVolume(6);
 //    noise.setMode(false);      // false = modo longo, true = curto
 //    noise.setFrequency(4000);   // ou experimente com 100, 500, 1000 Hz
+//
+//	setupDMC();
 //
 //    SDL_PauseAudioDevice(device, 0); // inicia audio
 //
