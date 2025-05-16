@@ -34,10 +34,10 @@ int main(int argc, char* argv[]) {
 	display.init(bus, &cartucho);
 	
 	CPU cpu;
-	cpu.inicializar(bus);
+	//cpu.inicializar(bus);
 	
-	carregarROM(cpu); // remover quando for testar ROM. APENAS PARA TESTAR SNAKE
-	display.jogoRodando = true; //  APENAS PARA TESTAR SNAKE
+	//carregarROM(cpu); // remover quando for testar ROM. APENAS PARA TESTAR SNAKE
+	//display.jogoRodando = true; //  APENAS PARA TESTAR SNAKE
 
 	bool rodar = true;
 	SDL_Event event;
@@ -50,12 +50,12 @@ int main(int argc, char* argv[]) {
 		}
 
 		if (display.jogoRodando) {
-			//if (cpu.iniciou == false) { // inicializacoes necessarias para o jogo
-			//	cpu.inicializar(bus);
-			//	// cpu.PC = cartucho.adrPCinicial; // Verificar se esta certo
-			//	cpu.PC = 0x8000; // PC inicial mapper0 smb. Retirar apos descobrir se instrucao acima esta correta.
-			//	bus->setCartucho(&cartucho);
-			//}
+			if (cpu.iniciou == false) { // inicializacoes necessarias para o jogo
+				cpu.inicializar(bus);
+				 cpu.PC = cartucho.adrPCinicial; // Verificar se esta certo
+				//cpu.PC = 0x8000; // PC inicial mapper0 smb. Retirar apos descobrir se instrucao acima esta correta.
+				bus->setCartucho(&cartucho);
+			}
 
 			if (cpu.PC == 0xFFFF) {
 				break;
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 			// mudar RNG. USADO APENAS NA SNAKE PARA TESTE
 			cpu.writeByte(0x00FE, rand() % 0xFF);
 			//std::cout << std::hex << cpu.PC << " " << cpu.atualizarGrafico << std::endl;
-
+			std::cout << std::hex << (int)cpu.PC << std::endl;
 			if (cpu.atualizarGrafico == false) {
 				continue;
 			}

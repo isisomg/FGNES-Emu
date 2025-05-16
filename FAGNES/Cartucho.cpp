@@ -1,6 +1,6 @@
 #include "Cartucho.h"
 #include "Mapper2.h"
-
+#include "Bus.h"
 void Cartucho::init(const std::string& path) {
 	std::ifstream arquivo(path, std::ios::binary);
 
@@ -61,6 +61,7 @@ void Cartucho::init(const std::string& path) {
 
 	if (valorMapper == 2) {
 		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM);
+		adrPCinicial = readPRG(0xFFFC) | (readPRG(0xFFFD) << 8);
 	}
 
 
