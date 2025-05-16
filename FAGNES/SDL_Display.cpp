@@ -62,15 +62,19 @@ void SDL_Display::processarEntrada(SDL_Event event) {
 			break;
 		case SDLK_UP:
 			pressionado ? controles->pressionar(UP) : controles->soltar(UP);
+			bus->write(0x00FF, 0x77); // para o snake
 			break;
 		case SDLK_DOWN:
 			pressionado ? controles->pressionar(DOWN) : controles->soltar(DOWN);
+			bus->write(0x00FF, 0x73); // para o snake
 			break;
 		case SDLK_LEFT:
 			pressionado ? controles->pressionar(LEFT) : controles->soltar(LEFT);
+			bus->write(0x00FF, 0x61); // para o snake
 			break;
 		case SDLK_RIGHT:
 			pressionado ? controles->pressionar(RIGHT) : controles->soltar(RIGHT);
+			bus->write(0x00FF, 0x64); // Para o snake
 			break;
 		}
 	}
