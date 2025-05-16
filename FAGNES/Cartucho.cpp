@@ -1,4 +1,5 @@
 #include "Cartucho.h"
+#include "Mapper2.h"
 
 void Cartucho::init(const std::string& path) {
 	std::ifstream arquivo(path, std::ios::binary);
@@ -33,9 +34,38 @@ void Cartucho::init(const std::string& path) {
 	}
 	
 	arquivo.close();
+	
+	
+	
+	// Cálculo do número do mapper
+	Byte mapperLow = (header[6] >> 4) & 0x0F;
+	Byte mapperHigh = (header[7] >> 4) & 0x0F;
+	Byte valorMapper = (mapperHigh << 4) | mapperLow;
+
+	// Criar o Mapper correto
+	switch (valorMapper) {
+	case 0:
+		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM); //NROM MAPPER 0
+		break;
+	case 1:
+		//mapper = std::make_unique<Mapper1>(prgBanks, chrBanks, prgROM, chrROM); // MMC1 MAPPER1
+		break;
+	case 2:
+		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM); // UxROM MAPPER2
+		break;
+	default:
+		std::cerr << "Mapper " << (int)valorMapper << " não suportado ainda.\n";
+		exit(3);
+	}
+
+
+	if (valorMapper == 2) {
+		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM);
+	}
+
 
 	// Pegando o mapper correto
-	Byte valorMapper = header[7];
+	
 	if (valorMapper == 0) { // mapper 0 
 		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM);
 		adrPCinicial = prgROM[prgROM.size() - 6] | (prgROM[prgROM.size() - 5] << 8); // endereco PC inicial ARRUMAR

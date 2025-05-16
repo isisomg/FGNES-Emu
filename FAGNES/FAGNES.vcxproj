@@ -146,7 +146,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64;$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);C:\Users\alexa\source\repos\FGNES-Emu\Libraries\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib;%(AdditionalDependencies) </AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -188,6 +188,7 @@
     <ClCompile Include="MainJanelaDeTeste.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mapper0.cpp" />
+    <ClCompile Include="Mapper2.cpp" />
     <ClCompile Include="NoiseChannel.cpp" />
     <ClCompile Include="SDL_Display.cpp" />
     <ClCompile Include="pulse_channel.cpp" />
@@ -206,6 +207,7 @@
     <ClInclude Include="DMCChannel.h" />
     <ClInclude Include="Mapper.h" />
     <ClInclude Include="Mapper0.h" />
+    <ClInclude Include="Mapper2.h" />
     <ClInclude Include="Memoria.h" />
     <ClInclude Include="NoiseChannel.h" />
     <ClInclude Include="pulse_channel.h" />
