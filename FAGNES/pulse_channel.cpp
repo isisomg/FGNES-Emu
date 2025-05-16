@@ -4,10 +4,15 @@ const uint8_t PulseChannel::dutyTable[4][8] = {
 
     // A tabela está definindo o formato da onda, possui um ciclo de 8 fases, sua frequencia permanece a mesma, porem seu formato muda, produzindo outros sons
 
-    {0,0,0,0,0,0,0,1}, // 12.5%
-    {0,0,0,0,0,1,1,1}, // 25%
-    {0,0,0,0,1,1,1,1}, // 50%
-    {1,1,1,1,0,0,0,0}  // 75%
+    //{0,0,0,0,0,0,0,1}, // 12.5%
+    //{0,0,0,0,0,1,1,1}, // 25%
+    //{0,0,0,0,1,1,1,1}, // 50%
+    //{1,1,1,1,0,0,0,0}  // 75%
+
+    {0,1,0,0,0,0,0,0}, // 12.5%
+    {0,1,1,0,0,1,1,1}, // 25%
+    {0,1,1,1,1,0,0,0}, // 50%
+    {1,0,0,1,1,1,1,1}  // 25% negado
 };
 
 //void PulseChannel::setTimer(uint16_t value) {
@@ -51,9 +56,13 @@ float PulseChannel::getSample() const {
 
 void PulseChannel::setFrequency(float freq) {
     frequency = freq;
-    timerPeriod = 44100.0f / (frequency * 8.0f);
+    timerPeriod = 44100.0f / (frequency * 8.0f); // 8 canais do duty
 }
 
 void PulseChannel::setEnabled(bool on) {
     enabled = on;
+}
+
+void PulseChannel::setBus(Bus* busNovo) {
+    this->bus = busNovo; // isto permite que a classe NoiseChannel acesse a memória
 }

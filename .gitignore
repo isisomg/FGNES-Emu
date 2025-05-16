@@ -1,0 +1,31 @@
+# Ignorar binários
+*.obj
+*.exe
+*.ilk
+*.pdb
+*.exp
+*.log
+*.tlog
+*.recipe
+
+# Ignorar todas essas extensões em qualquer subpasta
+**/*.obj
+**/*.exe
+**/*.ilk
+**/*.pdb
+**/*.exp
+**/*.log
+**/*.recipe
+**/*.tlog
+
+# Ignorar pastas de build
+Debug/
+Release/
+build/
+x64/
+
+# Visual Studio
+.vs/
+*.VC.db
+*.suo
+*.user

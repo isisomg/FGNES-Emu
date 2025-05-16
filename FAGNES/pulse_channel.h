@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include "Bus.h"
 
 class PulseChannel {
 public:
@@ -7,6 +8,7 @@ public:
     void setVolume(int vol);
     void setDuty(int duty); // 0 = 12.5%, 1 = 25%, 2 = 50%, 3 = 75%
     void setEnabled(bool on);
+    void setBus(Bus* memoria);
 
     float getSample() const;
 
@@ -19,8 +21,9 @@ private:
     int volume = 15; //volume maximo do NES
     int duty = 2; //50%
     int phase = 0;
+    Bus* bus;
 
 
     static const uint8_t dutyTable[4][8];
 };
-#pragma once
+
