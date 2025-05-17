@@ -3,7 +3,7 @@
 
 void Controles::pressionar(botoesNES botao) {
 	estado |= (1 << botao);
-    printf("Controle: botão %d pressionado, estado = 0x%02X\n", botao, estado);
+    //printf("Controle: botão %d pressionado, estado = 0x%02X\n", botao, estado);
 }
 
 void Controles::soltar(botoesNES botao) {
@@ -31,6 +31,6 @@ uint8_t Controles::ler() {
         indice++;
     }
 
-    printf("Controle: indice=%d, bit=%d\n", indice - 1, retorno);
+    //printf("Controle: indice=%d, bit=%d\n", indice - 1, retorno);
     return retorno;
 }

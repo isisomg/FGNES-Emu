@@ -14,11 +14,14 @@ void CPU::handleNMI() { // Implementar corretamente
 	// Reseta para os valores iniciais
 	void CPU::inicializar(Bus* novoBus) {
 		PC = 0x0600;
-		SP = 0xFF;
+		SP = 0xFD;
 
 		X = Y = A = 0x00;
 		N = V = D = I = Z = C = 0;
 		B = 1;
+
+		// Para o nestest sla pq eh assim. Verificar
+		B = 0; I = 1;
 
 		bus = novoBus;
 		iniciou = true;
@@ -279,12 +282,12 @@ void CPU::handleNMI() { // Implementar corretamente
 		ajustaN(A);
 		ajustaZ(A);
 	}
-	void CPU::BIT(DWord adr) { // REVISAR
+	void CPU::BIT(DWord adr) { 
 		Byte valor = readByte(adr);
 		Byte resultado = A & valor;
 		ajustaN(valor);
 		ajustaZ(resultado);
-		V = valor << 6;
+		V = (valor & 0x40) != 0;
 	}
 
 	// COMPARE
@@ -363,7 +366,7 @@ void CPU::handleNMI() { // Implementar corretamente
 			PC = adr;
 		}
 		else {
-			PC = readByte(adr);
+			PC = indirect();
 		}
 	}
 	void CPU::JSR(DWord adr) {
@@ -436,15 +439,16 @@ void CPU::handleNMI() { // Implementar corretamente
 	void CPU::PLA() {
 		SP++;
 		A = readByte(0x0100 + SP);
-		ajustaN(A);
 		ajustaZ(A);
+		ajustaN(A);
 	}
+
 	void CPU::PHP() {
 		Byte status = 0;
 		status |= (N << 7);
 		status |= (V << 6);
-		status |= (1 << 5); // Bit 5 sempre � 1 quando empilhado
-		status |= (B << 4);
+		status |= (1 << 5); // Bit 5 sempre eh 1 quando empilhado
+		status |= (1 << 4); // sempre 1 no PHP
 		status |= (D << 3);
 		status |= (I << 2);
 		status |= (Z << 1);
@@ -989,7 +993,7 @@ void CPU::handleNMI() { // Implementar corretamente
 		}
 		case 0x6C:
 		{
-			JMP(indirect());
+			JMP(0x00, false);
 			break;
 		}
 
