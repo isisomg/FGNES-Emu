@@ -24,6 +24,20 @@ public:
 	Byte Z : 1; // Zero
 	Byte C : 1; // Carry
 
+	Byte getStatusRegister() {
+		Byte p = 0x20; // Bit UNUSED é sempre 1 no NES
+
+		p |= (C << 0);  // Carry
+		p |= (Z << 1);  // Zero
+		p |= (I << 2);  // Interrupt
+		p |= (D << 3);  // Decimal
+		p |= (B << 4);  // Break
+		p |= (V << 6);  // Overflow
+		p |= (N << 7);  // Negative
+
+		return p;
+	}
+
 	bool iniciou = false;
 	bool atualizarGrafico = true;
 
