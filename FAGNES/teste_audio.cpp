@@ -4,26 +4,60 @@
 ////#include "audio.h"
 //#include <fstream>
 //#include <algorithm>
-//#include "pulse_channel.h"
-//#include "TriangleChannel.h"
-//#include "NoiseChannel.h"
-//#include "DMCChannel.h"
+//#include "APU.h"
 //
-//DMCChannel dmc;
+//APU pulse1;
+//APU pulse2;
+//APU triangle;
+//APU noise;
+//APU dmc;
 //
-//void setupDMC() {
-//    dmc.setSampleData(DMCChannel::fakeSample, sizeof(DMCChannel::fakeSample));
-//    dmc.setSampleAddress(0);       // índice inicial do sample
-//    dmc.setSampleLength(sizeof(DMCChannel::fakeSample));
-//    dmc.setRate(0);        // index 0 = 428 ciclos (o mesmo valor que você queria)
-//    dmc.setLoop(true);     // usa o nome correto do método
-//    dmc.setEnabled(true);
+//void setupPulses() {
+//	float canais = 8.0f; // 8 canais do duty
+//
+//    pulse1.setDuty(2);        // 50% duty
+//    pulse1.setFrequency(440, canais);
+//    pulse1.setVolume(32);     // Volume razoável
+//    pulse2.setDuty(1);        // 25%
+//    pulse2.setFrequency(660, canais);
+//    pulse2.setVolume(8);      // Mais fraco
 //}
 //
-//PulseChannel pulse1;
-//PulseChannel pulse2;
-//TriangleChannel triangle;
-//NoiseChannel noise;
+//void setupTriangle() {
+//	float canais = 32.0f; // 32 canais da tabela
+//
+//    triangle.setEnabled(true);
+//    triangle.setFrequency(220, canais);
+//}
+//
+//void setupNoise() {
+//	float canal = 1.0f; // 1 canal do noise
+//
+//    noise.setEnabled(true);
+//    noise.setVolume(6);
+//    noise.setMode(false);      // false = modo longo, true = curto
+//    noise.setFrequency(4000, canal);
+//}
+//
+////void setupDMC() {
+////    dmc.setSampleData(APU::fakeSample, sizeof(APU::fakeSample));
+////    dmc.setSampleAddress(0);       // índice inicial do sample
+////    dmc.setSampleLength(sizeof(APU::fakeSample));
+////    dmc.setRate(0);        // index 0 = 428 ciclos
+////    dmc.setLoop(true);
+////    dmc.dmcSetEnabled(true);
+////}
+//
+////DMCChannel dmc;
+//// 
+////void setupDMC() {
+////    dmc.setSampleData(DMCChannel::fakeSample, sizeof(DMCChannel::fakeSample));
+////    dmc.setSampleAddress(0);       // índice inicial do sample
+////    dmc.setSampleLength(sizeof(DMCChannel::fakeSample));
+////    dmc.setRate(0);        // index 0 = 428 ciclos
+////    dmc.setLoop(true);
+////    dmc.setEnabled(true);
+////}
 //
 ////std::ofstream triangleOut("triangle_samples.csv"); // isso é para gerar um .csv para visualizar se o formato das ondas está certo
 ////std::ofstream pulseOut("pulse_samples.csv");
@@ -59,13 +93,13 @@
 //    float* buffer = (float*)stream;
 //    int samples = len / sizeof(float);
 //    for (int i = 0; i < samples; ++i) {
-//        /*pulse1.tick();
-//        pulse2.tick();
-//        triangle.tick();
-//        noise.tick();*/
-//        dmc.tick();
+//        pulse1.tick(1);
+//        pulse2.tick(1);
+//        triangle.tick(2);
+//        noise.tick(3);
+//        //dmc.tick(4);
 //
-//        float sample = /*pulse1.getSample() + pulse2.getSample() + triangle.getSample() + noise.getSample() + */dmc.getSample();
+//        float sample = pulse1.getSample(1) + pulse2.getSample(1) + triangle.getSample(2) + noise.getSample(3) /*+ dmc.getSample(4) */;
 //
 //        // Clipping prevention simples
 //        if (sample > 1.0f) sample = 1.0f;
@@ -101,23 +135,10 @@
 //        return 1;
 //    }
 //
-//    pulse1.setDuty(2);        // 50% duty
-//    pulse1.setFrequency(440); 
-//    pulse1.setVolume(12);     // Volume razoável
-//
-//    pulse2.setDuty(1);        // 25%
-//    pulse2.setFrequency(660); 
-//    pulse2.setVolume(8);      // Mais fraco
-//
-//    triangle.setEnabled(true);
-//    triangle.setFrequency(220); 
-//
-//    noise.setEnabled(true);
-//    noise.setVolume(6);
-//    noise.setMode(false);      // false = modo longo, true = curto
-//    noise.setFrequency(4000);   // ou experimente com 100, 500, 1000 Hz
-//
-//	setupDMC();
+//    setupPulses();
+//    setupTriangle();
+//    setupNoise();
+//	/*setupDMC();*/
 //
 //    SDL_PauseAudioDevice(device, 0); // inicia audio
 //

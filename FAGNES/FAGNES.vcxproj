@@ -179,6 +179,7 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="APU.cpp" />
     <ClCompile Include="Bus.cpp" />
     <ClCompile Include="Cartucho.cpp" />
     <ClCompile Include="Controles.cpp" />
@@ -189,16 +190,13 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mapper0.cpp" />
     <ClCompile Include="Mapper2.cpp" />
-    <ClCompile Include="NoiseChannel.cpp" />
     <ClCompile Include="SDL_Display.cpp" />
-    <ClCompile Include="pulse_channel.cpp" />
     <ClCompile Include="SDL.cpp" />
     <ClCompile Include="teste_audio.cpp" />
-    <ClCompile Include="TriangleChannel.cpp" />
-    <ClCompile Include="TriangleChannel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbrirRom.h" />
+    <ClInclude Include="APU.h" />
     <ClInclude Include="Bus.h" />
     <ClInclude Include="Cartucho.h" />
     <ClInclude Include="Controles.h" />
@@ -209,8 +207,6 @@
     <ClInclude Include="Mapper0.h" />
     <ClInclude Include="Mapper2.h" />
     <ClInclude Include="Memoria.h" />
-    <ClInclude Include="NoiseChannel.h" />
-    <ClInclude Include="pulse_channel.h" />
     <ClInclude Include="SDL_Display.h" />
     <ClInclude Include="Tipos.h" />
   </ItemGroup>
