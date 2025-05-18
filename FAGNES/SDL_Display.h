@@ -12,7 +12,7 @@ class SDL_Display {
 private:
     const int TELA_WIDTH = 32;
     const int TELA_HEIGHT = 32;
-    int ZOOM = 8;
+    int ZOOM = 16;
     const int FPS = 30;
 
     SDL_Texture* TEXTURE;
