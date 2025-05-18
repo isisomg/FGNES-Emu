@@ -39,6 +39,11 @@
 //    noise.setFrequency(4000, canal);
 //}
 //
+//void setupDMC() {
+//    dmc.setEnabled(true); // Apenas ativa o canal
+//}
+//
+//
 ////void setupDMC() {
 ////    dmc.setSampleData(APU::fakeSample, sizeof(APU::fakeSample));
 ////    dmc.setSampleAddress(0);       // índice inicial do sample
@@ -97,9 +102,9 @@
 //        pulse2.tick(1);
 //        triangle.tick(2);
 //        noise.tick(3);
-//        //dmc.tick(4);
+//        dmc.tick(4);
 //
-//        float sample = pulse1.getSample(1) + pulse2.getSample(1) + triangle.getSample(2) + noise.getSample(3) /*+ dmc.getSample(4) */;
+//        float sample = pulse1.getSample(1) + pulse2.getSample(1) + triangle.getSample(2) + noise.getSample(3) + dmc.getSample(4);
 //
 //        // Clipping prevention simples
 //        if (sample > 1.0f) sample = 1.0f;
@@ -138,7 +143,7 @@
 //    setupPulses();
 //    setupTriangle();
 //    setupNoise();
-//	/*setupDMC();*/
+//	setupDMC();
 //
 //    SDL_PauseAudioDevice(device, 0); // inicia audio
 //

@@ -32,5 +32,13 @@ private:
 
 	static const uint8_t dutyTable[4][8]; // pulse
 	static const uint8_t triangleTable[32]; // triangle
+
+	// DMC
+	uint8_t dmcShiftReg = 0x00;
+	uint8_t dmcBitCount = 0;
+	uint8_t dmcOutputLevel = 0;
+	float dmcTimer = 0.0f;
+	float dmcTimerPeriod = 428.0f; // Valor comum para taxa 44100 Hz / 428 ? 103.1 Hz
+
 };
 #pragma once

@@ -82,6 +82,32 @@ void APU::tick(int channel) { // preferi fazer por switch case pq a partir do no
             shiftRegister |= (feedback << 14); // coloca feedback no bit 14 
         }
         break;
+    case 4: // DMC
+        if (dmcTimer <= 0.0f) {
+            dmcTimer += dmcTimerPeriod;
+
+            if (dmcBitCount == 0) {
+                // Simulando carregamento de byte fixo (0x55) por enquanto
+                dmcShiftReg = 0x55;
+                dmcBitCount = 8;
+            }
+
+            uint8_t bit = dmcShiftReg & 1;
+
+            if (bit) {
+                if (dmcOutputLevel <= 125) dmcOutputLevel += 2;
+            }
+            else {
+                if (dmcOutputLevel >= 2) dmcOutputLevel -= 2;
+            }
+
+            dmcShiftReg >>= 1;
+            dmcBitCount--;
+        }
+        else {
+            dmcTimer -= 1.0f;
+        }
+        break;
 	default:
 		std::cerr << "Canal inválido: " << channel << "\n";
 		return; // Canal inválido  
@@ -105,6 +131,10 @@ float APU::getSample(int channel) const {
             // se o valor do bit 0 for 0, então vai ligar, se for 1 vai silenciar
             return (shiftRegister & 1) == 0 ? (volume / 15.0f) : 0.0f;
             break;
+        case 4: // DMC
+            if (!enabled) return 0.0f;
+            return dmcOutputLevel / 127.0f;
+
 	    default:
 		    return 0.0f; // Canal inválido
             break;
@@ -123,7 +153,7 @@ void APU::setEnabled(bool on) {
 }
 
 void APU::setBus(Bus* busNovo) {
-    this->bus = busNovo; // isto permite que a classe NoiseChannel acesse a memória
+    this->bus = busNovo; 
 }
 
 void APU::setMode(bool m) {
