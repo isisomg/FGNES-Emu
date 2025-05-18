@@ -209,17 +209,8 @@ struct PPU {
 	uint16_t ppuAddress = 0x0000;
 	bool addressLatch = false;
 
-	// Implementação do PPUADDR com latch de dois writes
-	void writeToPPUADDR(Byte value) {
-		if (!addressLatch) {
-			ppuAddress = (value << 8) | (ppuAddress & 0x00FF);
-			addressLatch = true;
-		}
-		else {
-			ppuAddress = (ppuAddress & 0xFF00) | value;
-			addressLatch = false;
-		}
-	}
+	// Aqui a gente vai escrever no registrador de endereço do PPU, que é o $2006.
+	void writeToPPUADDR(Byte value);
 
 	// Interface com a CPU
 	void cpuWrite(uint16_t addr, Byte data) {
@@ -266,6 +257,10 @@ struct PPU {
 		}
 		return data;
 	}
+
+	// NMI
+	// Callback que a CPU vai registrar pra ser chamada quando o PPU quiser gerar um NMI
+	void (*nmiCallback)() = nullptr;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////		FALTA:  	 ////////////////////////////////////////////////////////////////////////////////////////////////////

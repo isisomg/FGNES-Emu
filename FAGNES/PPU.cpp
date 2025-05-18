@@ -87,7 +87,16 @@ void PPU::step() {
 	if (scanline == 241 && dot == 1) {
 		status.setVBlank(true);
 		if (ctrl.isNMIEnabled()) {
-			// NMI
+			// NMI vai chamar a callback se ela foi registrada e tals 
+			if (nmiCallback) {
+				nmiCallback();
+
+				// Precisa implementar a nmi corretamente na cpu, temq ter uma funcao mais ou menos assim
+
+					//ppu.nmiCallback = []() {
+					//	cpu.triggerNMI(); 
+					//	};
+			}
 		}
 	}
 
