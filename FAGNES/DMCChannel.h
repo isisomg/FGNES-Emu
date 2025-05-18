@@ -3,7 +3,7 @@
 
 class DMCChannel {
 public:
-    DMCChannel();
+	DMCChannel();
 
     void tick();             // Atualiza o estado da DMC
     float getSample() const; // Retorna o volume atual
@@ -21,21 +21,21 @@ public:
 private:
     const uint8_t* sampleData = nullptr;
     size_t sampleDataSize = 0;
-    uint16_t currentAddress;
-    uint16_t bytesRemaining;
-    uint8_t sampleBuffer;
-    bool sampleBufferEmpty;
-    uint8_t shiftRegister;
-    uint8_t bitCounter;
+    uint16_t currentAddress = 0;
+    uint16_t bytesRemaining = 0;
+    uint8_t sampleBuffer = 0;
+    bool sampleBufferEmpty = true;
+    uint8_t shiftRegister = 0;
+    uint8_t bitCounter = 8;
 
     // usa um contador delta com 7 bits que vao de 0-127, eh ajustado a cada bit lido
-    uint8_t deltaCounter;
+    uint8_t deltaCounter = 64; // Valor inicial padrão do contador delta
 
-    float timer;
+    float timer = 0;
     float timerPeriod;
-    bool enabled;
-    bool loopFlag;
-    bool irqEnabled;
-    uint16_t sampleStartAddress;
-    uint16_t sampleLength;
+    bool enabled = false;
+    bool loopFlag = false;
+    bool irqEnabled = false;
+    uint16_t sampleStartAddress = 0;
+    uint16_t sampleLength = 0;
 };

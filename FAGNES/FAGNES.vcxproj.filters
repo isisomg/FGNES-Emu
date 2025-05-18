@@ -27,18 +27,6 @@
     <ClCompile Include="teste_audio.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
-    <ClCompile Include="pulse_channel.cpp">
-      <Filter>Arquivos de Origem</Filter>
-    </ClCompile>
-    <ClCompile Include="TriangleChannel.cpp">
-      <Filter>Arquivos de Origem</Filter>
-    </ClCompile>
-    <ClCompile Include="TriangleChannel.h">
-      <Filter>Arquivos de Cabeçalho</Filter>
-    </ClCompile>
-    <ClCompile Include="NoiseChannel.cpp">
-      <Filter>Arquivos de Origem</Filter>
-    </ClCompile>
     <ClCompile Include="SDL_Display.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
@@ -66,14 +54,11 @@
     <ClCompile Include="Mapper2.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
+    <ClCompile Include="APU.cpp">
+      <Filter>Arquivos de Origem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NoiseChannel.h">
-      <Filter>Arquivos de Cabeçalho</Filter>
-    </ClInclude>
-    <ClInclude Include="pulse_channel.h">
-      <Filter>Arquivos de Cabeçalho</Filter>
-    </ClInclude>
     <ClInclude Include="Cores.h">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
@@ -111,6 +96,9 @@
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
     <ClInclude Include="Mapper2.h">
+      <Filter>Arquivos de Cabeçalho</Filter>
+    </ClInclude>
+    <ClInclude Include="APU.h">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
   </ItemGroup>

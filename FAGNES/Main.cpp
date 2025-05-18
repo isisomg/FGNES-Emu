@@ -2,7 +2,8 @@
 #include "Bus.h"
 #include "SDL_Display.h"
 #include "Cartucho.h"
-
+#include <sstream> // PARA DEBUG APENAS, COMENTAR CASO NAO FOR DEBUGAR
+#include <iomanip> // PARA DEBUG APENAS, COMENTAR CASO NAO FOR DEBUGAR
 #include <iostream>
 #include <fstream>
 
@@ -25,6 +26,40 @@ void carregarROM(CPU& cpu) { // APENAS PARA TESTE
 	}
 }
 
+// PARA DEBUGAR CPU. DEIXAR COMENTADO CASO NAO FOR DEBUGAR.
+std::vector<std::string> info;
+void salvarArquivo() { // cria a saida de resultados obtidos da cpu
+	std::string path = "resultadosObtidos.txt";
+	std::ofstream arq(path, std::ios::out);
+	if (arq.is_open() == false) {
+		std::cout << "Erro ao gerar arquivo de resultados obtidos" << std::endl;
+		return;
+	}
+	std::string dados = "";
+	for (int i = 0; i < info.size(); i++) {
+		dados += info.at(i);
+	}
+	arq << dados;
+	arq.close();
+}
+void guardarLinha(DWord PC, Byte A, Byte X, Byte Y, Byte P, Byte SP) {
+	std::stringstream ss;
+	ss << std::uppercase << std::setw(4) << std::setfill('0') << std::hex << (int)PC;
+	ss << " A:";
+	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)A;
+	ss << " X:";
+	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)X;
+	ss << " Y:";
+	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)Y;
+	ss << " P:";
+	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)P;
+	ss << " SP:";
+	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)SP;
+	ss << std::endl;
+	info.push_back(ss.str());
+}
+// ATE AQUI COMENTADO CASO NAO FOR DEBUGAR.
+
 int main(int argc, char* argv[]) {
 
 	Bus* bus = new Bus();
@@ -34,10 +69,10 @@ int main(int argc, char* argv[]) {
 	display.init(bus, &cartucho);
 	
 	CPU cpu;
-	cpu.inicializar(bus);
+	//cpu.inicializar(bus);
 	
-	carregarROM(cpu); // remover quando for testar ROM. APENAS PARA TESTAR SNAKE
-	display.jogoRodando = true; //  APENAS PARA TESTAR SNAKE
+	//carregarROM(cpu); // remover quando for testar ROM. APENAS PARA TESTAR SNAKE
+	//display.jogoRodando = true; //  APENAS PARA TESTAR SNAKE
 
 	bool rodar = true;
 	SDL_Event event;
@@ -50,22 +85,22 @@ int main(int argc, char* argv[]) {
 		}
 
 		if (display.jogoRodando) {
-			//if (cpu.iniciou == false) { // inicializacoes necessarias para o jogo
-			//	cpu.inicializar(bus);
-			//	// cpu.PC = cartucho.adrPCinicial; // Verificar se esta certo
-			//	cpu.PC = 0x8000; // PC inicial mapper0 smb. Retirar apos descobrir se instrucao acima esta correta.
-			//	bus->setCartucho(&cartucho);
-			//}
+			if (cpu.iniciou == false) { // inicializacoes necessarias para o jogo
+				cpu.inicializar(bus);
+				 cpu.PC = cartucho.adrPCinicial; // Verificar se esta certo
+				cpu.PC = 0x8000; // PC inicial mapper0. Retirar apos corrigir instrucao acima.
+				bus->setCartucho(&cartucho);
+			}
 
 			if (cpu.PC == 0xFFFF) {
 				break;
 			}
+			//guardarLinha(cpu.PC, cpu.A, cpu.X, cpu.Y, cpu.getStatusRegister(), cpu.SP); // PARA DEBUNG CPU
 			cpu.executar();
 
-			// mudar RNG. USADO APENAS NA SNAKE PARA TESTE
-			cpu.writeByte(0x00FE, rand() % 0xFF);
-			//std::cout << std::hex << cpu.PC << " " << cpu.atualizarGrafico << std::endl;
-
+			//cpu.writeByte(0x00FE, rand() % 0xFF); // mudar RNG. USADO APENAS NA SNAKE PARA TESTE
+			std::cout << std::hex << (int)cpu.PC << std::endl;
+			//system("pause");
 			if (cpu.atualizarGrafico == false) {
 				continue;
 			}
@@ -75,7 +110,7 @@ int main(int argc, char* argv[]) {
 		display.renderizar();
 		
 	}
-	
+	//salvarArquivo(); // PARA DEBUG CPU
 	display.destroy();
 	delete bus;
 	return 0;

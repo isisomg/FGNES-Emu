@@ -1,6 +1,6 @@
 #include "Cartucho.h"
 #include "Mapper2.h"
-
+#include "Bus.h"
 void Cartucho::init(const std::string& path) {
 	std::ifstream arquivo(path, std::ios::binary);
 
@@ -46,12 +46,14 @@ void Cartucho::init(const std::string& path) {
 	switch (valorMapper) {
 	case 0:
 		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM); //NROM MAPPER 0
+		adrPCinicial = prgROM[prgROM.size() - 2] | (prgROM[prgROM.size() - 1] << 8); // ERRADO
 		break;
 	case 1:
 		//mapper = std::make_unique<Mapper1>(prgBanks, chrBanks, prgROM, chrROM); // MMC1 MAPPER1
 		break;
 	case 2:
 		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM); // UxROM MAPPER2
+		adrPCinicial = readPRG(0xFFFC) | (readPRG(0xFFFD) << 8);
 		break;
 	default:
 		std::cerr << "Mapper " << (int)valorMapper << " não suportado ainda.\n";
@@ -59,17 +61,6 @@ void Cartucho::init(const std::string& path) {
 	}
 
 
-	if (valorMapper == 2) {
-		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM);
-	}
-
-
-	// Pegando o mapper correto
-	
-	if (valorMapper == 0) { // mapper 0 
-		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM);
-		adrPCinicial = prgROM[prgROM.size() - 6] | (prgROM[prgROM.size() - 5] << 8); // endereco PC inicial ARRUMAR
-	}
 	std::cout << "Jogo carregado. Mapper" << (int)valorMapper << " sendo usado. PC inicial: " << std::hex << (int)adrPCinicial << std::endl;
 }
 
