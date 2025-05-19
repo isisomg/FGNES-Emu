@@ -27,6 +27,12 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 	else if (adr == 0x4016) {
 			controles.escreverStrobe(dado & 1); //escrita dos Controles
 	}
+	else if (adr >= 0x4000 && adr <= 0x4017) {
+		if (apu) {
+			apu->writeRegister(adr, dado); // você criará esse método na APU
+		}
+	}
+
 }
 
 bool Bus::checkNMI() { // IMPLEMENTAR CORRETAMENTE EM CONJUNTO COM PPU
@@ -35,4 +41,8 @@ bool Bus::checkNMI() { // IMPLEMENTAR CORRETAMENTE EM CONJUNTO COM PPU
 
 void Bus::setCartucho(Cartucho * cart) {
 	cartucho = cart;
+}
+
+void Bus::setAPU(APU* novaAPU) {
+	apu = novaAPU;
 }

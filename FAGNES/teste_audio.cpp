@@ -104,7 +104,13 @@
 //        noise.tick(3);
 //        dmc.tick(4);
 //
-//        float sample = pulse1.getSample(1) + pulse2.getSample(1) + triangle.getSample(2) + noise.getSample(3) + dmc.getSample(4);
+//        float pulseMix = 0.00752f * (pulse1.getSample(1) + pulse2.getSample(1));
+//        float tndMix = 0.00851f * triangle.getSample(2)
+//            + 0.00494f * noise.getSample(3)
+//            + 0.00335f * dmc.getSample(4);
+//
+//        float sample = pulseMix + tndMix;
+//
 //
 //        // Clipping prevention simples
 //        if (sample > 1.0f) sample = 1.0f;

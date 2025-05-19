@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
 	
 	CPU cpu;
 	//cpu.inicializar(bus);
-	
+
 	//carregarROM(cpu); // remover quando for testar ROM. APENAS PARA TESTAR SNAKE
 	//display.jogoRodando = true; //  APENAS PARA TESTAR SNAKE
 
