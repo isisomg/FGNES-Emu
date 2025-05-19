@@ -10,6 +10,13 @@
 
 class SDL_Display {
 private:
+    //APU* apu = nullptr;
+    //SDL_AudioDeviceID audioDevice;
+
+    //static void audioCallback(void* userdata, Uint8* stream, int len);
+
+    //void inicializarAudio();
+
     const int TELA_WIDTH = 32;
     const int TELA_HEIGHT = 32;
     int ZOOM = 16;

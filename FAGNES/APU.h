@@ -2,6 +2,7 @@
 #include <cstdint>
 #include "Bus.h"
 
+class Bus;
 // fazendo sem o DMC por enquanto
 
 class APU {
@@ -16,6 +17,10 @@ public:
 	float getSample(int channel) const; // todos (1 = pulse, 2 = triangle, 3 = noise, 4 = DMC)
 
     void tick(int channel); // Avança o tempo interno (todos usam) (1 = pulse, 2 = triangle, 3 = noise, 4 = DMC)
+
+	void writeRegister(uint16_t addr, uint8_t value);
+	//uint8_t readRegister(uint16_t addr); // se quiser tratar leitura, ex: $4015
+
 private:
 
 	uint16_t shiftRegister = 1; // começa em 1 já que ao iniciar o NES, o registrador começava em 1 (noise)

@@ -37,6 +37,31 @@
 			SDL_Log("Erro ao criar textura: %s", SDL_GetError());
 			exit(1);
 		}
+		//// 1. Criar e configurar APU
+		//apu = new APU();
+		//apu->setFrequency(44100.0f, 4); // 4 canais
+		//apu->setEnabled(true);
+
+		//// 2. Passar APU para o Bus
+		//novoBus->setAPU(apu);
+
+		//// 3. Inicializar áudio SDL
+		//SDL_AudioSpec desiredSpec;
+		//SDL_zero(desiredSpec);
+		//desiredSpec.freq = 44100;
+		//desiredSpec.format = AUDIO_F32SYS;
+		//desiredSpec.channels = 1;
+		//desiredSpec.samples = 512;
+		//desiredSpec.callback = audioCallback;
+		//desiredSpec.userdata = this;
+
+		//audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desiredSpec, nullptr, 0);
+		//if (audioDevice == 0) {
+		//	SDL_Log("Erro ao abrir dispositivo de audio: %s", SDL_GetError());
+		//	exit(1);
+		//}
+
+		//SDL_PauseAudioDevice(audioDevice, 0);
 	}
 
 	void SDL_Display::processarEntrada(SDL_Event event) {
@@ -109,6 +134,7 @@
 				if (ImGui::MenuItem("Carregar")) {
 					std::string arquivoROM = AbrirArquivo();
 					cartucho->init(arquivoROM);
+					/*inicializarAudio();*/
 					jogoRodando = true;
 				}
 				ImGui::EndMenu();
@@ -134,7 +160,11 @@
 
 		SDL_RenderClear(RENDERER);
 
-		SDL_Rect dstRect = { 0, 0, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM };
+		/*SDL_Rect dstRect = { 0, 0, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM };*/
+		float menuBarAltura = ImGui::GetFrameHeight();
+		int offsetY = static_cast<int>(menuBarAltura); // ajuste se necessário
+		SDL_Rect dstRect = { 0, offsetY, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM };
+
 		SDL_RenderCopy(RENDERER, TEXTURE, nullptr, &dstRect);
 		ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), RENDERER);
 
@@ -143,6 +173,16 @@
 	}
 
 	void SDL_Display::destroy() {
+		// minhas coisinhassss
+		//if (audioDevice != 0) {
+		//	SDL_CloseAudioDevice(audioDevice);
+		//	audioDevice = 0;
+		//}
+
+		//if (apu) {
+		//	delete apu;
+		//	apu = nullptr;
+		//}
 		// Shutdown do ImGui
 		ImGui_ImplSDLRenderer2_Shutdown();
 		ImGui_ImplSDL2_Shutdown();
@@ -154,3 +194,52 @@
 		SDL_DestroyWindow(WINDOW);
 		SDL_Quit();
 	}
+	// tudo meu: cyro
+	//void SDL_Display::audioCallback(void* userdata, Uint8* stream, int len) {
+	//	SDL_Display* self = static_cast<SDL_Display*>(userdata);
+	//	if (!self || !self->apu) return;
+
+	//	float* buffer = reinterpret_cast<float*>(stream);
+	//	int samples = len / sizeof(float);
+
+	//	for (int i = 0; i < samples; i++) {
+	//		float mix = 0.0f;
+	//		mix += self->apu->getSample(1); // pulse
+	//		mix += self->apu->getSample(2); // triangle
+	//		mix += self->apu->getSample(3); // noise
+	//		mix += self->apu->getSample(4); // dmc
+
+	//		self->apu->tick(1);
+	//		self->apu->tick(2);
+	//		self->apu->tick(3);
+	//		self->apu->tick(4);
+
+	//		buffer[i] = mix / 4.0f; // normalizar volume
+	//	}
+	//}
+
+	//void SDL_Display::inicializarAudio() {
+	//	if (audioDevice != 0) return; // já está inicializado
+
+	//	apu = new APU();
+	//	apu->setFrequency(44100.0f, 4); // 4 canais
+	//	apu->setEnabled(true);
+	//	bus->setAPU(apu);
+
+	//	SDL_AudioSpec desiredSpec;
+	//	SDL_zero(desiredSpec);
+	//	desiredSpec.freq = 44100;
+	//	desiredSpec.format = AUDIO_F32SYS;
+	//	desiredSpec.channels = 1;
+	//	desiredSpec.samples = 512;
+	//	desiredSpec.callback = audioCallback;
+	//	desiredSpec.userdata = this;
+
+	//	audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desiredSpec, nullptr, 0);
+	//	if (audioDevice == 0) {
+	//		SDL_Log("Erro ao abrir dispositivo de audio: %s", SDL_GetError());
+	//	}
+	//	else {
+	//		SDL_PauseAudioDevice(audioDevice, 0);
+	//	}
+	//}

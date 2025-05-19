@@ -160,3 +160,28 @@ void APU::setMode(bool m) {
     mode = m;
 }
 
+void APU::writeRegister(uint16_t addr, uint8_t value) {
+   // Implementação básica para lidar com registros de som
+   switch (addr) {
+       case 0x4000: // Exemplo: Configuração de canal Pulse 1
+           setDuty((value >> 6) & 0x03); // Bits 6-7 para duty
+           setVolume(value & 0x0F);      // Bits 0-3 para volume
+           break;
+       case 0x4001: // Exemplo: Sweep do canal Pulse 1
+           // Implementar lógica de sweep se necessário
+           break;
+       case 0x4002: // Timer baixo do canal Pulse 1
+           timer = (timer & 0xFF00) | value;
+           break;
+       case 0x4003: // Timer alto do canal Pulse 1 e reinício da fase
+           timer = (timer & 0x00FF) | ((value & 0x07) << 8);
+           phase = 0; // Reinicia a fase
+           break;
+       case 0x4015: // Controle de habilitação de canais
+           setEnabled(value & 0x01); // Exemplo: Habilitar/desabilitar Pulse 1
+           break;
+       default:
+           // Outros endereços podem ser tratados aqui
+           break;
+   }
+}
