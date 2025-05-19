@@ -190,9 +190,11 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mapper0.cpp" />
     <ClCompile Include="Mapper2.cpp" />
+    <ClCompile Include="PPU.cpp" />
     <ClCompile Include="SDL_Display.cpp" />
     <ClCompile Include="SDL.cpp" />
     <ClCompile Include="teste_audio.cpp" />
+    <ClCompile Include="teste_vblank.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AbrirRom.h" />
