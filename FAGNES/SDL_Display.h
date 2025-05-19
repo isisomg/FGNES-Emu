@@ -18,7 +18,7 @@ private:
     //void inicializarAudio();
 
     const int TELA_WIDTH = 32;
-    const int TELA_HEIGHT = 32;
+    const int TELA_HEIGHT = 33;
     int ZOOM = 16;
     const int FPS = 30;
 
