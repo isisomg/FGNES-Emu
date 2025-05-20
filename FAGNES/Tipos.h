@@ -1,4 +1,4 @@
 #pragma once
-
-using Byte = unsigned char;
+#include <cstdint>
+using Byte = uint8_t;
 using DWord = unsigned short;

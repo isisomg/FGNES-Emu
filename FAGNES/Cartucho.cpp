@@ -46,7 +46,7 @@ void Cartucho::init(const std::string& path) {
 	switch (valorMapper) {
 	case 0:
 		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM); //NROM MAPPER 0
-		adrPCinicial = prgROM[prgROM.size() - 2] | (prgROM[prgROM.size() - 1] << 8); // ERRADO
+		adrPCinicial = prgROM[0x7FFC] | (prgROM[0x7FFD] << 8);
 		break;
 	case 1:
 		//mapper = std::make_unique<Mapper1>(prgBanks, chrBanks, prgROM, chrROM); // MMC1 MAPPER1

@@ -1,7 +1,27 @@
 #include "CPU.h"
 
 void CPU::handleNMI() { // Implementar corretamente
-	;
+	// 1. Empilha PC (em big endian)
+	writeByte(0x0100 + SP, (PC >> 8) & 0xFF); // High byte
+	SP--;
+	writeByte(0x0100 + SP, PC & 0xFF);        // Low byte
+	SP--;
+
+	// 2. Empilha Status com B flag como 0 e bit 5 como 1
+	Byte status = (N << 7) | (V << 6) | (1 << 5) | (0 << 4) |
+		(D << 3) | (I << 2) | (Z << 1) | (C);
+	writeByte(0x0100 + SP, status);
+	SP--;
+
+	// 3. Setar o flag I para inibir novas IRQs
+	I = 1;
+
+	// 4. Ler vetor NMI (em 0xFFFA/0xFFFB)
+	Byte low = readByte(0xFFFA);
+	Byte high = readByte(0xFFFB);
+	PC = (high << 8) | low;
+	std::cout << "NMI mudou o PC para " << std::hex << (int)PC << std::endl;
+	//PC = 0x8220; // SMB. ARRUMAR
 }
 
 
@@ -293,21 +313,25 @@ void CPU::handleNMI() { // Implementar corretamente
 	// COMPARE
 	void CPU::CMP(DWord adr) {
 		Byte valor = readByte(adr);
+		Byte resultado = A - valor;
 		C = (A >= valor);
-		Z = (A == valor);
-		ajustaN(A - valor);
+		ajustaZ(resultado);
+		ajustaN(resultado);
+
 	}
 	void CPU::CPX(DWord adr) {
 		Byte valor = readByte(adr);
+		Byte resultado = X - valor;
 		C = (X >= valor);
-		Z = (X == valor);
-		ajustaN(X - valor);
+		ajustaZ(resultado);
+		ajustaN(resultado);
 	}
 	void CPU::CPY(DWord adr) {
 		Byte valor = readByte(adr);
+		Byte resultado = Y - valor;
 		C = (Y >= valor);
-		Z = (Y == valor);
-		ajustaN(Y - valor);
+		ajustaZ(resultado);
+		ajustaN(resultado);
 	}
 
 	// BRANCH

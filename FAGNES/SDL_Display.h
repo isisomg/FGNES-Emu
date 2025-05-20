@@ -17,9 +17,9 @@ private:
 
     //void inicializarAudio();
 
-    const int TELA_WIDTH = 32;
-    const int TELA_HEIGHT = 33;
-    int ZOOM = 16;
+    const int TELA_WIDTH = 256;
+    const int TELA_HEIGHT = 240;
+    int ZOOM = 1;
     const int FPS = 30;
 
     SDL_Texture* TEXTURE;
