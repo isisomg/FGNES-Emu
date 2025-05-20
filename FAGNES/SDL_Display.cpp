@@ -138,7 +138,7 @@
 				if (ImGui::MenuItem("Carregar")) {
 					std::string arquivoROM = AbrirArquivo();
 					cartucho->init(arquivoROM);
-					/*inicializarAudio();*/
+					inicializarAudio();
 					jogoRodando = true;
 				}
 				ImGui::EndMenu();
@@ -231,16 +231,16 @@
 	}
 
 	void SDL_Display::destroy() {
-		// minhas coisinhassss
-		//if (audioDevice != 0) {
-		//	SDL_CloseAudioDevice(audioDevice);
-		//	audioDevice = 0;
-		//}
+		 //minhas coisinhassss
+		if (audioDevice != 0) {
+			SDL_CloseAudioDevice(audioDevice);
+			audioDevice = 0;
+		}
 
-		//if (apu) {
-		//	delete apu;
-		//	apu = nullptr;
-		//}
+		if (apu) {
+			delete apu;
+			apu = nullptr;
+		}
 		// Shutdown do ImGui
 		ImGui_ImplSDLRenderer2_Shutdown();
 		ImGui_ImplSDL2_Shutdown();
@@ -253,51 +253,60 @@
 		SDL_Quit();
 	}
 	// tudo meu: cyro
-	//void SDL_Display::audioCallback(void* userdata, Uint8* stream, int len) {
-	//	SDL_Display* self = static_cast<SDL_Display*>(userdata);
-	//	if (!self || !self->apu) return;
+	void SDL_Display::audioCallback(void* userdata, Uint8* stream, int len) {
+		SDL_Display* self = static_cast<SDL_Display*>(userdata);
+		if (!self || !self->apu) return;
 
-	//	float* buffer = reinterpret_cast<float*>(stream);
-	//	int samples = len / sizeof(float);
+		float* buffer = reinterpret_cast<float*>(stream);
+		int samples = len / sizeof(float);
 
-	//	for (int i = 0; i < samples; i++) {
-	//		float mix = 0.0f;
-	//		mix += self->apu->getSample(1); // pulse
-	//		mix += self->apu->getSample(2); // triangle
-	//		mix += self->apu->getSample(3); // noise
-	//		mix += self->apu->getSample(4); // dmc
+		for (int i = 0; i < samples; i++) {
+			float mix = 0.0f;
+			mix += self->apu->getSample(1); // pulse
+			mix += self->apu->getSample(2); // triangle
+			mix += self->apu->getSample(3); // noise
+			mix += self->apu->getSample(4); // dmc
 
-	//		self->apu->tick(1);
-	//		self->apu->tick(2);
-	//		self->apu->tick(3);
-	//		self->apu->tick(4);
+			self->apu->tick(1);
+			self->apu->tick(2);
+			self->apu->tick(3);
+			self->apu->tick(4);
 
-	//		buffer[i] = mix / 4.0f; // normalizar volume
-	//	}
-	//}
+			buffer[i] = mix / 4.0f; // normalizar volume
+		}
+	}
 
-	//void SDL_Display::inicializarAudio() {
-	//	if (audioDevice != 0) return; // já está inicializado
+	void SDL_Display::inicializarAudio() {
+		// Fecha o dispositivo de áudio anterior, se existir
+		if (audioDevice != 0) {
+			SDL_CloseAudioDevice(audioDevice);
+			audioDevice = 0;
+		}
+		// Libera a APU anterior, se existir
+		if (apu) {
+			delete apu;
+			apu = nullptr;
+		}
+		// Cria nova APU e configura
+		apu = new APU();
+		apu->setFrequency(44100.0f, 4);
+		apu->setEnabled(true);
+		bus->setAPU(apu);
 
-	//	apu = new APU();
-	//	apu->setFrequency(44100.0f, 4); // 4 canais
-	//	apu->setEnabled(true);
-	//	bus->setAPU(apu);
+		SDL_AudioSpec desiredSpec;
+		SDL_zero(desiredSpec);
+		desiredSpec.freq = 44100;
+		desiredSpec.format = AUDIO_F32SYS;
+		desiredSpec.channels = 1;
+		desiredSpec.samples = 512;
+		desiredSpec.callback = audioCallback;
+		desiredSpec.userdata = this;
 
-	//	SDL_AudioSpec desiredSpec;
-	//	SDL_zero(desiredSpec);
-	//	desiredSpec.freq = 44100;
-	//	desiredSpec.format = AUDIO_F32SYS;
-	//	desiredSpec.channels = 1;
-	//	desiredSpec.samples = 512;
-	//	desiredSpec.callback = audioCallback;
-	//	desiredSpec.userdata = this;
-
-	//	audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desiredSpec, nullptr, 0);
-	//	if (audioDevice == 0) {
-	//		SDL_Log("Erro ao abrir dispositivo de audio: %s", SDL_GetError());
-	//	}
-	//	else {
-	//		SDL_PauseAudioDevice(audioDevice, 0);
-	//	}
-	//}
+		audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desiredSpec, nullptr, 0);
+		if (audioDevice == 0) {
+			SDL_Log("Erro ao abrir dispositivo de audio: %s", SDL_GetError());
+		}
+		else {
+			SDL_PauseAudioDevice(audioDevice, 0);
+		}
+	}

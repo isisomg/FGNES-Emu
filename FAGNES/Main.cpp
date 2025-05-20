@@ -61,6 +61,10 @@ void guardarLinha(DWord PC, Byte A, Byte X, Byte Y, Byte P, Byte SP) {
 // ATE AQUI COMENTADO CASO NAO FOR DEBUGAR.
 
 int main(int argc, char* argv[]) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
+		std::cerr << "Erro ao inicializar SDL: " << SDL_GetError() << std::endl;
+		return 1;
+	}
 
 	Bus* bus = new Bus();
 	Cartucho cartucho;
