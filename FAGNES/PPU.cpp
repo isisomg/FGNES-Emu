@@ -2,7 +2,7 @@
 #include "Tipos.h"
 
 //Somente pra testes, descomentar se nao for testar!!
-//#include <iostream>
+#include <iostream>
 
 
 //////////////////////////////////////////////////////
@@ -151,7 +151,6 @@ void (*nmiCallback)() = nullptr;
 
 void PPU::step() {
 	dot++;
-
 	// O DOT eh de 0 a 340 (341 pontos por linha) !!!
 	if (dot > 340) {
 		dot = 0;
@@ -164,25 +163,13 @@ void PPU::step() {
 	}
 
 	if (scanline == 241 && dot == 1) {
-
-		// TESTE VBLANK !!! DESCOMENTA ISSO E O teste_PPU NO CASO DE QUERER VER O VBLANK FUNCIONANDO !!!!
-
-		//	std::cout << ">> VBlank iniciado!" << std::endl;
-		//}
-		//if (scanline == 261 && dot == 1) {
-		//	std::cout << ">>> VBLANK Finalizado!" << std::endl;
-		//}
-
-		// Começo do VBlank
-
 		status.setVBlank(true);
 		if (ctrl.isNMIEnabled()) {
 			nmiRequested = true;
-			// NMI vai chamar a callback se ela foi registrada e tals 
-			if (nmiCallback) {
-				nmiCallback();	// Gera o NMI se permitido
-			}
+			if (nmiCallback) nmiCallback();
 		}
+		// Sinaliza que um frame foi concluído
+		
 	}
 
 	if (scanline == 261 && dot == 1) {
@@ -192,7 +179,8 @@ void PPU::step() {
 
 	if (scanline < 240) {
 		// Desenha sprites
-		renderScanline(scanline);
+		//renderScanline(scanline);
+		;
 	}
 }
 

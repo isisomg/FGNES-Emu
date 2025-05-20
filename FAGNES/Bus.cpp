@@ -45,8 +45,10 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 }
 
 bool Bus::checkNMI() {
-	if (ppu)
-		return ppu && ppu->isNMIRequested(); // Vai verificar se a ppu ta requestando o NMI e tals
+	if (ppu){
+		bool valor = ppu && ppu->isNMIRequested();
+		return valor; // Vai verificar se a ppu ta requestando o NMI e tals
+	}
 	return false;
 }
 

@@ -69,6 +69,13 @@ int main(int argc, char* argv[]) {
 	display.init(bus, &cartucho);
 	
 	CPU cpu;
+	PPU ppu;
+
+	bus->setPPU(&ppu);
+	// Ativa NMI
+	ppu.cpuWrite(0x2000, 0x80);
+
+	
 	//cpu.inicializar(bus);
 
 	//carregarROM(cpu); // remover quando for testar ROM. APENAS PARA TESTAR SNAKE
@@ -95,17 +102,18 @@ int main(int argc, char* argv[]) {
 				break;
 			}
 			//guardarLinha(cpu.PC, cpu.A, cpu.X, cpu.Y, cpu.getStatusRegister(), cpu.SP); // PARA DEBUNG CPU
+			for (int i = 0; i < 27384; ++i) {
+				ppu.step();
+			}
+			std::cout << std::hex << (int)cpu.PC << std::endl;
 			cpu.executar();
+	
 
 			//cpu.writeByte(0x00FE, rand() % 0xFF); // mudar RNG. USADO APENAS NA SNAKE PARA TESTE
-			//std::cout << std::hex << (int)cpu.PC << " Y: " << (int)cpu.Y << " Z: " << (int)cpu.Z << std::endl;
+			//std::cout << std::hex << (int)cpu.PC << std::endl;
 			//system("pause");
-			if (cpu.atualizarGrafico == false) {
-				continue;
-			}
 		}
 		
-		cpu.atualizarGrafico = false;
 		display.renderizar();
 		
 	}

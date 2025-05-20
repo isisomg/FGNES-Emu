@@ -39,10 +39,8 @@ public:
 	}
 
 	bool iniciou = false;
-	bool atualizarGrafico = true;
 
 	void handleNMI();
-	void deveAtualizarGrafico(DWord adr);
 	void inicializar(Bus* novoBus);
 	Byte readByte(DWord adr);
 	void writeByte(DWord adr, Byte valor);

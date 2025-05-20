@@ -74,31 +74,35 @@
 			switch (event.key.keysym.sym) {
 			case SDLK_z:
 				pressionado ? controles->pressionar(A) : controles->soltar(A);
+				std::cout << "APERTOU A TECLA Z" << std::endl;
 				break;
 			case SDLK_x:
 				pressionado ? controles->pressionar(B) : controles->soltar(B);
+				std::cout << "APERTOU A TECLA X" << std::endl;
 				break;
 			case SDLK_d:
 				pressionado ? controles->pressionar(START) : controles->soltar(START);
+				std::cout << "APERTOU A TECLA START" << std::endl;
 				break;
 			case SDLK_f:
 				pressionado ? controles->pressionar(SELECT) : controles->soltar(SELECT);
+				std::cout << "APERTOU A TECLA SELECT" << std::endl;
 				break;
 			case SDLK_UP:
 				pressionado ? controles->pressionar(UP) : controles->soltar(UP);
-				bus->write(0x00FF, 0x77); // para o snake
+				std::cout << "APERTOU A TECLA UP" << std::endl;
 				break;
 			case SDLK_DOWN:
 				pressionado ? controles->pressionar(DOWN) : controles->soltar(DOWN);
-				bus->write(0x00FF, 0x73); // para o snake
+				std::cout << "APERTOU A TECLA DOWN" << std::endl;
 				break;
 			case SDLK_LEFT:
 				pressionado ? controles->pressionar(LEFT) : controles->soltar(LEFT);
-				bus->write(0x00FF, 0x61); // para o snake
+				std::cout << "APERTOU A TECLA LEFT" << std::endl;
 				break;
 			case SDLK_RIGHT:
 				pressionado ? controles->pressionar(RIGHT) : controles->soltar(RIGHT);
-				bus->write(0x00FF, 0x64); // Para o snake
+				std::cout << "APERTOU A TECLA RIGHT" << std::endl;
 				break;
 			}
 		}
@@ -223,7 +227,7 @@
 		ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), RENDERER);
 
 		SDL_RenderPresent(RENDERER);
-		SDL_Delay(32);
+		//SDL_Delay(32);
 	}
 
 	void SDL_Display::destroy() {

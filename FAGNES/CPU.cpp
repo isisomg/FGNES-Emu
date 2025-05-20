@@ -20,16 +20,9 @@ void CPU::handleNMI() { // Implementar corretamente
 	Byte low = readByte(0xFFFA);
 	Byte high = readByte(0xFFFB);
 	PC = (high << 8) | low;
-	std::cout << "NMI mudou o PC para " << std::hex << (int)PC << std::endl;
+	//std::cout << "NMI mudou o PC para " << std::hex << (int)PC << std::endl;
 	//PC = 0x8220; // SMB. ARRUMAR
 }
-
-
-	void CPU::deveAtualizarGrafico(DWord adr) { // VERIFICAR POSICOES ORIA DE GRAFICO
-		if (adr >= 0x0200 && adr <= 0x0600) {
-			atualizarGrafico = true;
-		}
-	}
 
 	// Reseta para os valores iniciais
 	void CPU::inicializar(Bus* novoBus) {
@@ -51,7 +44,6 @@ void CPU::handleNMI() { // Implementar corretamente
 		return bus->read(adr);
 	}
 	void CPU::writeByte(DWord adr, Byte valor) {
-		deveAtualizarGrafico(adr);
 		bus->write(adr, valor);
 	}
 
