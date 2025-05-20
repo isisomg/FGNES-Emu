@@ -87,8 +87,7 @@ int main(int argc, char* argv[]) {
 		if (display.jogoRodando) {
 			if (cpu.iniciou == false) { // inicializacoes necessarias para o jogo
 				cpu.inicializar(bus);
-				 cpu.PC = cartucho.adrPCinicial; // Verificar se esta certo
-				cpu.PC = 0x8000; // PC inicial mapper0. Retirar apos corrigir instrucao acima.
+				cpu.PC = cartucho.adrPCinicial; 
 				bus->setCartucho(&cartucho);
 			}
 
@@ -99,7 +98,7 @@ int main(int argc, char* argv[]) {
 			cpu.executar();
 
 			//cpu.writeByte(0x00FE, rand() % 0xFF); // mudar RNG. USADO APENAS NA SNAKE PARA TESTE
-			std::cout << std::hex << (int)cpu.PC << std::endl;
+			//std::cout << std::hex << (int)cpu.PC << " Y: " << (int)cpu.Y << " Z: " << (int)cpu.Z << std::endl;
 			//system("pause");
 			if (cpu.atualizarGrafico == false) {
 				continue;
