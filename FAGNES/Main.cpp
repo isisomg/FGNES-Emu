@@ -7,25 +7,6 @@
 #include <iostream>
 #include <fstream>
 
-void carregarROM(CPU& cpu) { // APENAS PARA TESTE
-	std::string path = "snake.hex";
-	std::ifstream input(path, std::ios::in | std::ios::binary);
-	if (input.is_open() == false) {
-		std::cout << "Erro ao carregar a ROM" << std::endl;
-		exit(-1);
-	}
-
-	input.seekg(0, input.end);
-	int tamanho = input.tellg();
-	input.seekg(0, input.beg);
-
-	for (int i = 0; i < tamanho; i++) {
-		Byte valor;
-		input.read((char*) &valor, sizeof(char));
-		cpu.bus->write(0x0600 + i, valor);
-	}
-}
-
 // PARA DEBUGAR CPU. DEIXAR COMENTADO CASO NAO FOR DEBUGAR.
 std::vector<std::string> info;
 void salvarArquivo() { // cria a saida de resultados obtidos da cpu
@@ -68,6 +49,9 @@ int main(int argc, char* argv[]) {
 
 	Bus* bus = new Bus();
 	Cartucho cartucho;
+	
+	Controles controle;
+	bus->setControles(&controle);
 
 	SDL_Display display;
 	display.init(bus, &cartucho);

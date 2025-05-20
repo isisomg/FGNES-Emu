@@ -137,9 +137,11 @@
 			if (ImGui::BeginMenu("Arquivo")) {
 				if (ImGui::MenuItem("Carregar")) {
 					std::string arquivoROM = AbrirArquivo();
-					cartucho->init(arquivoROM);
-					inicializarAudio();
-					jogoRodando = true;
+					if (!arquivoROM.empty()) {
+						cartucho->init(arquivoROM);
+						inicializarAudio();
+						jogoRodando = true;
+					}
 				}
 				ImGui::EndMenu();
 			}

@@ -1,6 +1,5 @@
 #pragma once
-
-#include <cstdint>
+#include "Tipos.h"
 
 //índices dos botões
 enum botoesNES {
@@ -20,14 +19,14 @@ enum botoesNES {
 class Controles {
 
 private:
-	uint8_t estado = 0;
-	uint8_t indice = 0;
+	Byte estado = 0;
+	Byte indice = 0;
 	bool strobe = false;
-
+	
 public:
 	void pressionar(botoesNES botao);
 	void soltar(botoesNES botao);
 
 	void escreverStrobe(bool valor);
-	uint8_t ler();
+	Byte ler();
 };

@@ -33,7 +33,6 @@ void CPU::handleNMI() { // Implementar corretamente
 		N = V = D = I = Z = C = 0;
 		B = 1;
 
-		// Para o nestest sla pq eh assim. Verificar
 		B = 0; I = 1;
 
 		bus = novoBus;

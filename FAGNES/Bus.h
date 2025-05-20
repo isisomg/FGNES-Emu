@@ -14,7 +14,7 @@ private:
 	Memoria<0x0800> memCPU;
 	Memoria<0x4000> memPPU;
 	Cartucho* cartucho = nullptr;
-	Controles controles;
+	Controles* controles = nullptr;
 
 public:
 	void setPPU(PPU* novaPPU);
@@ -23,6 +23,6 @@ public:
 	void setCartucho(Cartucho* cart);
 	void write(DWord adr, Byte dado);
 	Byte read(DWord adr);
-
-	Controles* getControles() { return &controles; };
+	void setControles(Controles* ctrl);
+	Controles* getControles() { return controles; };
 };

@@ -1,5 +1,9 @@
 #include "Bus.h"
 
+void Bus::setControles(Controles* ctrl) {
+	controles = ctrl;
+}
+
 Byte Bus::read(DWord adr) {
 	if (adr >= 0x0000 && adr <= 0x1FFF) { // Ta na memoria da CPU
 		return Bus::memCPU[adr % 0x0800]; // Usa o modulo para nao precisar espelhar a memoria
@@ -13,7 +17,7 @@ Byte Bus::read(DWord adr) {
 		}
 	}
 	else if (adr == 0x4016) {
-		return controles.ler(); //leitura dos Controles
+		return controles->ler(); //leitura dos Controles
 	}
 	else if (adr >= 0x8000 && adr <= 0xFFFF) { // Ta na PGR ROM
 		if (cartucho) // mapper0 read
@@ -34,7 +38,7 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 		}
 	}
 	else if (adr == 0x4016) {
-		controles.escreverStrobe(dado & 1); //escrita dos Controles
+		controles->escreverStrobe(dado & 1); //escrita dos Controles
 	}
 	else if (adr >= 0x4000 && adr <= 0x4017) {
 		if (apu) {

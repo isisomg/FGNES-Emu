@@ -37,7 +37,7 @@ public:
 
 		return p;
 	}
-
+	
 	bool iniciou = false;
 
 	void handleNMI();

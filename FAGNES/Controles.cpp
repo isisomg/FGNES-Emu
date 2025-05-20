@@ -17,8 +17,8 @@ void Controles::escreverStrobe(bool valor) {
     }
 }
 
-uint8_t Controles::ler() {
-    uint8_t retorno = 0;
+Byte Controles::ler() {
+    Byte retorno = 0;
 
     if (indice < 8) {
         retorno = (estado >> indice) & 1;

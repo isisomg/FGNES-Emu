@@ -7,6 +7,7 @@
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_sdlrenderer2.h>
 #include "Cartucho.h"
+#include "CPU.h"
 
 class SDL_Display {
 private:
