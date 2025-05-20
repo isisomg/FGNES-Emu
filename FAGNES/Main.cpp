@@ -1,5 +1,6 @@
 #include "CPU.h"
 #include "Bus.h"
+#include "APU.h"
 #include "SDL_Display.h"
 #include "Cartucho.h"
 #include <sstream> // PARA DEBUG APENAS, COMENTAR CASO NAO FOR DEBUGAR
@@ -58,6 +59,7 @@ int main(int argc, char* argv[]) {
 	
 	CPU cpu;
 	PPU ppu;
+	APU apu;
 
 	bus->setPPU(&ppu);
 	// Ativa NMI
@@ -93,7 +95,7 @@ int main(int argc, char* argv[]) {
 			for (int i = 0; i < 29781; ++i) { // 1 Frame
 				cpu.executar();
 				ppu.step(); ppu.step(); ppu.step();
-				// apu.step();
+				apu.step();
 			}
 
 			std::cout << std::hex << (int)cpu.PC << std::endl;

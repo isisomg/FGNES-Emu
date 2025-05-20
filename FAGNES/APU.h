@@ -1,61 +1,68 @@
 #pragma once
 #include <cstdint>
-#include "Bus.h"
+#include <algorithm>
 
+// Declaração antecipada da classe Bus
 class Bus;
-// fazendo sem o DMC por enquanto
 
 class APU {
 public:
-	void setFrequency(float freq, float can); // pulse, triangle, noise
-	void setVolume(int vol); // pulse, noise
-    void setDuty(int duty); // 0 = 12.5%, 1 = 25%, 2 = 50%, 3 = 75% (pulse)
-	void setMode(bool m); // false = modo longo, true = curto (noise)
-    void setEnabled(bool on); // todos
-    void setBus(Bus* memoria); // todos
+    void setFrequency(float freq, float can);
+    void setEnabled(bool e);
+    void setBus(Bus* b);
+    void step();
 
-	float getSample(int channel) const; // todos (1 = pulse, 2 = triangle, 3 = noise, 4 = DMC)
-
-    void tick(int channel); // Avança o tempo interno (todos usam) (1 = pulse, 2 = triangle, 3 = noise, 4 = DMC)
-
-	void writeRegister(uint16_t addr, uint8_t value);
-	//uint8_t readRegister(uint16_t addr); // se quiser tratar leitura, ex: $4015
+    float getSample(int channel) const; // 1 = pulse, 2 = triangle, 3 = noise, 4 = DMC
+    void tick(int channel);
+    void writeRegister(uint16_t addr, uint8_t value);
 
 private:
-	bool pulse1_enabled = false;
-	bool triangle_enabled = false;
-	bool noise_enabled = false;
-	bool dmc_enabled = false;
+    Bus* bus = nullptr; // Declaração corrigida
+    bool enabled = true;
+    float frequency = 44100.0f;
+    float canais = 4.0f;
 
-	uint16_t shiftRegister = 1; // começa em 1 já que ao iniciar o NES, o registrador começava em 1 (noise)
-	int timer = 0.0f; // todos usam (o dmc usa float, vou ver como arrumar)
-    float timerPeriod = 0.0f; // pulse, triangle, noise
-    bool enabled = true; // pulse, triangle, noise
-    float frequency = 440.0f; // Frequência padrão (pulse, triangle usam)
-	float canais = 1.0f; // canal padrao, pulse, triangle, noise
-	int volume = 15; //volume maximo do NES (pulse, noise)
-	int duty = 2; //50% (pulse)
-	int phase = 0; // pulse, triangle
-	bool mode = false; // no NES existem 2 modos, curto e longo, nesse caso to usando false pro longo, q eh um XOR entre o bit 0 e o 1, o bit curto eh um XOR entre o bit 0 e 6 (noise)
-    Bus* bus; // todos
+    struct PulseChannel {
+        uint16_t timerValue = 0;
+        bool enabled = false;
+        int volume = 15;
+        int duty = 2;
+        int phase = 0;
+        float timer = 0;
+        float timerPeriod = 0;
+    } pulse1;
 
-	static const uint8_t dutyTable[4][8]; // pulse
-	static const uint8_t triangleTable[32]; // triangle
+    struct TriangleChannel {
+        bool enabled = false;
+        int phase = 0;
+        float timer = 0;
+        float timerPeriod = 0;
+    } triangle;
 
-	// DMC
-	uint8_t dmcShiftReg = 0x00;
-	uint8_t dmcBitCount = 0;
-	uint8_t dmcOutputLevel = 0;
-	float dmcTimer = 0.0f;
-	float dmcTimerPeriod = 428.0f; // Valor comum para taxa 44100 Hz / 428 ? 103.1 Hz
-	// DMC control
-	uint16_t dmcSampleAddress = 0;     // Endereço base de amostra (iniciado em $4012)
-	uint16_t dmcCurrentAddress = 0;    // Endereço atual durante a leitura
-	uint16_t dmcSampleLength = 0;      // Comprimento em bytes (iniciado em $4013)
-	uint16_t dmcBytesRemaining = 0;    // Bytes restantes para ler
-	bool dmcIRQEnabled = false;        // Ignorado por enquanto
-	bool dmcLoop = false;              // Se deve reiniciar automaticamente
+    struct NoiseChannel {
+        bool enabled = false;
+        int volume = 15;
+        uint16_t shiftRegister = 1;
+        bool mode = false;
+        float timer = 0;
+        float timerPeriod = 0;
+    } noise;
 
+    struct DMCChannel {
+        bool enabled = false;
+        bool loop = false;
+        bool irqEnabled = false;
+        uint8_t dmcOutputLevel = 0;
+        uint8_t dmcShiftReg = 0;
+        uint8_t dmcBitCount = 0;
+        float dmcTimer = 0;
+        float dmcTimerPeriod = 428.0f;
+        uint16_t dmcSampleAddress = 0;
+        uint16_t dmcCurrentAddress = 0;
+        uint16_t dmcSampleLength = 0;
+        uint16_t dmcBytesRemaining = 0;
+    } dmc;
 
+    static const uint8_t dutyTable[4][8];
+    static const uint8_t triangleTable[32];
 };
-#pragma once
