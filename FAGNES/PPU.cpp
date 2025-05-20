@@ -108,6 +108,33 @@ void PPU::write(DWord address, Byte value) {
 	}
 }
 
+Byte PPU::readFromPPUData() {
+	Byte value = read(ppuAddress);
+
+	// Lógica de buffer: somente paleta é lida diretamente
+	if (ppuAddress < 0x3F00) {
+		Byte buffered = ppuDataBuffer;
+		ppuDataBuffer = value;
+		value = buffered;
+	}
+	else {
+		// Lê diretamente da paleta (sem buffer delay)
+		ppuDataBuffer = read(ppuAddress - 0x1000); // efeito colateral do NES
+	}
+
+	// Incrementa endereço (bit 2 de PPUCTRL define passo)
+	ppuAddress += (ctrl.control & 0x04) ? 32 : 1;
+	return value;
+}
+
+void PPU::writeToPPUData(Byte value) {
+	write(ppuAddress, value);
+
+	// Incrementa endereço
+	ppuAddress += (ctrl.control & 0x04) ? 32 : 1;
+}
+
+
 DWord PPU::mirrorAddress(DWord address) {
 	// Faz o espelhamento de nametables (para se ajustar ao tamanho real da RAM de 2kb)
 	address = (address - 0x2000) % 0x1000;
@@ -118,6 +145,7 @@ DWord PPU::mirrorAddress(DWord address) {
 //            VBLANK (FEITO) & STEP                 //										uhul!
 //////////////////////////////////////////////////////
 
+bool nmiRequested = false;
 
 void (*nmiCallback)() = nullptr;
 
@@ -136,19 +164,20 @@ void PPU::step() {
 	}
 
 	if (scanline == 241 && dot == 1) {
-		
-	// TESTE VBLANK !!! DESCOMENTA ISSO E O teste_PPU NO CASO DE QUERER VER O VBLANK FUNCIONANDO !!!!
-	
-	//	std::cout << ">> VBlank iniciado!" << std::endl;
-	//}
-	//if (scanline == 261 && dot == 1) {
-	//	std::cout << ">>> VBLANK Finalizado!" << std::endl;
-	//}
 
-	// Começo do VBlank
-	 
+		// TESTE VBLANK !!! DESCOMENTA ISSO E O teste_PPU NO CASO DE QUERER VER O VBLANK FUNCIONANDO !!!!
+
+		//	std::cout << ">> VBlank iniciado!" << std::endl;
+		//}
+		//if (scanline == 261 && dot == 1) {
+		//	std::cout << ">>> VBLANK Finalizado!" << std::endl;
+		//}
+
+		// Começo do VBlank
+
 		status.setVBlank(true);
 		if (ctrl.isNMIEnabled()) {
+			nmiRequested = true;
 			// NMI vai chamar a callback se ela foi registrada e tals 
 			if (nmiCallback) {
 				nmiCallback();	// Gera o NMI se permitido
@@ -165,6 +194,13 @@ void PPU::step() {
 		// Desenha sprites
 		renderScanline(scanline);
 	}
+}
+
+// VAI VERIFICAR SE PRECISA DO NMI
+bool PPU::isNMIRequested() {
+	bool result = nmiRequested;
+	nmiRequested = false;
+	return result;
 }
 
 //////////////////////////////////////////////////////
@@ -242,6 +278,9 @@ void PPU::cpuWrite(DWord addr, Byte data) {
 	case 0x6:	// $2006 - PPUADDR
 		writeToPPUADDR(data);
 		break;
+	case 0x7: // $2007 - PPUDATA
+		writeToPPUData(data);
+		break;
 	default:
 		break;
 	}
@@ -257,8 +296,12 @@ Byte PPU::cpuRead(DWord addr) {
 	case 0x4:	// $2004 - OAMDATA
 		data = OAM[oamAddress];
 		break;
+	case 0x7: // $2007 - PPUDATA
+		data = readFromPPUData();
+		break;
 	default:
 		break;
+
 	}
 	return data;
 }
@@ -268,8 +311,6 @@ Byte PPU::cpuRead(DWord addr) {
 //				COISAS QUE FALTAM E QUE PRECISAM PRO FAGNES SER FUNCIONAVEL:
 // 
 //	Coiso							Importancia						Descricao
-// $2002 - $2007						Alta		Precisa pra ler o status do PPU e saber se ta em VBlank.
-// Escrita\leitura em $2007				Alta		Fundamental para interagir com VRAM via CPU.
 // Pattern tables($0000 - $1FFF)		Alta		Sem isso nao da pra renderizar tiles.
 // Paletas($3F00 - $3FFF)				Alta		Precisa para cor real na tela.
 // Renderização real do background		Alta		Precisa buscar tiles, atributos e desenhar.

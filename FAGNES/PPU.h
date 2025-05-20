@@ -16,6 +16,7 @@ struct PPUSTATUS {
 };
 
 struct PPU {
+	bool isNMIRequested();
 	PPUCTRL ctrl;
 	PPUSTATUS status;
 
@@ -24,14 +25,18 @@ struct PPU {
 	//////////////////////////////////////////////////////
 
 	// https://www.nesdev.org/wiki/PPU_memory_map
-	
+
 	Byte nametableVRAM[2048] = { 0 };
 	Byte patternTable[0x2000] = { 0 };
 	Byte paletteRAM[32] = { 0 };
+	Byte ppuDataBuffer = 0x00; // Buffer de leitura da VRAM
 
 	Byte read(DWord address);
-
 	void write(DWord address, Byte value);
+
+	// $2007 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	Byte readFromPPUData();
+	void writeToPPUData(Byte value);
 
 	DWord mirrorAddress(DWord address);
 
@@ -39,9 +44,9 @@ struct PPU {
 	//////////////////////////////////////////////////////
 	//                  Scan-lines                      //
 	//////////////////////////////////////////////////////
-	
+
 	int scanline = 0;
-	int dot = 0; 
+	int dot = 0;
 
 
 	void step();
