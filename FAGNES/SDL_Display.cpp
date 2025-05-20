@@ -147,6 +147,40 @@
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("Zoom")) {
+				bool enabled = !isFull;
+
+				if (ImGui::MenuItem("1X", nullptr, (ZOOM == 1 && !isFull), enabled)) {
+					ZOOM = 1;
+					SDL_SetWindowSize(WINDOW, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM);
+				}
+				if (ImGui::MenuItem("2X", nullptr, (ZOOM == 2 && !isFull), enabled)) {
+					ZOOM = 2;
+					SDL_SetWindowSize(WINDOW, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM);
+				}
+				if (ImGui::MenuItem("4X", nullptr, (ZOOM == 4 && !isFull), enabled)) {
+					ZOOM = 4;
+					SDL_SetWindowSize(WINDOW, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM);
+				}
+				if (ImGui::MenuItem("Tela Cheia", nullptr, isFull)) {
+					isFull = !isFull;
+					if (isFull) {
+						prevZOOM = ZOOM;                            
+						ZOOM = 4;                                   
+						SDL_SetWindowFullscreen(WINDOW, SDL_WINDOW_FULLSCREEN_DESKTOP);
+					}
+					else {
+						SDL_SetWindowFullscreen(WINDOW, 0);
+						ZOOM = prevZOOM;                            
+						SDL_SetWindowSize(
+							WINDOW,
+							TELA_WIDTH * ZOOM,
+							TELA_HEIGHT * ZOOM
+						);
+					}
+				}
+				ImGui::EndMenu();
+			}
 
 			if (ImGui::BeginMenu("Ajuda")) {
 				if (ImGui::MenuItem("Sobre")) {
@@ -161,11 +195,31 @@
 		SDL_RenderClear(RENDERER);
 
 		/*SDL_Rect dstRect = { 0, 0, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM };*/
-		float menuBarAltura = ImGui::GetFrameHeight();
-		int offsetY = static_cast<int>(menuBarAltura); // ajuste se necessário
-		SDL_Rect dstRect = { 0, offsetY, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM };
+		// Antes de criar o dstRect, pegue o tamanho atual da janela:
+		int winW, winH;
+		SDL_GetWindowSize(WINDOW, &winW, &winH);
 
+		int dstW = TELA_WIDTH * ZOOM;
+		int dstH = TELA_HEIGHT * ZOOM;
+
+		int offsetX;
+		int offsetY;
+		if (isFull) {
+			// centraliza horizontal e verticalmente
+			offsetX = (winW - dstW) / 2;
+			offsetY = (winH - dstH) / 2;
+		}
+		else {
+			// mantém o menu bar no topo quando não é fullscreen
+			float menuBarAltura = ImGui::GetFrameHeight();
+			offsetX = 0;
+			offsetY = static_cast<int>(menuBarAltura);
+		}
+
+		SDL_Rect dstRect = { offsetX, offsetY, dstW, dstH };
 		SDL_RenderCopy(RENDERER, TEXTURE, nullptr, &dstRect);
+
+
 		ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), RENDERER);
 
 		SDL_RenderPresent(RENDERER);

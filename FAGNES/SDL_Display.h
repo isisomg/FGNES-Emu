@@ -16,10 +16,11 @@ private:
     //static void audioCallback(void* userdata, Uint8* stream, int len);
 
     //void inicializarAudio();
-
-    const int TELA_WIDTH = 32;
-    const int TELA_HEIGHT = 33;
-    int ZOOM = 16;
+    const int TELA_WIDTH = 256;
+    const int TELA_HEIGHT = 240;
+    int ZOOM = 1;
+    int prevZOOM = 1;
+    bool isFull = false;
     const int FPS = 30;
 
     SDL_Texture* TEXTURE;
