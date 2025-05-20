@@ -22,6 +22,10 @@ public:
 	//uint8_t readRegister(uint16_t addr); // se quiser tratar leitura, ex: $4015
 
 private:
+	bool pulse1_enabled = false;
+	bool triangle_enabled = false;
+	bool noise_enabled = false;
+	bool dmc_enabled = false;
 
 	uint16_t shiftRegister = 1; // começa em 1 já que ao iniciar o NES, o registrador começava em 1 (noise)
 	int timer = 0.0f; // todos usam (o dmc usa float, vou ver como arrumar)
@@ -44,6 +48,14 @@ private:
 	uint8_t dmcOutputLevel = 0;
 	float dmcTimer = 0.0f;
 	float dmcTimerPeriod = 428.0f; // Valor comum para taxa 44100 Hz / 428 ? 103.1 Hz
+	// DMC control
+	uint16_t dmcSampleAddress = 0;     // Endereço base de amostra (iniciado em $4012)
+	uint16_t dmcCurrentAddress = 0;    // Endereço atual durante a leitura
+	uint16_t dmcSampleLength = 0;      // Comprimento em bytes (iniciado em $4013)
+	uint16_t dmcBytesRemaining = 0;    // Bytes restantes para ler
+	bool dmcIRQEnabled = false;        // Ignorado por enquanto
+	bool dmcLoop = false;              // Se deve reiniciar automaticamente
+
 
 };
 #pragma once

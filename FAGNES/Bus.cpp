@@ -41,9 +41,9 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 		controles->escreverStrobe(dado & 1); //escrita dos Controles
 	}
 	else if (adr >= 0x4000 && adr <= 0x4017) {
-		if (apu) {
-			apu->writeRegister(adr, dado); // voc� criar� esse m�todo na APU
-		}
+		std::cout << "APU write $" << std::hex << adr << " = " << (int)dado << std::endl;
+		if (apu)
+			apu->writeRegister(adr, dado);
 	}
 
 }

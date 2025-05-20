@@ -3,97 +3,75 @@
 #include <iostream>
 
 const uint8_t APU::dutyTable[4][8] = {
-
-    // A tabela está definindo o formato da onda, possui um ciclo de 8 fases, sua frequencia permanece a mesma, porem seu formato muda, produzindo outros sons
-
-    //{0,0,0,0,0,0,0,1}, // 12.5%
-    //{0,0,0,0,0,1,1,1}, // 25%
-    //{0,0,0,0,1,1,1,1}, // 50%
-    //{1,1,1,1,0,0,0,0}  // 75%
-
-    {0,1,0,0,0,0,0,0}, // 12.5%
-    {0,1,1,0,0,1,1,1}, // 25%
-    {0,1,1,1,1,0,0,0}, // 50%
-    {1,0,0,1,1,1,1,1}  // 25% negado
+    {0,1,0,0,0,0,0,0},
+    {0,1,1,0,0,1,1,1},
+    {0,1,1,1,1,0,0,0},
+    {1,0,0,1,1,1,1,1}
 };
 
 const uint8_t APU::triangleTable[32]{
     15, 14, 13, 12, 11, 10,  9,  8,
-    7,  6,  5,  4,  3,  2,  1,  0,
-    0,  1,  2,  3,  4,  5,  6,  7,
-    8,  9, 10, 11, 12, 13, 14, 15
+     7,  6,  5,  4,  3,  2,  1,  0,
+     0,  1,  2,  3,  4,  5,  6,  7,
+     8,  9, 10, 11, 12, 13, 14, 15
 };
-
-//void APU::setTimer(uint16_t value) {
-//    timer = value;
-//}
 
 void APU::setVolume(int vol) {
     if (vol < 0) vol = 0;
-    volume = (vol > 15) ? 15 : vol; // Limita o volume a 15, que é o máximo do NES
+    volume = (vol > 15) ? 15 : vol;
 }
 
 void APU::setDuty(int d) {
-    if (d >= 0 && d < 4) { //temos apenas 4 valores na duty table, portanto d deve estar dentro desse periodo
+    if (d >= 0 && d < 4) {
         duty = d;
     }
 }
 
-//void APU::resetPhase() {
-//    counter = 0;
-//    phase = 0;
-//}
-
-
-void APU::tick(int channel) { // preferi fazer por switch case pq a partir do noise muda mt a logica do tick, ent acho melhor pra alterar o modo
+void APU::tick(int channel) {
     if (!enabled) return;
 
     timer -= 1.0f;
 
     switch (channel) {
-	case 1: // Pulse
+    case 1:
         if (timer <= 0.0f) {
             timer += timerPeriod;
             phase = (phase + 1) % 8;
         }
-
-        /*if (++counter >= timer) {
-            counter = 0;
-            phase = (phase + 1) % 8;
-        }*/
         break;
-	case 2: // Triangle
+    case 2:
         if (timer <= 0.0f) {
             timer += timerPeriod;
             phase = (phase + 1) % 32;
         }
         break;
-	case 3: // Noise
+    case 3:
         if (timer <= 0.0f) {
             timer += timerPeriod;
-
-            // Escolhe os bits para o XOR com base no modo (curto ou longo)
             int bit0 = shiftRegister & 1;
             int bit1or6 = (shiftRegister >> (mode ? 6 : 1)) & 1;
             int feedback = bit0 ^ bit1or6;
-
-            // Atualiza o registrador
-            shiftRegister >>= 1; // isso move os bits de valor 1 para a direita
-            shiftRegister |= (feedback << 14); // coloca feedback no bit 14 
+            shiftRegister >>= 1;
+            shiftRegister |= (feedback << 14);
         }
         break;
-    case 4: // DMC
+    case 4:
         if (dmcTimer <= 0.0f) {
             dmcTimer += dmcTimerPeriod;
-
-            if (dmcBitCount == 0) {
-                // Simulando carregamento de byte fixo (0x55) por enquanto
-                dmcShiftReg = 0x55;
+            if (dmcBitCount == 0 && dmcBytesRemaining > 0) {
+                dmcShiftReg = bus->read(dmcCurrentAddress++);
                 dmcBitCount = 8;
+                dmcBytesRemaining--;
+
+                if (dmcCurrentAddress == 0) dmcCurrentAddress = 0x8000;
+
+                if (dmcBytesRemaining == 0 && dmcLoop) {
+                    dmcCurrentAddress = dmcSampleAddress;
+                    dmcBytesRemaining = dmcSampleLength;
+                }
             }
 
             uint8_t bit = dmcShiftReg & 1;
-
             if (bit) {
                 if (dmcOutputLevel <= 125) dmcOutputLevel += 2;
             }
@@ -108,44 +86,36 @@ void APU::tick(int channel) { // preferi fazer por switch case pq a partir do no
             dmcTimer -= 1.0f;
         }
         break;
-	default:
-		std::cerr << "Canal inválido: " << channel << "\n";
-		return; // Canal inválido  
-        break;
+    default:
+        std::cerr << "Canal inválido: " << channel << "\n";
+        return;
     }
 }
 
 float APU::getSample(int channel) const {
     switch (channel) {
-	    case 1: // Pulse
-            if (!enabled || dutyTable[duty][phase] == 0) return 0.0f;
-            return volume / 15.0f;
-            break;
-	    case 2: // Triangle
-            if (!enabled) return 0.0f;
-            return triangleTable[phase] / 15.0f; // não tem volume ajustável, portanto o valor é normalizado pela fase da onda
-            break;
-	    case 3: // Noise
-            if (!enabled) return 0.0f;
-
-            // se o valor do bit 0 for 0, então vai ligar, se for 1 vai silenciar
-            return (shiftRegister & 1) == 0 ? (volume / 15.0f) : 0.0f;
-            break;
-        case 4: // DMC
-            if (!enabled) return 0.0f;
-            return dmcOutputLevel / 127.0f;
-
-	    default:
-		    return 0.0f; // Canal inválido
-            break;
+    case 1:
+        if (!pulse1_enabled || dutyTable[duty][phase] == 0) return 0.0f;
+        return volume / 15.0f;
+    case 2:
+        if (!triangle_enabled) return 0.0f;
+        return triangleTable[phase] / 15.0f;
+    case 3:
+        if (!noise_enabled || (shiftRegister & 1)) return 0.0f;
+        return volume / 15.0f;
+    case 4:
+        if (!dmc_enabled) return 0.0f;
+        return dmcOutputLevel / 127.0f;
+    default:
+        return 0.0f;
     }
 }
 
 void APU::setFrequency(float freq, float can) {
     canais = can;
     frequency = freq;
-    if (frequency <= 0.0f) frequency = 1.0f; // evita divisão por zero
-	timerPeriod = 44100.0f / (frequency * canais); // 8 canais do duty, 32 canais do triangles, 1 por padrão do noise
+    if (frequency <= 0.0f) frequency = 1.0f;
+    timerPeriod = 44100.0f / (frequency * canais);
 }
 
 void APU::setEnabled(bool on) {
@@ -153,7 +123,7 @@ void APU::setEnabled(bool on) {
 }
 
 void APU::setBus(Bus* busNovo) {
-    this->bus = busNovo; 
+    this->bus = busNovo;
 }
 
 void APU::setMode(bool m) {
@@ -161,27 +131,42 @@ void APU::setMode(bool m) {
 }
 
 void APU::writeRegister(uint16_t addr, uint8_t value) {
-   // Implementação básica para lidar com registros de som
-   switch (addr) {
-       case 0x4000: // Exemplo: Configuração de canal Pulse 1
-           setDuty((value >> 6) & 0x03); // Bits 6-7 para duty
-           setVolume(value & 0x0F);      // Bits 0-3 para volume
-           break;
-       case 0x4001: // Exemplo: Sweep do canal Pulse 1
-           // Implementar lógica de sweep se necessário
-           break;
-       case 0x4002: // Timer baixo do canal Pulse 1
-           timer = (timer & 0xFF00) | value;
-           break;
-       case 0x4003: // Timer alto do canal Pulse 1 e reinício da fase
-           timer = (timer & 0x00FF) | ((value & 0x07) << 8);
-           phase = 0; // Reinicia a fase
-           break;
-       case 0x4015: // Controle de habilitação de canais
-           setEnabled(value & 0x01); // Exemplo: Habilitar/desabilitar Pulse 1
-           break;
-       default:
-           // Outros endereços podem ser tratados aqui
-           break;
-   }
+    std::cout << "APU Write $" << std::hex << addr << " = " << (int)value << std::endl;
+    switch (addr) {
+    case 0x4000:
+        setDuty((value >> 6) & 0x03);
+        setVolume(value & 0x0F);
+        break;
+    case 0x4002:
+        timer = (timer & 0xFF00) | value;
+        break;
+    case 0x4003:
+        timer = (timer & 0x00FF) | ((value & 0x07) << 8);
+        phase = 0;
+        break;
+    case 0x4010:
+        dmcIRQEnabled = value & 0x80;
+        dmcLoop = value & 0x40;
+        break;
+    case 0x4011:
+        dmcOutputLevel = value & 0x7F;
+        break;
+    case 0x4012:
+        dmcSampleAddress = 0xC000 + (value * 64);
+        break;
+    case 0x4013:
+        dmcSampleLength = (value * 16) + 1;
+        break;
+    case 0x4015:
+        pulse1_enabled = value & 0x01;
+        triangle_enabled = value & 0x04;
+        noise_enabled = value & 0x08;
+        dmc_enabled = value & 0x10;
+
+        if (dmc_enabled && dmcBytesRemaining == 0) {
+            dmcCurrentAddress = dmcSampleAddress;
+            dmcBytesRemaining = dmcSampleLength;
+        }
+        break;
+    }
 }
