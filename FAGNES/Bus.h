@@ -3,11 +3,13 @@
 #include "Cartucho.h"
 #include "Controles.h"
 #include "APU.h"
+#include "PPU.h" //adicionei a ppu haha!!!:D
 
 class APU;
 
 class Bus {
 private:
+	PPU* ppu = nullptr;
 	APU* apu = nullptr;
 	Memoria<0x0800> memCPU;
 	Memoria<0x4000> memPPU;
@@ -15,6 +17,7 @@ private:
 	Controles controles;
 
 public:
+	void setPPU(PPU* novaPPU);
 	void setAPU(APU* novaAPU);
 	bool checkNMI();
 	void setCartucho(Cartucho* cart);
