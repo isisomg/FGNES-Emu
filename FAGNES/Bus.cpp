@@ -37,7 +37,7 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 
 int teste = 0;
 bool Bus::checkNMI() { // IMPLEMENTAR CORRETAMENTE EM CONJUNTO COM PPU
-	if (teste > 2000) {
+	if (teste > 2900) {
 		teste = 0;
 		return true;
 	}

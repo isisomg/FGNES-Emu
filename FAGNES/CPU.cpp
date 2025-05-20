@@ -403,8 +403,10 @@ void CPU::handleNMI() { // Implementar corretamente
 		PC = adr;
 	}
 	void CPU::RTS() {
-		Byte low = readByte(0x0100 + ++SP);
-		Byte high = readByte(0x0100 + ++SP);
+		SP++;
+		Byte low = readByte(0x0100 + SP);
+		SP++;
+		Byte high = readByte(0x0100 + SP);
 
 		DWord returnAddress = (high << 8) | low;
 
@@ -412,8 +414,8 @@ void CPU::handleNMI() { // Implementar corretamente
 	}
 	void CPU::BRK() { // AJUSTAR
 
-		PC = 0xFFFF; // TESTE
-		return; // TESTE
+		//PC = 0xFFFF; // TESTE
+		//return; // TESTE
 
 		// Empilha o endere�o de retorno (PC + 1) na pilha
 		DWord returnAddress = PC + 1;

@@ -20,6 +20,12 @@ void Cartucho::init(const std::string& path) {
 	int prgBanks = header[4]; // quantidade de bancos prg, sendo cada um deles de 16kb.
 	int chrBanks = header[5]; // quantidade de bancos chr, sendo cada um deles de 8kb.
 
+	bool ehINES2_0 = (header[7] & 0x0C) == 0x08;
+	if (ehINES2_0) {
+		prgBanks |= (header[9] & 0x0F) << 8;
+		chrBanks |= (header[9] & 0xF0) << 4;
+	}
+
 	bool saveRAM = (header[6] & 0x02) != 0;  // verifica se tem funcionalidade de save no cartucho
 
 	prgROM.resize(prgBanks * 0x4000); // aloca memoria para os bancos prg
@@ -36,7 +42,6 @@ void Cartucho::init(const std::string& path) {
 	arquivo.close();
 	
 	
-	
 	// Cálculo do número do mapper
 	Byte mapperLow = (header[6] >> 4) & 0x0F;
 	Byte mapperHigh = (header[7] >> 4) & 0x0F;
@@ -46,7 +51,14 @@ void Cartucho::init(const std::string& path) {
 	switch (valorMapper) {
 	case 0:
 		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM); //NROM MAPPER 0
-		adrPCinicial = prgROM[0x7FFC] | (prgROM[0x7FFD] << 8);
+		if (prgBanks == 1) {
+			// 16KB banco: endereço espelhado no vetor
+			adrPCinicial = prgROM[0x3FFC] | (prgROM[0x3FFD] << 8);
+		}
+		else {
+			// 32KB ou mais: endereço direto no final da ROM
+			adrPCinicial = prgROM[0x7FFC] | (prgROM[0x7FFD] << 8);
+		}
 		break;
 	case 1:
 		//mapper = std::make_unique<Mapper1>(prgBanks, chrBanks, prgROM, chrROM); // MMC1 MAPPER1
