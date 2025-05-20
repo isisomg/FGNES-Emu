@@ -90,12 +90,13 @@ int main(int argc, char* argv[]) {
 				break;
 			}
 			//guardarLinha(cpu.PC, cpu.A, cpu.X, cpu.Y, cpu.getStatusRegister(), cpu.SP); // PARA DEBUNG CPU
-			for (int i = 0; i < 27384; ++i) {
-				ppu.step();
+			for (int i = 0; i < 29781; ++i) { // 1 Frame
+				cpu.executar();
+				ppu.step(); ppu.step(); ppu.step();
+				// apu.step();
 			}
+
 			std::cout << std::hex << (int)cpu.PC << std::endl;
-			cpu.executar();
-	
 
 			//cpu.writeByte(0x00FE, rand() % 0xFF); // mudar RNG. USADO APENAS NA SNAKE PARA TESTE
 			//std::cout << std::hex << (int)cpu.PC << std::endl;
