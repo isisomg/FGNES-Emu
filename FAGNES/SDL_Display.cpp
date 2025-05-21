@@ -2,9 +2,10 @@
 	#include "SDL_Display.h"
 	#include "AbrirRom.h"
 
-	void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo) {
+	void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo, PPU* p) {
 		cartucho = cartuchoNovo;
 		bus = novoBus;
+		ppu = p;
 		SDL_Init(SDL_INIT_VIDEO);
 		WINDOW = SDL_CreateWindow(
 			"FaGNES", SDL_WINDOWPOS_CENTERED,
@@ -23,7 +24,7 @@
 		ImGui_ImplSDLRenderer2_Init(RENDERER);
 
 
-		TEXTURE = SDL_CreateTexture(RENDERER, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, TELA_WIDTH, TELA_HEIGHT);
+		TEXTURE = SDL_CreateTexture(RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, TELA_WIDTH, TELA_HEIGHT);
 
 		if (!WINDOW) {
 			SDL_Log("Erro ao criar janela: %s", SDL_GetError());
@@ -114,17 +115,13 @@
 		SDL_LockTexture(TEXTURE, nullptr, &pixels, &pitch);
 		uint32_t* pixel_ptr = static_cast<uint32_t*>(pixels);
 
-		// Ajustar para fazer a renderizacao da PPU corretamente
-		// APENAS PARA TESTE DO SNAKE
-		for (int y = 0; y < TELA_HEIGHT; ++y) {
-			for (int x = 0; x < TELA_WIDTH; ++x) {
-				int index = y * (pitch / 4) + x;
+		for (int y = 0; y < 240; ++y) { // copia o framebuffer para gerar textura
+			memcpy(&pixel_ptr[y * (pitch / 4)], &ppu->framebuffer[y * 256], 256 * sizeof(uint32_t));
+		}
 
-				int cor_index = bus->read(0x0200 + index);
-				Pixel cor = cores[cor_index];
-
-				pixel_ptr[index] = (255 << 24) | (cor.r << 16) | (cor.g << 8) | cor.b;
-			}
+		// LIMPAR FRAMEBUFFER PARA NAO FICAR FUDIDO DE FEIO
+		for(int i = 0; i < TELA_WIDTH * TELA_HEIGHT; i++){
+			ppu->framebuffer[i] = 0;
 		}
 
 		SDL_UnlockTexture(TEXTURE);
@@ -229,7 +226,8 @@
 		ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), RENDERER);
 
 		SDL_RenderPresent(RENDERER);
-		//SDL_Delay(32);
+
+		//SDL_Delay(16);
 	}
 
 	void SDL_Display::destroy() {

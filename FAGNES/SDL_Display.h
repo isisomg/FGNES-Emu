@@ -12,6 +12,7 @@
 class SDL_Display {
 private:
     APU* apu = nullptr;
+    PPU* ppu = nullptr;
     SDL_AudioDeviceID audioDevice;
 
     static void audioCallback(void* userdata, Uint8* stream, int len);
@@ -36,7 +37,7 @@ public:
     SDL_Renderer* RENDERER;
 
     //SDL_Display();
-    void init(Bus* novoBus, Cartucho* cartucho);
+    void init(Bus* novoBus, Cartucho* cartucho, PPU* p);
     void processarEntrada(SDL_Event event);
     void renderizar();
     void destroy();

@@ -53,13 +53,13 @@ int main(int argc, char* argv[]) {
 	
 	Controles controle;
 	bus->setControles(&controle);
-
-	SDL_Display display;
-	display.init(bus, &cartucho);
 	
 	CPU cpu;
 	PPU ppu;
 	APU apu;
+
+	SDL_Display display;
+	display.init(bus, &cartucho, &ppu);
 
 	bus->setPPU(&ppu);
 	// Ativa NMI
@@ -86,6 +86,7 @@ int main(int argc, char* argv[]) {
 				cpu.inicializar(bus);
 				cpu.PC = cartucho.adrPCinicial; 
 				bus->setCartucho(&cartucho);
+				ppu.carregarCHR(cartucho.chrROM);
 			}
 
 			if (cpu.PC == 0xFFFF) {
@@ -98,7 +99,7 @@ int main(int argc, char* argv[]) {
 				apu.step();
 			}
 
-			std::cout << std::hex << (int)cpu.PC << std::endl;
+			//std::cout << std::hex << (int)cpu.PC << std::endl;
 
 			//cpu.writeByte(0x00FE, rand() % 0xFF); // mudar RNG. USADO APENAS NA SNAKE PARA TESTE
 			//std::cout << std::hex << (int)cpu.PC << std::endl;

@@ -89,6 +89,16 @@ Byte PPU::read(DWord address) {
 	return 0x00;
 }
 
+void PPU::carregarCHR(const std::vector<Byte>& chrData) {
+	if (chrData.size() > sizeof(patternTable)) {
+		std::cerr << "Erro: CHR-ROM maior que 8KB!" << std::endl;
+		return;
+	}
+
+	// Copia os dados da CHR-ROM para a tabela de padrões
+	std::copy(chrData.begin(), chrData.end(), patternTable);
+}
+
 void PPU::write(DWord address, Byte value) {
 	address &= 0x3FFF;
 
@@ -179,8 +189,7 @@ void PPU::step() {
 
 	if (scanline < 240) {
 		// Desenha sprites
-		//renderScanline(scanline);
-		;
+		renderScanline(scanline);
 	}
 }
 
@@ -201,10 +210,66 @@ void PPU::renderScanline(int scanline) {
 
 void PPU::drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int scanline) {
 	// ! ! ! P L A C E H O L D E R ! ! !  para desenhar um tile do sprite ! ! !
+	int spriteHeight = 8; // ou 16 se usar sprites altos (ver PPUCTRL)
+
+	// Verifica a linha do sprite que está sendo desenhada
+	int rowInTile = scanline - y;
+
+	// Flipping vertical (bit 7 do atributo)
+	if (attributes & 0x80) {
+		rowInTile = spriteHeight - 1 - rowInTile;
+	}
+
+	// Cada tile tem 16 bytes (8 para plano baixo, 8 para alto)
+	DWord baseAddress = tileIndex * 16;
+	Byte low = patternTable[baseAddress + rowInTile];
+	Byte high = patternTable[baseAddress + rowInTile + 8];
+
+	// Paleta (bits 0-1 do atributo)
+	Byte palette = attributes & 0x03;
+
+	// Flipping horizontal (bit 6)
+	bool flipH = attributes & 0x40;
+
+	for (int i = 0; i < 8; ++i) {
+		int bit = flipH ? i : (7 - i);
+
+		Byte bit0 = (low >> bit) & 1;
+		Byte bit1 = (high >> bit) & 1;
+		Byte colorIndex = (bit1 << 1) | bit0;
+
+		if (colorIndex == 0) continue; // Cor 0 = transparente para sprites
+
+		// Indice final da cor considerando paleta de sprites
+		Byte paletteIndex = 0x10 + palette * 4 + colorIndex;
+
+		Byte color = read(0x3F00 + (paletteIndex % 32)); // % 32 para evitar estouro
+
+		// X do pixel
+		int finalX = x + i;
+		if (finalX >= 256 || scanline >= 240) continue; // Bounds check
+
+		// Aqui você deve desenhar: substitua por sua função real de renderização
+		putPixel(finalX, scanline, color);
+
+		
+	}
+}
+
+void PPU::putPixel(int x, int y, uint8_t colorIndex) {
+	if (x < 0 || x >= 256 || y < 0 || y >= 240) return;
+
+	Pixel cor = cores[colorIndex % 64];  // Garante que está dentro do range
+
+	// RGBA8888 format: 0xRRGGBBAA
+	uint32_t pixelValue = (0xFF << 24) | (cor.r << 16) | (cor.g << 8) | (cor.b);
+
+	framebuffer[y * 256 + x] = pixelValue; // escreve no buffer SDL2
 }
 
 void PPU::renderSprites(int scanline) {
 	// Informações em: https://www.nesdev.org/wiki/PPU_OAM
+
 
 	// Sprite Height depende de config, aqui 8 como padrão
 
