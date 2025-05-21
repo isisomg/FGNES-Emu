@@ -176,7 +176,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);I:\Visual Studio 2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>echo $(WindowsSdkDir)</Command>

@@ -22,6 +22,9 @@ struct PPU {
 	PPUCTRL ctrl;
 	PPUSTATUS status;
 
+	// Aqui PRECISA MESMO MESMO EMESMO de um background buffer paralelo, com informações de opacidade do background para que o sprite zero hit funcione corretamente.
+	Byte backgroundBuffer[256 * 240]; // 1 byte por pixel, só pra saber se é transparente ou não
+
 	//////////////////////////////////////////////////////
 	//                     VRAM                         //
 	//////////////////////////////////////////////////////
@@ -57,11 +60,15 @@ struct PPU {
 
 
 	void step();
-	void renderBackgroundScanline(int scanline);
-
 	void renderScanline(int scanline);
-	void drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int scanline);
+	void renderBackgroundScanline(int scanline);
 	void renderSprites(int scanline);
+	void drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int scanline);
+	void checkSpriteZeroHit(int scanline);  // Aqui eu isis calabresi acabei de adicionar o sprite zero hit
+
+
+
+
 	//////////////////////////////////////////////////////
 	//                      OAM                         //
 	//////////////////////////////////////////////////////
@@ -89,12 +96,10 @@ struct PPU {
 
 //////////////////////////////////////////////////////////////////////////////////////////		FALTA:  	 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//				COISAS QUE FALTAM E QUE PRECISAM PRO FAGNES SER FUNCIONAVEL:
-// 
-//	Coiso							Importancia						Descricao
-// Escrita\leitura em $2007				Alta		Fundamental para interagir com VRAM via CPU.
-// Pattern tables($0000 - $1FFF)		Alta		Sem isso nao da pra renderizar tiles.
-// Paletas($3F00 - $3FFF)				Alta		Precisa para cor real na tela.
-// Renderização real do background		Alta		Precisa buscar tiles, atributos e desenhar.
-// Sprites(OAM) na tela					Media		Mas necessario para jogos funcionarem.
-// Scroll($2005, $2006)					Media		Fundos moveis exigem isso.
+//	O que falta?
+//
+//	Scroll completo
+//
+//	Mirroring configurável
+//
+//	Suporte opcional a sprites 8x16

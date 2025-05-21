@@ -40,7 +40,6 @@ Byte PPUCTRL::getNameTableAddr() const {
 
 // ESTOU PARANDO DE ASSINAR!!!!!
 
-
 //////////////////////////////////////////////////////
 //                    PPUSTATUS                     //
 //////////////////////////////////////////////////////
@@ -133,7 +132,7 @@ Byte PPU::readFromPPUData() {
 	}
 
 	// Incrementa endereço (bit 2 de PPUCTRL define passo)
-	ppuAddress += (ctrl.control & 0x04) ? 32 : 1;
+	ppuAddress = (ppuAddress + ((ctrl.control & 0x04) ? 32 : 1)) & 0x3FFF;
 	return value;
 }
 
@@ -146,9 +145,8 @@ void PPU::writeToPPUData(Byte value) {
 
 
 DWord PPU::mirrorAddress(DWord address) {
-	// Faz o espelhamento de nametables (para se ajustar ao tamanho real da RAM de 2kb)
 	address = (address - 0x2000) % 0x1000;
-	return address % 0x800;
+	return address % 0x800; // Mirroring simplificado que fiz, ainda nao muito bem implementado! Vamos retorar aqui dps.
 }
 
 //////////////////////////////////////////////////////
@@ -179,7 +177,7 @@ void PPU::step() {
 			if (nmiCallback) nmiCallback();
 		}
 		// Sinaliza que um frame foi concluído
-		
+
 	}
 
 	if (scanline == 261 && dot == 1) {
@@ -188,10 +186,17 @@ void PPU::step() {
 	}
 
 	if (scanline < 240) {
-		// Desenha sprites
-		renderBackgroundScanline(scanline); // <- COMENTAR ISSO SE FICAR MUITO LENTO ATE ARRUMAR
-		renderScanline(scanline);
+		renderBackgroundScanline(scanline);
+		checkSpriteZeroHit(scanline);
+		renderScanline(scanline); // aqui chama os sprites
 	}
+
+	if (scanline == 0) {
+		std::fill(backgroundBuffer, backgroundBuffer + 256 * 240, 0);
+
+	}
+
+	// SPRITE 0-HIT EBA EBA
 }
 
 void PPU::renderBackgroundScanline(int scanline) {
@@ -238,11 +243,13 @@ void PPU::renderBackgroundScanline(int scanline) {
 			int offset = scanline * 256 + x;
 			Pixel cor = cores[color % 64];
 			framebuffer[offset] = (0xFF << 24) | (cor.r << 16) | (cor.g << 8) | cor.b;
+
+			// Atualiza o buffer de opacidade para sprite 0-hit
+			backgroundBuffer[offset] = (colorIndex == 0) ? 0 : 1;
+
 		}
 	}
 }
-
-
 
 
 // VAI VERIFICAR SE PRECISA DO NMI
@@ -251,6 +258,32 @@ bool PPU::isNMIRequested() {
 	nmiRequested = false;
 	return result;
 }
+
+// Começo do:
+//////////////////////////////////////////////////////
+//                   SCROLLER                       //
+//////////////////////////////////////////////////////
+
+// Vou colocar isso no h, soq meu vscode bugou e nao ta salvando o h, entao vou colocar aqui mesmo, mas depois eu coloco no h de novo.
+
+//DWord v = 0; // Esse é o endereço de vram que ta sendo usado
+//DWord t = 0; // Endereco de VRAM temporario, que, PASMEM, vamos usar pra fazer o scroll! Eba!
+//DWord x = 0;  // X é o offset do tile que ta sendo renderizado. Ele vai de 0 a 7, e depois volta pra 0.
+//bool w = false; // write toggle !!! Isso é um latch que alterna entre os dois registradores de endereço, o t e o v. Ele é usado pra fazer scroll horizontal.
+//
+//void writePPUScroll(Byte value) {
+//	if (!w) {
+//		// A primeira escrita vai pro scroll x
+//		t = (t & 0x7FE0) | (value >> 3); // coarse X (5 bits) ((oraculo))
+//		x = value & 0x07;                // fine X (3 bits)	  ((oraculo))
+//		w = true;
+//	}
+//	else {
+//		// A segunda escrita vai pro scroll y
+//		t = (t & 0x0C1F) | ((value & 0x07) << 12) | ((value & 0xF8) << 2); //  ((oraculo))
+//		w = false;
+//	}
+//}
 
 //////////////////////////////////////////////////////
 //           Renderização de Sprites                //
@@ -273,7 +306,8 @@ void PPU::drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int sc
 	}
 
 	// Cada tile tem 16 bytes (8 para plano baixo, 8 para alto)
-	DWord baseAddress = tileIndex * 16;
+	DWord patternBase = (ctrl.control & 0x08) ? 0x1000 : 0x0000;
+	DWord baseAddress = patternBase + tileIndex * 16;
 	Byte low = patternTable[baseAddress + rowInTile];
 	Byte high = patternTable[baseAddress + rowInTile + 8];
 
@@ -304,7 +338,7 @@ void PPU::drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int sc
 		// Aqui você deve desenhar: substitua por sua função real de renderização
 		putPixel(finalX, scanline, color);
 
-		
+
 	}
 }
 
@@ -317,6 +351,55 @@ void PPU::putPixel(int x, int y, uint8_t colorIndex) {
 	uint32_t pixelValue = (0xFF << 24) | (cor.r << 16) | (cor.g << 8) | (cor.b);
 
 	framebuffer[y * 256 + x] = pixelValue; // escreve no buffer SDL2
+}
+
+
+//////////////////////////////////////////////////////
+//                Sprite 0-hit                      //
+//////////////////////////////////////////////////////
+
+
+
+void PPU::checkSpriteZeroHit(int scanline) {
+	// Aqui vamos pegar as informações do sprite 0!!!
+	Byte y = OAM[0];
+	Byte tileIndex = OAM[1];
+	Byte attributes = OAM[2];
+	Byte x = OAM[3];
+
+	// Verifica se o scanline atual atinge o sprite 0
+	if (scanline >= y + 1 && scanline < y + 1 + 8) {
+		int rowInTile = scanline - (y + 1);
+		if (attributes & 0x80) {
+			rowInTile = 7 - rowInTile; // flip vertical (QUE FOI TESTADO E FUNCIONA CORRETAMENTE EBAAAA)
+		}
+
+		DWord baseAddress = tileIndex * 16;
+		Byte low = patternTable[baseAddress + rowInTile];
+		Byte high = patternTable[baseAddress + rowInTile + 8];
+
+		for (int i = 0; i < 8; i++) {
+			int bit = (attributes & 0x40) ? i : (7 - i);
+
+			Byte bit0 = (low >> bit) & 1;
+			Byte bit1 = (high >> bit) & 1;
+
+			if ((bit0 | bit1) == 0) continue; // pixel transparente no sprite
+
+			// Coordenada do pixel no framebuffer
+			int pixelX = x + i;
+			int pixelY = scanline;
+
+			// Verifica se background tem pixel não transparentes
+			bool bgOpaque = backgroundBuffer[pixelY * 256 + pixelX] != 0;
+
+			if (bgOpaque) {
+				// CHECK SE DETECTOU UM HIT OMG NO WAY AY AY AY
+				status.status |= 0x40; // seta bit 6
+				return;
+			}
+		}
+	}
 }
 
 void PPU::renderSprites(int scanline) {
@@ -411,13 +494,11 @@ Byte PPU::cpuRead(DWord addr) {
 	return data;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////		FALTA:  	 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//				COISAS QUE FALTAM E QUE PRECISAM PRO FAGNES SER FUNCIONAVEL:
-// 
-//	Coiso							Importancia						Descricao
-// Pattern tables($0000 - $1FFF)		Alta		Sem isso nao da pra renderizar tiles.
-// Paletas($3F00 - $3FFF)				Alta		Precisa para cor real na tela.
-// Renderização real do background		Alta		Precisa buscar tiles, atributos e desenhar.
-// Sprites(OAM) na tela					Media		Mas necessario para jogos funcionarem.
-// Scroll($2005, $2006)					Media		Fundos moveis exigem isso.
+// O que falta:
+//
+//	Scroll completo (principalmente pq o Sprite 0-hit depende disso)
+//
+//	Mirroring configurável
+//
+//	Suporte opcional a sprites 8x16
