@@ -72,41 +72,41 @@
 			bool pressionado = (event.type == SDL_KEYDOWN);
 
 			switch (event.key.keysym.sym) {
-			case SDLK_z:
-				pressionado ? controles->pressionar(A) : controles->soltar(A);
-				std::cout << "APERTOU A TECLA Z" << std::endl;
-				break;
-			case SDLK_x:
-				pressionado ? controles->pressionar(B) : controles->soltar(B);
-				std::cout << "APERTOU A TECLA X" << std::endl;
-				break;
-			case SDLK_d:
-				pressionado ? controles->pressionar(START) : controles->soltar(START);
-				std::cout << "APERTOU A TECLA START" << std::endl;
-				break;
-			case SDLK_f:
-				pressionado ? controles->pressionar(SELECT) : controles->soltar(SELECT);
-				std::cout << "APERTOU A TECLA SELECT" << std::endl;
-				break;
-			case SDLK_UP:
-				pressionado ? controles->pressionar(UP) : controles->soltar(UP);
-				std::cout << "APERTOU A TECLA UP" << std::endl;
-				break;
-			case SDLK_DOWN:
-				pressionado ? controles->pressionar(DOWN) : controles->soltar(DOWN);
-				std::cout << "APERTOU A TECLA DOWN" << std::endl;
-				break;
-			case SDLK_LEFT:
-				pressionado ? controles->pressionar(LEFT) : controles->soltar(LEFT);
-				std::cout << "APERTOU A TECLA LEFT" << std::endl;
-				break;
-			case SDLK_RIGHT:
-				pressionado ? controles->pressionar(RIGHT) : controles->soltar(RIGHT);
-				std::cout << "APERTOU A TECLA RIGHT" << std::endl;
-				break;
+				case SDLK_z:
+					pressionado ? controles->pressionar(A) : controles->soltar(A);
+					std::cout << "APERTOU A TECLA Z" << std::endl;
+					break;
+				case SDLK_x:
+					pressionado ? controles->pressionar(B) : controles->soltar(B);
+					std::cout << "APERTOU A TECLA X" << std::endl;
+					break;
+				case SDLK_d:
+					pressionado ? controles->pressionar(START) : controles->soltar(START);
+					std::cout << "APERTOU A TECLA START" << std::endl;
+					break;
+				case SDLK_f:
+					pressionado ? controles->pressionar(SELECT) : controles->soltar(SELECT);
+					std::cout << "APERTOU A TECLA SELECT" << std::endl;
+					break;
+				case SDLK_UP:
+					pressionado ? controles->pressionar(UP) : controles->soltar(UP);
+					std::cout << "APERTOU A TECLA UP" << std::endl;
+					break;
+				case SDLK_DOWN:
+					pressionado ? controles->pressionar(DOWN) : controles->soltar(DOWN);
+					std::cout << "APERTOU A TECLA DOWN" << std::endl;
+					break;
+				case SDLK_LEFT:
+					pressionado ? controles->pressionar(LEFT) : controles->soltar(LEFT);
+					std::cout << "APERTOU A TECLA LEFT" << std::endl;
+					break;
+				case SDLK_RIGHT:
+					pressionado ? controles->pressionar(RIGHT) : controles->soltar(RIGHT);
+					std::cout << "APERTOU A TECLA RIGHT" << std::endl;
+					break;
+				}
 			}
 		}
-	}
 
 	void SDL_Display::renderizar() {
 		void* pixels;
@@ -147,9 +147,9 @@
 			}
 
 			if (ImGui::BeginMenu(u8"Opções")) {
-				if (ImGui::MenuItem("Lorem Ipsum")) {
-					//Inserir funções para Opções
-				}
+				if (ImGui::MenuItem("Controle")) {
+					mostrarJanelaControle = true;
+					}
 				ImGui::EndMenu();
 			}
 
@@ -194,7 +194,54 @@
 				}
 				ImGui::EndMenu();
 			}
-			ImGui::EndMainMenuBar();
+			ImGui::EndMainMenuBar(); // FINAL DO MENU
+
+			// Janela de mapeamento de controle
+			if (mostrarJanelaControle) {
+				// Define a posição e tamanho iniciais fora da área da tela do emulador
+				ImGui::SetNextWindowPos(ImVec2(500, 100), ImGuiCond_FirstUseEver); // Altere conforme necessário
+				ImGui::SetNextWindowSize(ImVec2(300, 250), ImGuiCond_FirstUseEver);
+
+				ImGui::Begin("Mapeamento de Controle NES", &mostrarJanelaControle,
+					ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+
+				static const char* nomesBotoesNES[8] = {
+					"Cima", "Baixo", "Esquerda", "Direita", "B", "A", "Start", "Select"
+				};
+
+				static SDL_Scancode mapeamentos[8] = {
+					SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
+					SDL_SCANCODE_X, SDL_SCANCODE_Z, SDL_SCANCODE_D, SDL_SCANCODE_F
+				};
+
+				static int aguardandoBotao = -1;
+
+				for (int i = 0; i < 8; ++i) {
+					ImGui::Text("%s:", nomesBotoesNES[i]);
+					ImGui::SameLine();
+
+					char label[32];
+					snprintf(label, sizeof(label), "Mapear##%d", i);
+					if (ImGui::Button(label)) {
+						aguardandoBotao = i;
+					}
+					ImGui::SameLine();
+					ImGui::Text("%s", SDL_GetScancodeName(mapeamentos[i]));
+				}
+				if (aguardandoBotao != -1) {
+					ImGui::Text(u8"Pressione uma tecla para o botão: %s", nomesBotoesNES[aguardandoBotao]);
+
+					const Uint8* state = SDL_GetKeyboardState(nullptr);
+					for (int sc = 0; sc < SDL_NUM_SCANCODES; ++sc) {
+						if (state[sc]) {
+							mapeamentos[aguardandoBotao] = static_cast<SDL_Scancode>(sc);
+							aguardandoBotao = -1;
+							break;
+						}
+					}
+				}
+				ImGui::End();
+			}
 		}
 		ImGui::Render();
 
