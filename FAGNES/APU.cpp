@@ -65,12 +65,16 @@ void APU::writeRegister(uint16_t addr, uint8_t value) {
         pulse1.timerValue = (pulse1.timerValue & 0x00FF) | ((value & 0x07) << 8);
         pulse1.phase = 0;
         pulse1.timer = static_cast<float>(pulse1.timerValue);
+        //pulse1.timerPeriod = static_cast<float>(pulse1.timerValue);
+
         break;
 
         // Pulse 2
     case 0x4004:
         pulse2.duty = (value >> 6) & 0x03;
         pulse2.volume = value & 0x0F;
+        //pulse1.timerPeriod = static_cast<float>(pulse1.timerValue);
+
         break;
     case 0x4006:
         pulse2.timerValue = (pulse2.timerValue & 0xFF00) | value;
@@ -97,7 +101,7 @@ void APU::writeRegister(uint16_t addr, uint8_t value) {
         noise.mode = value & 0x80;
         break;
     case 0x400F:
-        // Ignorado por simplicidade
+        noise.envelopeStart = true;
         break;
 
         // DMC
@@ -164,30 +168,43 @@ void APU::step() {
     }
 
     // Noise
+// Envelope clock (240 Hz)
     if (noise.enabled) {
-        if (noise.envelopeStart) {
-            noise.envelopeStart = false;
-            noise.envelopeDecayLevel = 15;
-            noise.envelopeDivider = noise.envelopeDividerPeriod;
-        } else {
-            if (noise.envelopeDivider > 0) {
-                noise.envelopeDivider--;
-            } else {
+        noise.envelopeClockTimer += 1.0f;
+        if (noise.envelopeClockTimer >= 183.0f) { // 44100 / 240 ? 183.75
+            noise.envelopeClockTimer -= 183.0f;
+
+            if (noise.envelopeStart) {
+                noise.envelopeStart = false;
+                noise.envelopeDecayLevel = 15;
                 noise.envelopeDivider = noise.envelopeDividerPeriod;
-                if (noise.envelopeDecayLevel > 0) {
-                    noise.envelopeDecayLevel--;
-                } else if (noise.envelopeLoop) {
-                    noise.envelopeDecayLevel = 15;
+            }
+            else {
+                if (noise.envelopeDivider > 0) {
+                    noise.envelopeDivider--;
+                }
+                else {
+                    noise.envelopeDivider = noise.envelopeDividerPeriod;
+                    if (noise.envelopeDecayLevel > 0) {
+                        noise.envelopeDecayLevel--;
+                    }
+                    else if (noise.envelopeLoop) {
+                        noise.envelopeDecayLevel = 15;
+                    }
+                    // Se loop estiver desligado e já estiver em 0, permanece em 0
                 }
             }
         }
 
+        // Shift register do ruído
         noise.timer -= 1.0f;
         if (noise.timer <= 0.0f) {
             noise.timer += noise.timerPeriod;
+
             int bit0 = noise.shiftRegister & 1;
             int bit1or6 = (noise.shiftRegister >> (noise.mode ? 6 : 1)) & 1;
             int feedback = bit0 ^ bit1or6;
+
             noise.shiftRegister >>= 1;
             noise.shiftRegister |= (feedback << 14);
         }
@@ -224,7 +241,13 @@ void APU::step() {
 }
 
 float APU::getMixedSample() const {
-    float pulseOut = 0.00752f * (pulse1.getSample() + pulse2.getSample());
-    float tndOut = 0.00851f * triangle.getSample() + 0.00494f * noise.getSample() + 0.00335f * dmc.getSample();
-    return pulseOut + tndOut;
+    //float pulseOut = 0.00752f * (pulse1.getSample() + pulse2.getSample());
+    float tndOut =
+        //0.00851f * triangle.getSample() 
+        //+
+        0.00494f * noise.getSample();
+        //+
+        //0.01f * dmc.getSample(); // aumente para testar
+    float gain = 20.0f; // ajuste conforme necessário
+    return (/*pulseOut +*/ tndOut) * gain;
 }

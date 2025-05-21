@@ -65,6 +65,7 @@ private:
     } triangle;
 
     struct NoiseChannel {
+        float envelopeClockTimer = 0.0f; // para clockar o envelope a 240Hz
         bool enabled = false;
         int volume = 15;
         uint16_t shiftRegister = 1;
@@ -80,7 +81,10 @@ private:
 
         float getSample() const {
             if (!enabled) return 0.0f;
-            return (shiftRegister & 1) ? 0.0f : volume / 15.0f;
+            if (shiftRegister & 1) return 0.0f;
+
+            float finalVolume = envelopeConstant ? volume : envelopeDecayLevel;
+            return finalVolume / 15.0f;
         }
     } noise;
 
