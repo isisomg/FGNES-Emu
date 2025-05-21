@@ -3,46 +3,10 @@
 #include "APU.h"
 #include "SDL_Display.h"
 #include "Cartucho.h"
-#include <sstream> // PARA DEBUG APENAS, COMENTAR CASO NAO FOR DEBUGAR
-#include <iomanip> // PARA DEBUG APENAS, COMENTAR CASO NAO FOR DEBUGAR
 #include <iostream>
 #include <fstream>
 
 const int ciclosPorFrame = 29781;
-
-// PARA DEBUGAR CPU. DEIXAR COMENTADO CASO NAO FOR DEBUGAR.
-std::vector<std::string> info;
-void salvarArquivo() { // cria a saida de resultados obtidos da cpu
-	std::string path = "resultadosObtidos.txt";
-	std::ofstream arq(path, std::ios::out);
-	if (arq.is_open() == false) {
-		std::cout << "Erro ao gerar arquivo de resultados obtidos" << std::endl;
-		return;
-	}
-	std::string dados = "";
-	for (int i = 0; i < info.size(); i++) {
-		dados += info.at(i);
-	}
-	arq << dados;
-	arq.close();
-}
-void guardarLinha(DWord PC, Byte A, Byte X, Byte Y, Byte P, Byte SP) {
-	std::stringstream ss;
-	ss << std::uppercase << std::setw(4) << std::setfill('0') << std::hex << (int)PC;
-	ss << " A:";
-	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)A;
-	ss << " X:";
-	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)X;
-	ss << " Y:";
-	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)Y;
-	ss << " P:";
-	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)P;
-	ss << " SP:";
-	ss << std::uppercase << std::setw(2) << std::setfill('0') << std::hex << (int)SP;
-	ss << std::endl;
-	info.push_back(ss.str());
-}
-// ATE AQUI COMENTADO CASO NAO FOR DEBUGAR.
 
 int main(int argc, char* argv[]) {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {

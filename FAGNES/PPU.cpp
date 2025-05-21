@@ -189,9 +189,61 @@ void PPU::step() {
 
 	if (scanline < 240) {
 		// Desenha sprites
+		renderBackgroundScanline(scanline); // <- COMENTAR ISSO SE FICAR MUITO LENTO ATE ARRUMAR
 		renderScanline(scanline);
 	}
 }
+
+void PPU::renderBackgroundScanline(int scanline) {
+	bool usePatternTable1 = (ctrl.control & 0x10);
+	DWord patternBase = usePatternTable1 ? 0x1000 : 0x0000;
+	DWord nametableBase = 0x2000 + (ctrl.control & 0x03) * 0x400;
+
+	int tileY = scanline / 8;
+	int rowInTile = scanline % 8;
+
+	// Cache da paleta
+	Byte paleta[32];
+	for (int i = 0; i < 32; ++i)
+		paleta[i] = read(0x3F00 + i);
+
+	for (int tileX = 0; tileX < 32; ++tileX) {
+		DWord tileIndexAddr = nametableBase + tileY * 32 + tileX;
+		Byte tileIndex = read(tileIndexAddr);
+
+		// Atributos
+		int attrX = tileX / 4;
+		int attrY = tileY / 4;
+		DWord attributeAddr = nametableBase + 0x3C0 + attrY * 8 + attrX;
+		Byte attributeByte = read(attributeAddr);
+
+		int shift = ((tileY % 4) / 2) * 4 + ((tileX % 4) / 2) * 2;
+		Byte paletteBits = (attributeByte >> shift) & 0x03;
+
+		DWord tileAddr = patternBase + tileIndex * 16 + rowInTile;
+		Byte low = read(tileAddr);
+		Byte high = read(tileAddr + 8);
+
+		for (int pixel = 0; pixel < 8; ++pixel) {
+			int bit = 7 - pixel;
+			Byte bit0 = (low >> bit) & 1;
+			Byte bit1 = (high >> bit) & 1;
+			Byte colorIndex = (bit1 << 1) | bit0;
+			if (colorIndex == 0) continue;
+
+			Byte paletteIndex = paletteBits * 4 + colorIndex;
+			Byte color = paleta[paletteIndex & 0x1F];
+
+			int x = tileX * 8 + pixel;
+			int offset = scanline * 256 + x;
+			Pixel cor = cores[color % 64];
+			framebuffer[offset] = (0xFF << 24) | (cor.r << 16) | (cor.g << 8) | cor.b;
+		}
+	}
+}
+
+
+
 
 // VAI VERIFICAR SE PRECISA DO NMI
 bool PPU::isNMIRequested() {

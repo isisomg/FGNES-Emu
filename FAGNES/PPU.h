@@ -55,7 +55,10 @@ struct PPU {
 	int dot = 0;
 
 
+
 	void step();
+	void renderBackgroundScanline(int scanline);
+
 	void renderScanline(int scanline);
 	void drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int scanline);
 	void renderSprites(int scanline);
