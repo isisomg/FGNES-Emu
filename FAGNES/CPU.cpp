@@ -326,53 +326,109 @@ void CPU::handleNMI() { // Implementar corretamente
 	}
 
 	// BRANCH
-	void CPU::BCC() {
+	int CPU::BCC() {
 		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
+		int ciclos = 2;
 		if (C == 0) {
+			DWord oldPC = PC;
 			PC += offset;
+			ciclos++;
+			if ((oldPC & 0xFF00) != (PC & 0xFF00)) { // se cruzou pagina
+				ciclos++; 
+			}
 		}
+		return ciclos;
 	}
-	void CPU::BCS() {
+	int CPU::BCS() {
 		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
+		int ciclos = 2;
 		if (C == 1) {
+			DWord oldPC = PC;
 			PC += offset;
+			ciclos++;
+			if ((oldPC & 0xFF00) != (PC & 0xFF00)) { // se cruzou pagina
+				ciclos++;
+			}
 		}
+		return ciclos;
 	}
-	void CPU::BEQ() {
+	int CPU::BEQ() {
 		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
+		int ciclos = 2;
 		if (Z == 1) {
+			DWord oldPC = PC;
 			PC += offset;
+			ciclos++;
+			if ((oldPC & 0xFF00) != (PC & 0xFF00)) { // se cruzou pagina
+				ciclos++;
+			}
 		}
+		return ciclos;
 	}
-	void CPU::BNE() {
+	int CPU::BNE() {
 		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
+		int ciclos = 2;
 		if (Z == 0) {
+			DWord oldPC = PC;
 			PC += offset;
+			ciclos++;
+			if ((oldPC & 0xFF00) != (PC & 0xFF00)) { // se cruzou pagina
+				ciclos++;
+			}
 		}
+		return ciclos;
 	}
-	void CPU::BPL() {
+	int CPU::BPL() {
 		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
+		int ciclos = 2;
 		if (N == 0) {
+			DWord oldPC = PC;
 			PC += offset;
+			ciclos++;
+			if ((oldPC & 0xFF00) != (PC & 0xFF00)) { // se cruzou pagina
+				ciclos++;
+			}
 		}
+		return ciclos;
 	}
-	void CPU::BMI() {
+	int CPU::BMI() {
 		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
+		int ciclos = 2;
 		if (N == 1) {
+			DWord oldPC = PC;
 			PC += offset;
+			ciclos++;
+			if ((oldPC & 0xFF00) != (PC & 0xFF00)) { // se cruzou pagina
+				ciclos++;
+			}
 		}
+		return ciclos;
 	}
-	void CPU::BVC() {
+	int CPU::BVC() {
 		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
+		int ciclos = 2;
 		if (V == 0) {
+			DWord oldPC = PC;
 			PC += offset;
+			ciclos++;
+			if ((oldPC & 0xFF00) != (PC & 0xFF00)) { // se cruzou pagina
+				ciclos++;
+			}
 		}
+		return ciclos;
 	}
-	void CPU::BVS() {
+	int CPU::BVS() {
 		int8_t offset = static_cast<int8_t> (fetchByte()); // Faz cast por causa do sinal
+		int ciclos = 2;
 		if (V == 1) {
+			DWord oldPC = PC;
 			PC += offset;
+			ciclos++;
+			if ((oldPC & 0xFF00) != (PC & 0xFF00)) { // se cruzou pagina
+				ciclos++;
+			}
 		}
+		return ciclos;
 	}
 
 	// JUMP
@@ -553,18 +609,20 @@ void CPU::handleNMI() { // Implementar corretamente
 		return adr;
 	}
 	// Absolute X - Retorna o address
-	DWord CPU::absoluteX() {
+	std::pair<DWord, bool> CPU::absoluteX() {
 		Byte adrBase = fetchByte();
 		DWord adrCompleto = (fetchByte() << 8) | adrBase;
 		DWord adr = adrCompleto + X;
-		return adr;
+		bool crossed = (adrCompleto & 0xFF00) != (adr & 0xFF00); // verifica page crossed
+		return { adr, crossed };
 	}
 	// Absolute Y - Retorna o address
-	DWord CPU::absoluteY() {
+	std::pair<DWord, bool> CPU::absoluteY() {
 		Byte adrBase = fetchByte();
 		DWord adrCompleto = (fetchByte() << 8) | adrBase;
 		DWord adr = adrCompleto + Y;
-		return adr;
+		bool crossed = (adrCompleto & 0xFF00) != (adr & 0xFF00); // verifica page crossed
+		return { adr, crossed };
 	}
 	// Indirect - Retorna o adr
 	DWord CPU::indirect() {
@@ -591,20 +649,21 @@ void CPU::handleNMI() { // Implementar corretamente
 	}
 
 	// Indirect Y - Retorna o adr
-	DWord CPU::indirectY() {
+	std::pair<DWord, bool> CPU::indirectY() {
 		Byte base = fetchByte();
 		Byte lo = readByte(base);
 		Byte hi = readByte((base + 1) & 0xFF); 
 
-		DWord addr = (hi << 8) | lo;
-		addr = (addr + Y) & 0xFFFF;
+		DWord adrCompleto = (hi << 8) | lo;
+		DWord adr = (adrCompleto + Y) & 0xFFFF;
 
-		return addr;
+		bool crossed = (adrCompleto & 0xFF00) != (adr & 0xFF00); // verifica page crossed
+		return { adr, crossed };
 	}
 
 
 	// fetch - decode - execute
-	void CPU::executar() {
+	int CPU::executar() {
 		if (bus->checkNMI()) {
 			handleNMI();
 		}
@@ -616,6 +675,7 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x69: // ADC Immediate
 		{
 			ADC(immediate());
+			return 2;
 			break;
 		}
 
@@ -623,6 +683,7 @@ void CPU::handleNMI() { // Implementar corretamente
 		{
 			Byte valorAdr = zeropage();
 			ADC(readByte(valorAdr));
+			return 3;
 			break;
 		}
 
@@ -630,6 +691,7 @@ void CPU::handleNMI() { // Implementar corretamente
 		{
 			Byte valorAdr = zeropageX();
 			ADC(readByte(valorAdr));
+			return 4;
 			break;
 		}
 
@@ -637,20 +699,23 @@ void CPU::handleNMI() { // Implementar corretamente
 		{
 			DWord valorAdr = absolute();
 			ADC(readByte(valorAdr));
+			return 4;
 			break;
 		}
 
 		case 0x7D: // ADC Absolute X
 		{
-			DWord valorAdr = absoluteX();
-			ADC(readByte(valorAdr));
+			auto [adr, crossed] = absoluteX();
+			ADC(readByte(adr));
+			return crossed ? 5 : 4;
 			break;
 		}
 
 		case 0x79: // ADC Absolute Y
 		{
-			DWord valorAdr = absoluteY();
-			ADC(readByte(valorAdr));
+			auto [adr, crossed] = absoluteY();
+			ADC(readByte(adr));
+			return crossed ? 5 : 4;
 			break;
 		}
 
@@ -658,12 +723,14 @@ void CPU::handleNMI() { // Implementar corretamente
 		{
 			DWord valorAdr = indirectX();
 			ADC(readByte(valorAdr));
+			return 6;
 			break;
 		}
 		case 0x71: // ADC Indirect Y
 		{
-			DWord valorAdr = indirectY();
-			ADC(readByte(valorAdr));
+			auto [adr, crossed] = indirectY();
+			ADC(readByte(adr));
+			return crossed ? 6 : 5;
 			break;
 		}
 
@@ -673,47 +740,55 @@ void CPU::handleNMI() { // Implementar corretamente
 		{
 			LDA(PC++);
 			break;
+			return 2;
 		}
 		case 0xA5:
 		{
 			DWord adr = zeropage();
 			LDA(adr);
+			return 3;
 			break;
 		}
 		case 0xB5:
 		{
 			DWord adr = zeropageX();
 			LDA(adr);
+			return 4;
 			break;
 		}
 		case 0xAD:
 		{
 			DWord adr = absolute();
 			LDA(adr);
+			return 4;
 			break;
 		}
 		case 0xBD:
 		{
-			DWord adr = absoluteX();
+			auto [adr, crossed] = absoluteX();
 			LDA(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0xB9:
 		{
-			DWord adr = absoluteY();
+			auto [adr, crossed] = absoluteY();
 			LDA(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0xA1:
 		{
 			DWord adr = indirectX();
 			LDA(adr);
+			return 6;
 			break;
 		}
 		case 0xB1:
 		{
-			DWord adr = indirectY();
+			auto [adr, crossed] = indirectY();
 			LDA(adr);
+			return crossed ? 6 : 5;
 			break;
 		}
 
@@ -721,30 +796,35 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xA2:
 		{
 			LDX(PC++);
+			return 2;
 			break;
 		}
 		case 0xA6:
 		{
 			DWord adr = zeropage();
 			LDX(adr);
+			return 3;
 			break;
 		}
 		case 0xB6:
 		{
 			DWord adr = zeropageY();
 			LDX(adr);
+			return 4;
 			break;
 		}
 		case 0xAE:
 		{
 			DWord adr = absolute();
 			LDX(adr);
+			return 4;
 			break;
 		}
 		case 0xBE:
 		{
-			DWord adr = absoluteY();
+			auto [adr, crossed] = absoluteY();
 			LDX(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 
@@ -752,30 +832,35 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xA0:
 		{
 			LDY(PC++);
+			return 2;
 			break;
 		}
 		case 0xA4:
 		{
 			DWord adr = zeropage();
 			LDY(adr);
+			return 3;
 			break;
 		}
 		case 0xB4:
 		{
 			DWord adr = zeropageX();
 			LDY(adr);
+			return 4;
 			break;
 		}
 		case 0xAC:
 		{
 			DWord adr = absolute();
 			LDY(adr);
+			return 4;
 			break;
 		}
 		case 0xBC:
 		{
-			DWord adr = absoluteX();
+			auto [adr, crossed] = absoluteX();
 			LDY(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 
@@ -783,30 +868,35 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x38:
 		{
 			SEC();
+			return 2;
 			break;
 		}
 		// CASO CLC
 		case 0x18:
 		{
 			CLC();
+			return 2;
 			break;
 		}
 		// CASO CLD
 		case 0xD8:
 		{
 			CLD();
+			return 2;
 			break;
 		}
 		// CASO CLI
 		case 0x58:
 		{
 			CLI();
+			return 2;
 			break;
 		}
 		// CASO CLV
 		case 0xB8:
 		{
 			CLV();
+			return 2;
 			break;
 		}
 
@@ -814,18 +904,21 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x00:
 		{
 			BRK();
+			return 7;
 			break;
 		}
 		// CASO DEX
 		case 0xCA:
 		{
 			DEX();
+			return 2;
 			break;
 		}
 		// CASO DEY
 		case 0x88:
 		{
 			DEY();
+			return 2;
 			break;
 		}
 
@@ -834,74 +927,87 @@ void CPU::handleNMI() { // Implementar corretamente
 		{
 			DWord adr = zeropage();
 			STA(adr);
+			return 3;
 			break;
 		}
 		case 0x95:
 		{
 			DWord adr = zeropageX();
 			STA(adr);
+			return 4;
 			break;
 		}
 		case 0x8D:
 		{
 			DWord adr = absolute();
 			STA(adr);
+			return 4;
 			break;
 		}
 		case 0x9D:
 		{
-			DWord adr = absoluteX();
+			auto [adr, crossed] = absoluteX();
 			STA(adr);
+			return 5;
 			break;
 		}
 		case 0x99:
 		{
-			DWord adr = absoluteY();
+			auto [adr, crossed] = absoluteY();
 			STA(adr);
+			return 5;
 			break;
 		}
 		case 0x81:
 		{
 			DWord adr = indirectX();
 			STA(adr);
+			return 6;
 			break;
 		}
 		case 0x91:
 		{
-			DWord adr = indirectY();
+			auto [adr, crossed] = indirectY();
 			STA(adr);
+			return 6;
 			break;
 		}
 		// CASOS STX ********************************************
 		case 0x86:
 		{
 			STX(zeropage());
+			return 3;
 			break;
 		}
 		case 0x96:
 		{
 			STX(zeropageY());
+			return 4;
 			break;
 		}
 		case 0x8E:
 		{
 			STX(absolute());
+			return 4;
 			break;
 		}
 		// CASOS STY ********************************************
 		case 0x84:
 		{
 			STY(zeropage());
+			return 3;
 			break;
 		}
 		case 0x94:
 		{
 			STY(zeropageX());
+			return 4;
 			break;
 		}
 		case 0x8C:
 		{
 			STY(absolute());
+			return 4;
 			break;
 		}
 
@@ -909,41 +1015,52 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x29:
 		{
 			AND(PC++);
+			return 2;
 			break;
 		}
 		case 0x25:
 		{
 			AND(zeropage());
+			return 3;
 			break;
 		}
 		case 0x35:
 		{
 			AND(zeropageX());
+			return 4;
 			break;
 		}
 		case 0x2D:
 		{
 			AND(absolute());
+			return 4;
 			break;
 		}
 		case 0x3D:
 		{
-			AND(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			AND(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0x39:
 		{
-			AND(absoluteY());
+			auto [adr, crossed] = absoluteY();
+			AND(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0x21:
 		{
 			AND(indirectX());
+			return 6;
 			break;
 		}
 		case 0x31:
 		{
-			AND(indirectY());
+			auto [adr, crossed] = indirectY();
+			AND(adr);
+			return crossed ? 6 : 5;
 			break;
 		}
 
@@ -951,41 +1068,52 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x49:
 		{
 			EOR(PC++);
+			return 2;
 			break;
 		}
 		case 0x45:
 		{
 			EOR(zeropage());
+			return 3;
 			break;
 		}
 		case 0x55:
 		{
 			EOR(zeropageX());
+			return 4;
 			break;
 		}
 		case 0x4D:
 		{
 			EOR(absolute());
+			return 4;
 			break;
 		}
 		case 0x5D:
 		{
-			EOR(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			EOR(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0x59:
 		{
-			EOR(absoluteY());
+			auto [adr, crossed] = absoluteY();
+			EOR(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0x41:
 		{
 			EOR(indirectX());
+			return 6;
 			break;
 		}
 		case 0x51:
 		{
-			EOR(indirectY());
+			auto [adr, crossed] = indirectY();
+			EOR(adr);
+			return crossed ? 6 : 5;
 			break;
 		}
 
@@ -993,12 +1121,14 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xE8:
 		{
 			INX();
+			return 2;
 			break;
 		}
 		// CASO INY
 		case 0xC8:
 		{
 			INY();
+			return 2;
 			break;
 		}
 
@@ -1006,11 +1136,13 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x4C:
 		{
 			JMP(absolute(), true);
+			return 3;
 			break;
 		}
 		case 0x6C:
 		{
 			JMP(0x00, false);
+			return 5;
 			break;
 		}
 
@@ -1018,6 +1150,7 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xEA:
 		{
 			NOP();
+			return 2;
 			break;
 		}
 
@@ -1025,41 +1158,52 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x09:
 		{
 			ORA(PC++);
+			return 2;
 			break;
 		}
 		case 0x05:
 		{
 			ORA(zeropage());
+			return 3;
 			break;
 		}
 		case 0x15:
 		{
 			ORA(zeropageX());
+			return 4;
 			break;
 		}
 		case 0x0D:
 		{
 			ORA(absolute());
+			return 4;
 			break;
 		}
 		case 0x1D:
 		{
-			ORA(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			ORA(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0x019:
 		{
-			ORA(absoluteY());
+			auto [adr, crossed] = absoluteY();
+			ORA(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0x01:
 		{
 			ORA(indirectX());
+			return 6;
 			break;
 		}
 		case 0x11:
 		{
-			ORA(indirectY());
+			auto [adr, crossed] = indirectY();
+			ORA(adr);
+			return crossed ? 6 : 5;
 			break;
 		}
 
@@ -1067,6 +1211,7 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xF8:
 		{
 			SED();
+			return 2;
 			break;
 		}
 
@@ -1074,6 +1219,7 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x78:
 		{
 			SEI();
+			return 2;
 			break;
 		}
 
@@ -1081,36 +1227,42 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xAA:
 		{
 			TAX();
+			return 2;
 			break;
 		}
 		// CASO TAY
 		case 0xA8:
 		{
 			TAY();
+			return 2;
 			break;
 		}
 		// CASO TSX
 		case 0xBA:
 		{
 			TSX();
+			return 2;
 			break;
 		}
 		// CASO TXA
 		case 0x8A:
 		{
 			TXA();
+			return 2;
 			break;
 		}
 		// CASO TXS
 		case 0x9A:
 		{
 			TXS();
+			return 2;
 			break;
 		}
 		// CASO TYA
 		case 0x98:
 		{
 			TYA();
+			return 2;
 			break;
 		}
 
@@ -1118,41 +1270,52 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xC9:
 		{
 			CMP(PC++);
+			return 2;
 			break;
 		}
 		case 0xC5:
 		{
 			CMP(zeropage());
+			return 3;
 			break;
 		}
 		case 0xD5:
 		{
 			CMP(zeropageX());
+			return 4;
 			break;
 		}
 		case 0xCD:
 		{
 			CMP(absolute());
+			return 4;
 			break;
 		}
 		case 0xDD:
 		{
-			CMP(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			CMP(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0xD9:
 		{
-			CMP(absoluteY());
+			auto [adr, crossed] = absoluteY();
+			CMP(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0xC1:
 		{
 			CMP(indirectX());
+			return 6;
 			break;
 		}
 		case 0xD1:
 		{
-			CMP(indirectY());
+			auto [adr, crossed] = indirectY();
+			CMP(adr);
+			return crossed ? 6 : 5;
 			break;
 		}
 
@@ -1160,16 +1323,19 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xE0:
 		{
 			CPX(PC++);
+			return 2;
 			break;
 		}
 		case 0xE4:
 		{
 			CPX(zeropage());
+			return 3;
 			break;
 		}
 		case 0xEC:
 		{
 			CPX(absolute());
+			return 4;
 			break;
 		}
 
@@ -1177,16 +1343,19 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xC0:
 		{
 			CPY(PC++);
+			return 2;
 			break;
 		}
 		case 0xC4:
 		{
 			CPY(zeropage());
+			return 3;
 			break;
 		}
 		case 0xCC:
 		{
 			CPY(absolute());
+			return 4;
 			break;
 		}
 
@@ -1194,21 +1363,26 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xE6:
 		{
 			INC(zeropage());
+			return 5;
 			break;
 		}
 		case 0xF6:
 		{
 			INC(zeropageX());
+			return 6;
 			break;
 		}
 		case 0xEE:
 		{
 			INC(absolute());
+			return 6;
 			break;
 		}
 		case 0xFE:
 		{
-			INC(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			INC(adr);
+			return 7;
 			break;
 		}
 
@@ -1216,21 +1390,26 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xC6:
 		{
 			DEC(zeropage());
+			return 5;
 			break;
 		}
 		case 0xD6:
 		{
 			DEC(zeropageX());
+			return 6;
 			break;
 		}
 		case 0xCE:
 		{
 			DEC(absolute());
+			return 6;
 			break;
 		}
 		case 0xDE:
 		{
-			DEC(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			DEC(adr);
+			return 7;
 			break;
 		}
 
@@ -1238,37 +1417,45 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x24:
 		{
 			BIT(zeropage());
+			return 3;
 			break;
 		}
 		case 0x2C:
 		{
 			BIT(absolute());
+			return 4;
 			break;
 		}
 		// CASOS ASL ********************************************
 		case 0x0A:
 		{
 			ASL(PC, true);
+			return 2;
 			break;
 		}
 		case 0x06:
 		{
 			ASL(zeropage());
+			return 5;
 			break;
 		}
 		case 0x16:
 		{
 			ASL(zeropageX());
+			return 6;
 			break;
 		}
 		case 0x0E:
 		{
 			ASL(absolute());
+			return 6;
 			break;
 		}
 		case 0x1E:
 		{
-			ASL(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			ASL(adr);
+			return 7;
 			break;
 		}
 
@@ -1276,26 +1463,32 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x4A:
 		{
 			LSR(PC, true);
+			return 2;
 			break;
 		}
 		case 0x46:
 		{
 			LSR(zeropage());
+			return 5;
 			break;
 		}
 		case 0x56:
 		{
 			LSR(zeropageX());
+			return 6;
 			break;
 		}
 		case 0x4E:
 		{
 			LSR(absolute());
+			return 6;
 			break;
 		}
 		case 0x5E:
 		{
-			LSR(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			LSR(adr);
+			return 7;
 			break;
 		}
 
@@ -1303,26 +1496,32 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x2A:
 		{
 			ROL(PC, true);
+			return 2;
 			break;
 		}
 		case 0x26:
 		{
 			ROL(zeropage());
+			return 5;
 			break;
 		}
 		case 0x36:
 		{
 			ROL(zeropageX());
+			return 6;
 			break;
 		}
 		case 0x2E:
 		{
 			ROL(absolute());
+			return 6;
 			break;
 		}
 		case 0x3E:
 		{
-			ROL(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			ROL(adr);
+			return 7;
 			break;
 		}
 
@@ -1330,26 +1529,32 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x6A:
 		{
 			ROR(PC, true);
+			return 2;
 			break;
 		}
 		case 0x66:
 		{
 			ROR(zeropage());
+			return 5;
 			break;
 		}
 		case 0x76:
 		{
 			ROR(zeropageX());
+			return 6;
 			break;
 		}
 		case 0x6E:
 		{
 			ROR(absolute());
+			return 6;
 			break;
 		}
 		case 0x7E:
 		{
-			ROR(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			ROR(adr);
+			return 7;
 			break;
 		}
 
@@ -1357,31 +1562,39 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xE9:
 		{
 			SBC(PC++);
+			return 2;
 			break;
 		}
 		case 0xE5:
 		{
 			SBC(zeropage());
+			return 3;
 			break;
 		}
 		case 0xF5:
 		{
 			SBC(zeropageX());
+			return 4;
 			break;
 		}
 		case 0xED:
 		{
 			SBC(absolute());
+			return 4;
 			break;
 		}
 		case 0xFD:
 		{
-			SBC(absoluteX());
+			auto [adr, crossed] = absoluteX();
+			SBC(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0xF9:
 		{
-			SBC(absoluteY());
+			auto [adr, crossed] = absoluteY();
+			SBC(adr);
+			return crossed ? 5 : 4;
 			break;
 		}
 		case 0xE1:
@@ -1391,7 +1604,9 @@ void CPU::handleNMI() { // Implementar corretamente
 		}
 		case 0xF1:
 		{
-			SBC(indirectY());
+			auto [adr, crossed] = indirectY();
+			SBC(adr);
+			return crossed ? 6 : 5;
 			break;
 		}
 
@@ -1399,86 +1614,94 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0x28:
 		{
 			PLP();
+			return 4;
 			break;
 		}
 		// Caso PLA
 		case 0x68:
 		{
 			PLA();
+			return 4;
 			break;
 		}
 		// Caso PHP
 		case 0x08:
 		{
 			PHP();
+			return 3;
 			break;
 		}
 		// Caso PHA
 		case 0x48:
 		{
 			PHA();
+			return 3;
 			break;
 		}
 
 		case 0x90:
 		{
-			BCC();
+			return BCC();
 			break;
 		}
 		case 0xB0:
 		{
-			BCS();
+			return BCS();
 			break;
 		}
 		case 0xF0:
 		{
-			BEQ();
+			return BEQ();
 			break;
 		}
 		case 0xD0:
 		{
-			BNE();
+			return BNE();
 			break;
 		}
 		case 0x10:
 		{
-			BPL();
+			return BPL();
 			break;
 		}
 		case 0x30:
 		{
-			BMI();
+			return BMI();
 			break;
 		}
 		case 0x50:
 		{
-			BVC();
+			return BVC();
 			break;
 		}
 		case 0x70:
 		{
-			BVS();
+			return BVS();
 			break;
 		}
 
 		case 0x20:
 		{
 			JSR(absolute());
+			return 6;
 			break;
 		}
 		case 0x60:
 		{
 			RTS();
+			return 6;
 			break;
 		}
 		case 0x40:
 		{
 			RTI();
+			return 6;
 			break;
 		}
 
 		default:
 			std::cout << "Instrucao nao encontrada " << std::hex << (int)op << std::endl;
+			return 0;
 			break;
 		};
 	}

@@ -84,14 +84,14 @@ public:
 	void CPX(DWord adr);
 	void CPY(DWord adr);
 
-	void BCC();
-	void BCS();
-	void BEQ();
-	void BNE();
-	void BPL();
-	void BMI();
-	void BVC();
-	void BVS();
+	int BCC();
+	int BCS();
+	int BEQ();
+	int BNE();
+	int BPL();
+	int BMI();
+	int BVC();
+	int BVS();
 
 	void JMP(DWord adr, bool absoluto = false);
 	void JSR(DWord adr);
@@ -121,11 +121,11 @@ public:
 	Byte zeropageX();
 	Byte zeropageY();
 	DWord absolute();
-	DWord absoluteX();
-	DWord absoluteY();
+	std::pair<DWord, bool> absoluteX();
+	std::pair<DWord, bool> absoluteY();
 	DWord indirect();
 	DWord indirectX();
-	DWord indirectY();
+	std::pair<DWord, bool> indirectY();
 
-	void executar();
+	int executar(); // retorna o numero de ciclos utilizados
 };

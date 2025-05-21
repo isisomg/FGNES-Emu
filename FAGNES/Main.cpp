@@ -8,6 +8,8 @@
 #include <iostream>
 #include <fstream>
 
+const int ciclosPorFrame = 29781;
+
 // PARA DEBUGAR CPU. DEIXAR COMENTADO CASO NAO FOR DEBUGAR.
 std::vector<std::string> info;
 void salvarArquivo() { // cria a saida de resultados obtidos da cpu
@@ -93,17 +95,18 @@ int main(int argc, char* argv[]) {
 				break;
 			}
 			//guardarLinha(cpu.PC, cpu.A, cpu.X, cpu.Y, cpu.getStatusRegister(), cpu.SP); // PARA DEBUNG CPU
-			for (int i = 0; i < 29781; ++i) { // 1 Frame
-				cpu.executar();
-				ppu.step(); ppu.step(); ppu.step();
-				apu.step();
+			int cpuCiclos = 0;
+			while (cpuCiclos < ciclosPorFrame) { // RODA UM FRAME
+				int ciclos = cpu.executar();
+				cpuCiclos += ciclos;
+
+				for (int c = 0; c < ciclos; ++c) {
+					//apu.step();
+					ppu.step(); ppu.step(); ppu.step();
+				}
 			}
-
 			//std::cout << std::hex << (int)cpu.PC << std::endl;
 
-			//cpu.writeByte(0x00FE, rand() % 0xFF); // mudar RNG. USADO APENAS NA SNAKE PARA TESTE
-			//std::cout << std::hex << (int)cpu.PC << std::endl;
-			//system("pause");
 		}
 		
 		display.renderizar();
