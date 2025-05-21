@@ -308,18 +308,8 @@
 		int samples = len / sizeof(float);
 
 		for (int i = 0; i < samples; i++) {
-			float mix = 0.0f;
-			mix += self->apu->getSample(1); // pulse
-			mix += self->apu->getSample(2); // triangle
-			mix += self->apu->getSample(3); // noise
-			mix += self->apu->getSample(4); // dmc
-
-			self->apu->tick(1);
-			self->apu->tick(2);
-			self->apu->tick(3);
-			self->apu->tick(4);
-
-			buffer[i] = mix / 4.0f; // normalizar volume
+			self->apu->step(); // avança todos os canais
+			buffer[i] = self->apu->getMixedSample(); // retorna o som combinado dos canais
 		}
 	}
 

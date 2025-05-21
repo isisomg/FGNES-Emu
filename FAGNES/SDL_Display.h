@@ -29,7 +29,6 @@ private:
 
     SDL_Texture* TEXTURE;
     SDL_Window* WINDOW;
-    SDL_Renderer* RENDERER;
 
     Bus* bus;
     Cartucho* cartucho;
