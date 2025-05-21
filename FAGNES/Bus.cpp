@@ -37,6 +37,15 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 			Bus::memPPU[(adr - 0x2000) % 8] = dado;		// MESMA COISA QUE NO READ!!!!!!!!!!
 		}
 	}
+	else if (adr == 0x4014) { // DMA 
+		if (ppu) {
+			Byte page = dado;
+			for (int i = 0; i < 256; i++) {
+				Byte value = read(page * 0x100 + i);
+				ppu->cpuWrite(0x04, value); // escreve em $2004
+			}
+		}
+	}
 	else if (adr == 0x4016) {
 		controles->escreverStrobe(dado & 1); //escrita dos Controles
 	}

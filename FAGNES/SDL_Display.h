@@ -14,6 +14,7 @@
 class SDL_Display {
 private:
     APU* apu = nullptr;
+    PPU* ppu = nullptr;
     SDL_AudioDeviceID audioDevice;
 
     static void audioCallback(void* userdata, Uint8* stream, int len);
@@ -45,12 +46,15 @@ private:
 public:
     bool jogoRodando = false;
 
-    void init(Bus* novoBus, Cartucho* cartucho);
+    SDL_Renderer* RENDERER;
+
+    //SDL_Display();
+    void init(Bus* novoBus, Cartucho* cartucho, PPU* p);
     void processarEntrada(SDL_Event event);
     void renderizar();
     void destroy();
 
-    // Métodos novos para a janela de controle
+    // Mï¿½todos novos para a janela de controle
     void abrirJanelaControle();
     void renderizarJanelaControle();
 };

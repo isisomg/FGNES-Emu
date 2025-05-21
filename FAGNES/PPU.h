@@ -1,5 +1,7 @@
 #include <cstdint>
 #include "Tipos.h"
+#include "Cores.h"
+#include <vector>
 
 struct PPUCTRL {
 	Byte control = 0;
@@ -33,6 +35,10 @@ struct PPU {
 
 	Byte read(DWord address);
 	void write(DWord address, Byte value);
+
+	void carregarCHR(const std::vector<Byte>& chrData);
+	void putPixel(int x, int y, uint8_t colorIndex); // escrever buffer SDL.
+	uint32_t framebuffer[256 * 240] = {0}; // buffer para o SDL2 desenhar o frame.
 
 	// $2007 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	Byte readFromPPUData();
