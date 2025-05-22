@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 				cpuCiclos += ciclos;
 
 				for (int c = 0; c < ciclos; ++c) {
-					//apu.step();
+					apu.step();
 					ppu.step(); ppu.step(); ppu.step();
 				}
 			}

@@ -6,7 +6,9 @@ class Bus;
 
 class APU {
 public:
-    void setFrequency(float freq, float can);
+    void clockFrameSequencer();
+    void stepCpuCycles(float cpuCycles);
+    //void setFrequency(float freq, float can);
     void setEnabled(bool e);
     void setBus(Bus* b);
     void step();
@@ -17,6 +19,8 @@ public:
     void writeRegister(uint16_t addr, uint8_t value);
 
 private:
+    float cpuCycleRemainder = 0.0f;
+    int frameSequencerStep = 0;
     Bus* bus = nullptr;
     bool enabled = true;
     float frequency = 44100.0f;
@@ -30,16 +34,53 @@ private:
         int phase = 0;
         float timer = 0;
         float timerPeriod = 0;
+		bool isInverted = false; // Canal 2 invertido para testes de cancelamento
+
+        // Campos necessários
+        bool envelopeStart = false;
+        int envelopeDivider = 0;
+        int envelopeDecayLevel = 0;
+        uint8_t envelopeDividerPeriod = 0;
+        bool envelopeLoop = false;
+        bool envelopeConstant = false;
+
+        int lengthCounter = 0;
+        bool lengthCounterHalt = false;
+
+        // Envelope
+        void clockEnvelope() {
+            if (envelopeStart) {
+                envelopeStart = false;
+                envelopeDecayLevel = 15;
+                envelopeDivider = envelopeDividerPeriod;
+            }
+            else {
+                if (--envelopeDivider < 0) {
+                    envelopeDivider = envelopeDividerPeriod;
+                    if (envelopeDecayLevel > 0) {
+                        --envelopeDecayLevel;
+                    }
+                    else if (envelopeLoop) {
+                        envelopeDecayLevel = 15;
+                    }
+                }
+            }
+        }
+
+        // Length counter
+        void clockLength() {
+            if (!lengthCounterHalt && lengthCounter > 0) {
+                --lengthCounter;
+            }
+        }
 
         float getSample() const {
-            if (!enabled) return 0.0f;
-            static const int dutyTable[4][8] = {
-                {0, 1, 0, 0, 0, 0, 0, 0},
-                {0, 1, 1, 0, 0, 0, 0, 0},
-                {0, 1, 1, 1, 1, 0, 0, 0},
-                {1, 0, 0, 1, 1, 1, 1, 1}
-            };
-            return dutyTable[duty][phase] ? volume / 15.0f : 0.0f;
+            if (!enabled || timerValue < 8) return 0.0f;
+
+            float amp = APU::dutyTable[duty][phase] ? volume : 0.0f;
+
+            // Canal 2 invertido para testes de cancelamento
+            return isInverted ? -amp : amp;
         }
     } pulse1;
 
@@ -51,6 +92,34 @@ private:
         float timer = 0;
         float timerPeriod = 0;
         int linearCounterReload = 0;
+
+        // Campos necessários
+        int linearCounter = 0;
+        bool linearReloadFlag = false;
+        bool linearControlFlag = false;
+
+        int lengthCounter = 0;
+        bool lengthCounterHalt = false;
+
+        // Linear counter
+        void clockLinearCounter() {
+            if (linearReloadFlag) {
+                linearCounter = linearCounterReload;
+            }
+            else if (linearCounter > 0) {
+                --linearCounter;
+            }
+            if (!linearControlFlag) {
+                linearReloadFlag = false;
+            }
+        }
+
+        // Length counter
+        void clockLength() {
+            if (!lengthCounterHalt && lengthCounter > 0) {
+                --lengthCounter;
+            }
+        }
 
         float getSample() const {
             if (!enabled) return 0.0f;
@@ -65,6 +134,9 @@ private:
     } triangle;
 
     struct NoiseChannel {
+        bool lengthCounterHalt = false;
+        uint8_t lengthCounter = 0;
+
         float envelopeClockTimer = 0.0f; // para clockar o envelope a 240Hz
         bool enabled = false;
         int volume = 15;
@@ -72,19 +144,47 @@ private:
         bool mode = false;
         float timer = 0;
         float timerPeriod = 0;
+
+        // Campos necessários
         bool envelopeStart = false;
+        int envelopeDivider = 0;
+        int envelopeDecayLevel = 0;
+        uint8_t envelopeDividerPeriod = 0;
         bool envelopeLoop = false;
         bool envelopeConstant = false;
-        uint8_t envelopeDecayLevel = 15;
-        uint8_t envelopeDivider = 0;
-        uint8_t envelopeDividerPeriod = 0;
+
+        // Envelope
+        void clockEnvelope() {
+            if (envelopeStart) {
+                envelopeStart = false;
+                envelopeDecayLevel = 15;
+                envelopeDivider = envelopeDividerPeriod;
+            }
+            else {
+                if (--envelopeDivider < 0) {
+                    envelopeDivider = envelopeDividerPeriod;
+                    if (envelopeDecayLevel > 0) {
+                        --envelopeDecayLevel;
+                    }
+                    else if (envelopeLoop) {
+                        envelopeDecayLevel = 15;
+                    }
+                }
+            }
+        }
+
+        // Length counter
+        void clockLength() {
+            if (!lengthCounterHalt && lengthCounter > 0) {
+                --lengthCounter;
+            }
+        }
 
         float getSample() const {
-            if (!enabled) return 0.0f;
-            if (shiftRegister & 1) return 0.0f;
+            if (!enabled || lengthCounter == 0 || (shiftRegister & 1)) return 0.0f;
 
-            float finalVolume = envelopeConstant ? volume : envelopeDecayLevel;
-            return finalVolume / 15.0f;
+            int volume = envelopeConstant ? envelopeDividerPeriod : envelopeDecayLevel;
+            return volume / 15.0f;
         }
     } noise;
 

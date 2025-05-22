@@ -309,8 +309,11 @@
 		int samples = len / sizeof(float);
 
 		for (int i = 0; i < samples; i++) {
-			self->apu->step(); // avança todos os canais
-			buffer[i] = self->apu->getMixedSample(); // retorna o som combinado dos canais
+			//self->apu->step(); // avança todos os canais
+			//buffer[i] = self->apu->getMixedSample(); // retorna o som combinado dos canais
+			const float cyclesPerSample = 1789773.0f / 44100.0f;
+			self->apu->stepCpuCycles(cyclesPerSample);
+			buffer[i] = self->apu->getMixedSample();
 		}
 	}
 
@@ -327,7 +330,7 @@
 		}
 		// Cria nova APU e configura
 		apu = new APU();
-		apu->setFrequency(44100.0f, 4);
+		//apu->setFrequency(44100.0f, 4);
 		apu->setEnabled(true);
 		bus->setAPU(apu);
 
