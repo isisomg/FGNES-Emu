@@ -185,7 +185,7 @@ void PPU::step() {
 		status.setVBlank(false);
 	}
 
-	if (scanline < 240) {
+	if (scanline < 240 && dot == 0) {
 		renderBackgroundScanline(scanline);
 		checkSpriteZeroHit(scanline);
 		renderScanline(scanline); // aqui chama os sprites

@@ -274,7 +274,7 @@
 
 		SDL_RenderPresent(RENDERER);
 
-		//SDL_Delay(16);
+		SDL_Delay(16);
 	}
 
 	void SDL_Display::destroy() {
