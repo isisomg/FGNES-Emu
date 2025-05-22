@@ -1,5 +1,6 @@
 ﻿#include "PPU.h"
 #include "Tipos.h"
+#include "Cartucho.h"
 
 //Somente pra testes, descomentar se nao for testar!!
 #include <iostream>
@@ -144,10 +145,50 @@ void PPU::writeToPPUData(Byte value) {
 }
 
 
+
+//////////////////////////////////////////////////////
+//			        MIRRORING!!						//									EBAAAAA!
+//////////////////////////////////////////////////////
+
+// Da pra melhorar o Mirroring com certeza, tem jogos do NES que usam FOUR SCREEN MIRRORING (brutal e medonho)
+// Mas sao tipo POUQUISSIMOS jogos.
+// Lista deles:
+// 
+//  Rad Racer II.
+//	Gauntlet.
+//	Napoleon Senki.																	(É O NOSSO AMIGO!!!!)
+//	Rocman X(Sachen) 																(Que é um bootleg)
+//	Todos os jogos Vs.System. que sao basicamente uma versao arcade do NES.
+
+MirroringSelect mirroringselect = MirroringSelect::Horizontal;
+
 DWord PPU::mirrorAddress(DWord address) {
-	address = (address - 0x2000) % 0x1000;
-	return address % 0x800; // Mirroring simplificado que fiz, ainda nao muito bem implementado! Vamos retorar aqui dps.
+	address = (address - 0x2000) % 0x1000; // Só parte da nametable (0x2000~0x2FFF)
+
+	DWord table = address / 0x400; // 0, 1, 2, 3 (nametable lógica)
+	DWord offset = address % 0x400;
+
+	switch (mirroringselect) {
+	case MirroringSelect::Vertical:
+		// 0 e 2 → NT0, 1 e 3 vai fica NT1
+		return (table % 2) * 0x400 + offset;
+
+	case MirroringSelect::Horizontal:
+		// 0 e 1 → NT0, 2 e 3 vai fica NT1
+		return (table / 2) * 0x400 + offset;
+	}
+
+	return offset; // fallback (não deveria acontecer)
 }
+
+//	NO CASO DESSE MIRRORING TER DADO ERRADO AQUI VAI FICAR O CODIGO DO MIRRORING MEIO FALSO QUE FIZ:
+
+//DWord PPU::mirrorAddress(DWord address) {
+//	address = (address - 0x2000) % 0x1000;
+//	return address % 0x800; // Mirroring simplificado que fiz, ainda nao muito bem implementado! Vamos retorar aqui dps.
+//}
+
+
 
 //////////////////////////////////////////////////////
 //            VBLANK (FEITO) & STEP                 //										uhul!
