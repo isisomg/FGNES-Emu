@@ -1,6 +1,5 @@
 ﻿#include "PPU.h"
 #include "Tipos.h"
-#include "Cartucho.h"
 
 //Somente pra testes, descomentar se nao for testar!!
 #include <iostream>
