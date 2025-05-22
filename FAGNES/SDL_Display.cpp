@@ -24,7 +24,7 @@
 		ImGui_ImplSDLRenderer2_Init(RENDERER);
 
 
-		TEXTURE = SDL_CreateTexture(RENDERER, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, TELA_WIDTH, TELA_HEIGHT);
+		TEXTURE = SDL_CreateTexture(RENDERER, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, TELA_WIDTH, TELA_HEIGHT);
 
 		if (!WINDOW) {
 			SDL_Log("Erro ao criar janela: %s", SDL_GetError());
@@ -115,14 +115,15 @@
 		SDL_LockTexture(TEXTURE, nullptr, &pixels, &pitch);
 		uint32_t* pixel_ptr = static_cast<uint32_t*>(pixels);
 
-		for (int y = 0; y < 240; ++y) { // copia o framebuffer para gerar textura
-			memcpy(&pixel_ptr[y * (pitch / 4)], &ppu->framebuffer[y * 256], 256 * sizeof(uint32_t));
-		}
+		//for (int y = 0; y < 240; ++y) { 
+		//	memcpy(&pixel_ptr[y * (pitch / 4)], &ppu->framebuffer[y * 256], 256 * sizeof(uint32_t));
+		//}
+		memcpy(pixel_ptr, ppu->framebuffer, TELA_WIDTH * TELA_HEIGHT * sizeof(uint32_t));// copia o framebuffer para gerar textura
+
 
 		// LIMPAR FRAMEBUFFER PARA NAO FICAR FUDIDO DE FEIO
-		for(int i = 0; i < TELA_WIDTH * TELA_HEIGHT; i++){
-			ppu->framebuffer[i] = 0;
-		}
+		memset(ppu->framebuffer, 0, TELA_WIDTH * TELA_HEIGHT * sizeof(ppu->framebuffer[0]));
+
 
 		SDL_UnlockTexture(TEXTURE);
 
