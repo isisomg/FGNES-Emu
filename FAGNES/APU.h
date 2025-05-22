@@ -12,7 +12,7 @@ public:
     void setEnabled(bool e);
     void setBus(Bus* b);
     void step();
-    float getMixedSample() const;  // Novo método para retornar mix de áudio
+    float getMixedSample() const;  // retornar mix de áudio
 
 
     float getSample(int channel) const; // 1 = pulse, 2 = triangle, 3 = noise, 4 = DMC
@@ -34,7 +34,7 @@ private:
         int phase = 0;
         float timer = 0;
         float timerPeriod = 0;
-		bool isInverted = false; // Canal 2 invertido para testes de cancelamento
+        bool isInverted = false; // Canal 2 invertido para testes de cancelamento
 
         // Campos necessários
         bool envelopeStart = false;
@@ -89,9 +89,11 @@ private:
     struct TriangleChannel {
         bool enabled = false;
         int phase = 0;
+        uint16_t timerValue = 0;
         float timer = 0;
         float timerPeriod = 0;
         int linearCounterReload = 0;
+        uint8_t sequencerStep = 0;
 
         // Campos necessários
         int linearCounter = 0;
@@ -119,6 +121,26 @@ private:
             if (!lengthCounterHalt && lengthCounter > 0) {
                 --lengthCounter;
             }
+        }
+
+        // Registradores
+        void writeControl(uint8_t value) {
+            linearControlFlag = (value >> 7) & 1;
+            linearCounterReload = value & 0x7F;
+            lengthCounterHalt = linearControlFlag;
+        }
+
+        void writeTimerLow(uint8_t value) {
+            timerValue = (timerValue & 0x0700) | value;
+        }
+
+        void writeTimerHigh(uint8_t value) {
+            timerValue = (timerValue & 0x00FF) | ((value & 0x07) << 8);
+            lengthCounter = triangleTable[(value >> 3) & 0x1F];
+            linearReloadFlag = true;
+            timerPeriod = timerValue + 1;
+            timer = timerPeriod;
+            sequencerStep = 0;
         }
 
         float getSample() const {
@@ -201,7 +223,7 @@ private:
         uint16_t dmcCurrentAddress = 0;
         uint16_t dmcSampleLength = 0;
         uint16_t dmcBytesRemaining = 0;
-        
+
         float getSample() const {
             return dmcOutputLevel / 127.0f;
         }

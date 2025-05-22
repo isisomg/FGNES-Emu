@@ -98,7 +98,13 @@ void APU::writeRegister(uint16_t addr, uint8_t value) {
 
         // Triangle
     case 0x4008:
-        triangle.linearCounterReload = value & 0x7F;
+        triangle.writeControl(value);
+        break;
+    case 0x400A:
+        triangle.writeTimerLow(value);
+        break;
+    case 0x400B:
+        triangle.writeTimerHigh(value);
         break;
 
         // Noise
@@ -272,7 +278,7 @@ float APU::getMixedSample() const {
         0.01f * dmc.getSample();
 
     float gain = 20.0f; // ajuste de volume geral
-    return (pulseOut + tndOut)*gain;
+    return (pulseOut + tndOut) * gain;
 }
 
 void APU::stepCpuCycles(float cpuCycles) {
@@ -304,4 +310,3 @@ void APU::clockFrameSequencer() {
         if (frameSequencerStep == 2) triangle.clockLength();
     }
 }
-
