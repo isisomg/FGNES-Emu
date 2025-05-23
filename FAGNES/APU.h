@@ -6,12 +6,15 @@ class Bus;
 
 class APU {
 public:
+    float PITCH_ADJUST = 1.05f;
+    uint8_t readRegister(uint16_t addr);
     void clockFrameSequencer();
     void stepCpuCycles(float cpuCycles);
     //void setFrequency(float freq, float can);
     void setEnabled(bool e);
     void setBus(Bus* b);
     void step();
+    //void fetchDMCByte();
     float getMixedSample() const;  // retornar mix de áudio
 
 
@@ -30,7 +33,7 @@ private:
         uint16_t timerValue = 0;
         bool enabled = false;
         int volume = 15;
-        int duty = 2;
+        int dutyCycle = 0;
         int phase = 0;
         float timer = 0;
         float timerPeriod = 0;
@@ -44,8 +47,46 @@ private:
         bool envelopeLoop = false;
         bool envelopeConstant = false;
 
+        // sweep
+        bool sweepEnable = false;
+        uint8_t sweepPeriod = 0;
+        bool sweepNegate = false;
+        uint8_t sweepShift = 0;
+        int sweepDivider = 0;
+        bool sweepReload = false;
+        bool sweepMute = false;
+
         int lengthCounter = 0;
         bool lengthCounterHalt = false;
+
+        // Sweep
+        void clockSweep() {
+            sweepMute = (timerValue < 8);
+
+            if (sweepDivider == 0 && sweepEnable && !sweepMute) {
+                // calcula nova period
+                int change = timerValue >> sweepShift;
+                if (sweepNegate) change = -change - (isInverted ? 1 : 0);
+                uint16_t newPeriod = timerValue + change;
+                // se overflow, silencia
+                if (newPeriod > 0x7FF) {
+                    sweepMute = true;
+                }
+                else {
+                    timerValue = newPeriod;
+                    timerPeriod = (timerValue + 1) * 2;
+                    sweepMute = false;
+                }
+            }
+            if (sweepDivider == 0 || sweepReload) {
+                sweepDivider = sweepPeriod;
+                sweepReload = false;
+            }
+            else {
+                --sweepDivider;
+            }
+        }
+
 
         // Envelope
         void clockEnvelope() {
@@ -75,12 +116,12 @@ private:
         }
 
         float getSample() const {
-            if (!enabled || timerValue < 8) return 0.0f;
+            if (!enabled || timerValue < 8 || lengthCounter == 0 || sweepMute) return 0.0f;
 
-            float amp = APU::dutyTable[duty][phase] ? volume : 0.0f;
-
-            // Canal 2 invertido para testes de cancelamento
-            return isInverted ? -amp : amp;
+            // usa envelope ou volume constante
+            uint8_t duty = APU::dutyTable[dutyCycle][phase];
+            float envelopeVolume = envelopeConstant ? envelopeDividerPeriod : envelopeDecayLevel;
+            return duty ? (envelopeVolume / 15.0f) : 0.0f;
         }
     } pulse1;
 
@@ -123,26 +164,6 @@ private:
             }
         }
 
-        // Registradores
-        void writeControl(uint8_t value) {
-            linearControlFlag = (value >> 7) & 1;
-            linearCounterReload = value & 0x7F;
-            lengthCounterHalt = linearControlFlag;
-        }
-
-        void writeTimerLow(uint8_t value) {
-            timerValue = (timerValue & 0x0700) | value;
-        }
-
-        void writeTimerHigh(uint8_t value) {
-            timerValue = (timerValue & 0x00FF) | ((value & 0x07) << 8);
-            lengthCounter = triangleTable[(value >> 3) & 0x1F];
-            linearReloadFlag = true;
-            timerPeriod = timerValue + 1;
-            timer = timerPeriod;
-            sequencerStep = 0;
-        }
-
         float getSample() const {
             if (!enabled) return 0.0f;
             static const int triangleTable[32] = {
@@ -164,6 +185,7 @@ private:
         int volume = 15;
         uint16_t shiftRegister = 1;
         bool mode = false;
+        int phase = 0;
         float timer = 0;
         float timerPeriod = 0;
 
@@ -212,17 +234,29 @@ private:
 
     struct DMCChannel {
         bool enabled = false;
-        bool loop = false;
+
         bool irqEnabled = false;
-        uint8_t dmcOutputLevel = 0;
-        uint8_t dmcShiftReg = 0;
-        uint8_t dmcBitCount = 0;
-        float dmcTimer = 0;
-        float dmcTimerPeriod = 428.0f;
+        bool irqFlag = false;
+        bool loop = false;
+
         uint16_t dmcSampleAddress = 0;
         uint16_t dmcCurrentAddress = 0;
         uint16_t dmcSampleLength = 0;
         uint16_t dmcBytesRemaining = 0;
+
+        uint8_t dmcOutputLevel = 0; // 7-bit unsigned
+        uint8_t dmcShiftReg = 0;
+        uint8_t dmcBitCount = 0;
+
+        uint16_t dmcTimer = 0;
+        float dmcTimerPeriod = 428; // default period
+
+        bool bufferEmpty = true;
+        uint8_t sampleBuffer = 0;
+
+        bool silence = true;
+
+        Bus* bus = nullptr; // referência ao barramento
 
         float getSample() const {
             return dmcOutputLevel / 127.0f;
