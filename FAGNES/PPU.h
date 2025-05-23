@@ -48,6 +48,21 @@ struct PPU {
 	void writeToPPUData(Byte value);
 
 	DWord mirrorAddress(DWord address);
+	//////////////////////////////////////////////////////
+	//                   Scroller                       //
+	//////////////////////////////////////////////////////
+	void writePPUScroll(Byte value);
+
+	// Scroll registers
+	DWord v = 0;
+	DWord t = 0;
+	Byte x = 0;
+	bool w = false;
+
+
+	// Métodos de incremento
+	void incrementX();
+	void incrementY();
 
 
 	//////////////////////////////////////////////////////

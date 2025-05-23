@@ -161,31 +161,31 @@ void PPU::writeToPPUData(Byte value) {
 
 MirroringSelect mirroringselect = MirroringSelect::Horizontal;
 
-DWord PPU::mirrorAddress(DWord address) {
-	address = (address - 0x2000) % 0x1000; // Só parte da nametable (0x2000~0x2FFF)
-
-	DWord table = address / 0x400; // 0, 1, 2, 3 (nametable lógica)
-	DWord offset = address % 0x400;
-
-	switch (mirroringselect) {
-	case MirroringSelect::Vertical:
-		// 0 e 2 → NT0, 1 e 3 vai fica NT1
-		return (table % 2) * 0x400 + offset;
-
-	case MirroringSelect::Horizontal:
-		// 0 e 1 → NT0, 2 e 3 vai fica NT1
-		return (table / 2) * 0x400 + offset;
-	}
-
-	return offset; // fallback (não deveria acontecer)
-}
+//DWord PPU::mirrorAddress(DWord address) {
+//	address = (address - 0x2000) % 0x1000; // Só parte da nametable (0x2000~0x2FFF)
+//
+//	DWord table = address / 0x400; // 0, 1, 2, 3 (nametable lógica)
+//	DWord offset = address % 0x400;
+//
+//	switch (mirroringselect) {
+//	case MirroringSelect::Vertical:
+//		// 0 e 2 → NT0, 1 e 3 vai fica NT1
+//		return (table % 2) * 0x400 + offset;
+//
+//	case MirroringSelect::Horizontal:
+//		// 0 e 1 → NT0, 2 e 3 vai fica NT1
+//		return (table / 2) * 0x400 + offset;
+//	}
+//
+//	return offset; // fallback (não deveria acontecer)
+//}
 
 //	NO CASO DESSE MIRRORING TER DADO ERRADO AQUI VAI FICAR O CODIGO DO MIRRORING MEIO FALSO QUE FIZ:
 
-//DWord PPU::mirrorAddress(DWord address) {
-//	address = (address - 0x2000) % 0x1000;
-//	return address % 0x800; // Mirroring simplificado que fiz, ainda nao muito bem implementado! Vamos retorar aqui dps.
-//}
+DWord PPU::mirrorAddress(DWord address) {
+	address = (address - 0x2000) % 0x1000;
+	return address % 0x800; // Mirroring simplificado que fiz, ainda nao muito bem implementado! Vamos retorar aqui dps.
+}
 
 
 
@@ -299,30 +299,103 @@ bool PPU::isNMIRequested() {
 	return result;
 }
 
-// Começo do:
-//////////////////////////////////////////////////////
-//                   SCROLLER                       //
-//////////////////////////////////////////////////////
+void PPU::incrementX() {
+	if ((v & 0x001F) == 31) { // Coarse X == 31?
+		v &= ~0x001F;         // Coarse X = 0
+		v ^= 0x0400;          // Switch horizontal nametable
+	}
+	else {
+		v += 1;
+	}
+}
 
-// Vou colocar isso no h, soq meu vscode bugou e nao ta salvando o h, entao vou colocar aqui mesmo, mas depois eu coloco no h de novo.
+void PPU::incrementY() {
+	if ((v & 0x7000) != 0x7000) {
+		v += 0x1000;
+	}
+	else {
+		v &= ~0x7000;
+		int y = (v & 0x03E0) >> 5;
+		if (y == 29) {
+			y = 0;
+			v ^= 0x0800; // Switch vertical nametable
+		}
+		else if (y == 31) {
+			y = 0;
+		}
+		else {
+			y += 1;
+		}
+		v = (v & ~0x03E0) | (y << 5);
+	}
+}
 
-//DWord v = 0; // Esse é o endereço de vram que ta sendo usado
-//DWord t = 0; // Endereco de VRAM temporario, que, PASMEM, vamos usar pra fazer o scroll! Eba!
-//DWord x = 0;  // X é o offset do tile que ta sendo renderizado. Ele vai de 0 a 7, e depois volta pra 0.
-//bool w = false; // write toggle !!! Isso é um latch que alterna entre os dois registradores de endereço, o t e o v. Ele é usado pra fazer scroll horizontal.
+//void PPU::renderBackgroundScanline(int scanline) {
+//	bool usePatternTable1 = (ctrl.control & 0x10);
+//	DWord patternBase = usePatternTable1 ? 0x1000 : 0x0000;
 //
-//void writePPUScroll(Byte value) {
-//	if (!w) {
-//		// A primeira escrita vai pro scroll x
-//		t = (t & 0x7FE0) | (value >> 3); // coarse X (5 bits) ((oraculo))
-//		x = value & 0x07;                // fine X (3 bits)	  ((oraculo))
-//		w = true;
+//	// Cache da paleta
+//	Byte paleta[32];
+//	for (int i = 0; i < 32; ++i)
+//		paleta[i] = read(0x3F00 + i);
+//
+//	DWord originalV = v;
+//
+//	int fineY = (v >> 12) & 0x7;
+//
+//	for (int tile = 0; tile < 33; ++tile) {
+//		DWord tileAddr = 0x2000 | (v & 0x0FFF);
+//		Byte tileIndex = read(tileAddr);
+//
+//		int coarseX = v & 0x1F;
+//		int coarseY = (v >> 5) & 0x1F;
+//		DWord nametableBase = 0x2000 | (v & 0x0C00);
+//		DWord attributeAddr = nametableBase + 0x3C0 + (coarseY / 4) * 8 + (coarseX / 4);
+//		Byte attributeByte = read(attributeAddr);
+//
+//		int shift = (((coarseY % 4) / 2) * 2 + ((coarseX % 4) / 2)) * 2;
+//
+//		Byte paletteBits = (attributeByte >> shift) & 0x03;
+//
+//		DWord tilePixelAddr = patternBase + tileIndex * 16 + fineY;
+//		Byte low = read(tilePixelAddr);
+//		Byte high = read(tilePixelAddr + 8);
+//
+//		for (int px = 0; px < 8; ++px) {
+//			int bit = 7 - px;
+//			Byte bit0 = (low >> bit) & 1;
+//			Byte bit1 = (high >> bit) & 1;
+//			Byte colorIndex = (bit1 << 1) | bit0;
+//			if (colorIndex == 0) {
+//				// Pixel transparente do tile: desenha a cor de fundo
+//				Byte color = paleta[0];  // Cor universal do fundo
+//				Pixel cor = cores[color % 64];
+//				framebuffer[scanline * 256 + (tile * 8 + px - x)] = (0xFF << 24) | (cor.r << 16) | (cor.g << 8) | cor.b;
+//				// NÃO marca backgroundBuffer, pois é pixel "transparente"
+//				continue;
+//			}
+//
+//			Byte paletteIndex = paletteBits * 4 + colorIndex;
+//			Byte color = paleta[paletteIndex & 0x1F];
+//
+//			int xPixel = tile * 8 + px - x;
+//			if (xPixel < 0 || xPixel >= 256) {
+//				incrementX();
+//				continue;
+//			}
+//
+//			int offset = scanline * 256 + xPixel;
+//			Pixel cor = cores[color % 64];
+//			framebuffer[offset] = (0xFF << 24) | (cor.r << 16) | (cor.g << 8) | cor.b;
+//			backgroundBuffer[offset] = 1;
+//		}
+//
+//		incrementX(); // Vai pro próximo tile
 //	}
-//	else {
-//		// A segunda escrita vai pro scroll y
-//		t = (t & 0x0C1F) | ((value & 0x07) << 12) | ((value & 0xF8) << 2); //  ((oraculo))
-//		w = false;
-//	}
+//
+//	// Restaura v no final do scanline (NES real faz isso)
+//	v = originalV;
+//	incrementY();
 //}
 
 //////////////////////////////////////////////////////
@@ -334,7 +407,7 @@ void PPU::renderScanline(int scanline) {
 }
 
 void PPU::drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int scanline) {
-	// ! ! ! P L A C E H O L D E R ! ! !  para desenhar um tile do sprite ! ! !
+	// ! ! ! P L A C E H O L D E R ! ! !  para desenhar um tile do sprite ! !
 	int spriteHeight = 8; // ou 16 se usar sprites altos (ver PPUCTRL)
 
 	// Verifica a linha do sprite que está sendo desenhada
@@ -378,7 +451,6 @@ void PPU::drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int sc
 		// Aqui você deve desenhar: substitua por sua função real de renderização
 		putPixel(finalX, scanline, color);
 
-
 	}
 }
 
@@ -388,7 +460,7 @@ void PPU::putPixel(int x, int y, uint8_t colorIndex) {
 	Pixel cor = cores[colorIndex % 64];  // Garante que está dentro do range
 
 	// RGBA8888 format: 0xRRGGBBAA
-	uint32_t pixelValue = (0xFF << 24) | (cor.r << 16) | (cor.g << 8) | (cor.b);
+	uint32_t pixelValue = (0xFF << 24) | (cor.r << 16) | (cor.g << 8) | cor.b;
 
 	framebuffer[y * 256 + x] = pixelValue; // escreve no buffer SDL2
 }
@@ -423,20 +495,20 @@ void PPU::checkSpriteZeroHit(int scanline) {
 
 			Byte bit0 = (low >> bit) & 1;
 			Byte bit1 = (high >> bit) & 1;
+			Byte colorIndex = (bit1 << 1) | bit0;
 
-			if ((bit0 | bit1) == 0) continue; // pixel transparente no sprite
+			if (colorIndex == 0) continue;
 
-			// Coordenada do pixel no framebuffer
-			int pixelX = x + i;
-			int pixelY = scanline;
+			Byte paletteIndex = 0x10 + (attributes & 0x03) * 4 + colorIndex;
+			Byte color = read(0x3F00 + (paletteIndex % 32));
 
-			// Verifica se background tem pixel não transparentes
-			bool bgOpaque = backgroundBuffer[pixelY * 256 + pixelX] != 0;
-
-			if (bgOpaque) {
-				// CHECK SE DETECTOU UM HIT OMG NO WAY AY AY AY
-				status.status |= 0x40; // seta bit 6
-				return;
+			int finalX = x + i;
+			if (finalX >= 0 && finalX < 256 && scanline >= 0 && scanline < 240) {
+				// Sprite 0 com pixel não transparente no background
+				if (backgroundBuffer[scanline * 256 + finalX]) {
+					status.status |= 0x40; // Sprite 0 hit
+					return;
+				}
 			}
 		}
 	}
