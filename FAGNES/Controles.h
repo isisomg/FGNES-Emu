@@ -47,4 +47,5 @@ public:
 	bool carregarMapeamento(const std::string& caminhoArquivo);
 	void processarEntrada(SDL_Scancode scancode, bool pressionado);
 	bool salvarMapInicial(const std::string& caminhoArquivo);
+	bool salvarMapeamento(const std::string& caminhoArquivo);
 };

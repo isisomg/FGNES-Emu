@@ -142,6 +142,39 @@ bool Controles::carregarMapeamento(const std::string& caminhoArquivo) {
 
 }
 
+bool Controles::salvarMapeamento(const std::string& caminhoArquivo) {
+    json j;
+    for (auto const& [botaoEnum, scancode] : mapeamentoTeclas) { //itera sobre o mapeamento de teclas atual e salva
+        const char* nomeTecla = SDL_GetScancodeName(scancode);
+        
+        if (nomeTecla && nomeTecla[0] != '\0') {
+            j[botaoParaString(botaoEnum)] = nomeTecla;
+        }
+        else {
+            j[botaoParaString(botaoEnum)] = "UNKNOWN";
+            std::cerr << "Aviso: Scancode para o botao " << botaoParaString(botaoEnum) << " nao tem nome ou é UNKNOWN. Salvo como UNKNOWN." << std::endl;
+        }
+
+    }
+
+    std::ofstream arquivo(caminhoArquivo);
+
+    if (!arquivo.is_open()) {
+        std::cerr << "Erro: Nao foi possivel abrir o arquivo para salvar o mapeamento: " << caminhoArquivo << std::endl;
+        return false;
+    }
+
+    try {
+        arquivo << j.dump(4);
+        std::cout << "Mapeamento de controles salvo em " << caminhoArquivo << std::endl;
+        return true;
+    }
+    catch(json::exception& e){
+        std::cerr << "Erro ao serializar para JSON ao salvar: " << e.what() << std::endl;
+        return false;
+    }
+}
+
 bool Controles::salvarMapInicial(const std::string& caminhoArquivo) {
 
     std::ifstream verificaArquivo(caminhoArquivo);
@@ -151,7 +184,9 @@ bool Controles::salvarMapInicial(const std::string& caminhoArquivo) {
     }
     verificaArquivo.close();
 
-    json j;
+    return salvarMapeamento(caminhoArquivo);
+
+    /*json j;
     for (auto const& [botao, scancode] : mapeamentoTeclas) {
         const char* nomeTecla = SDL_GetScancodeName(scancode);
         
@@ -180,6 +215,6 @@ bool Controles::salvarMapInicial(const std::string& caminhoArquivo) {
     catch(json::exception& e) {
         std::cerr << "Erro ao serializar para JSON (inicial): " << e.what() << std::endl;
         return false;
-    }
+    }*/
 
 }

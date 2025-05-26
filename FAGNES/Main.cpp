@@ -84,6 +84,11 @@ int main(int argc, char* argv[]) {
 		display.renderizar();
 		
 	}
+
+	//Teste salvar mapeamento, provavelmente vou remover no futuro
+	std::cout << "Saindo... tentando salvar o mapeamento dos controles." << std::endl;
+	controle.salvarMapeamento("controles.json");
+
 	//salvarArquivo(); // PARA DEBUG CPU
 	display.destroy();
 	delete bus;
