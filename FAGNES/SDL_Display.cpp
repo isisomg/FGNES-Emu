@@ -1,6 +1,8 @@
 	#pragma once
 	#include "SDL_Display.h"
 	#include "AbrirRom.h"
+	#include "Controles.h"
+
 
 	void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo, PPU* p) {
 		cartucho = cartuchoNovo;
@@ -72,7 +74,21 @@
 		if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
 			bool pressionado = (event.type == SDL_KEYDOWN);
 
-			switch (event.key.keysym.sym) {
+			// ImGui_ImplSDL2_ProcessEvent(&event); // Deixe para o loop principal em main.cpp para ImGui
+
+			if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
+				ImGuiIO& io = ImGui::GetIO(); //Se ImGui quiser o teclado ele prioriza as entradas apenas para a ImGUi
+
+				if (!io.WantCaptureKeyboard) { //precessa apenas se a ImGui não quiser usar o teclado
+
+					bool pressionado = (event.type == SDL_KEYDOWN);
+
+					controles->processarEntrada(event.key.keysym.scancode, pressionado); //Não rodar junto com o switch case abaixo
+				}
+
+			}
+
+			/*switch (event.key.keysym.sym) {
 				case SDLK_z:
 					pressionado ? controles->pressionar(A) : controles->soltar(A);
 					std::cout << "APERTOU A TECLA Z" << std::endl;
@@ -105,9 +121,9 @@
 					pressionado ? controles->pressionar(RIGHT) : controles->soltar(RIGHT);
 					std::cout << "APERTOU A TECLA RIGHT" << std::endl;
 					break;
-				}
-			}
+			}*/
 		}
+	}
 
 	void SDL_Display::renderizar() {
 		void* pixels;

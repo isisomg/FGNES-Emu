@@ -5,6 +5,7 @@
 #include "Cartucho.h"
 #include <iostream>
 #include <fstream>
+#include "Controles.h"
 
 const int ciclosPorFrame = 29781;
 
@@ -18,8 +19,15 @@ int main(int argc, char* argv[]) {
 	Cartucho cartucho;
 	
 	Controles controle;
+
+	if (!controle.carregarMapeamento("controles.json")) { //carrega mapeamento e cria arquivo padrão se necessario
+
+		//Se carregarMapeamento retorna false salvamos o mapeamento padrão no json
+		controle.salvarMapInicial("controles.json");
+	}
+
 	bus->setControles(&controle);
-	
+
 	CPU cpu;
 	PPU ppu;
 	APU apu;
