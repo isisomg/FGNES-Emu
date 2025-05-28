@@ -268,3 +268,37 @@ bool Controles::salvarMapInicial() {
     }*/
 
 }
+
+SDL_Scancode Controles::getScancodeParaBotao(botoesNES botao) const {
+
+    auto it = mapeamentoTeclas.find(botao);
+    if (it != mapeamentoTeclas.end()) {
+        return it->second;
+    }
+
+    auto it_padrao = mapeamentoPadrao.find(botao);
+    if (it_padrao != mapeamentoPadrao.end()) {
+        return it_padrao->second;
+    }
+
+    return SDL_SCANCODE_UNKNOWN;
+}
+
+void Controles::setScancodeParaBotao(botoesNES botao, SDL_Scancode scancode) {
+
+    if (scancode != SDL_SCANCODE_UNKNOWN) {
+        mapeamentoTeclas[botao] = scancode;
+        std::cout << "Botao " << botaoParaString(botao) << " remapeado para " << SDL_GetScancodeName(scancode) << std::endl;
+
+    }
+    else {
+        std::cout << "Tentativa de mapear Botao " << botaoParaString(botao) << " para SDL_SCANCODE_UNKNOWN ignorada." << std::endl;
+    }
+}
+
+void Controles::reverterParaPadrao() {
+
+    mapeamentoTeclas = mapeamentoPadrao;
+    std::cout << "Mapeamento de controles revertido para o padrao." << std::endl;
+
+}

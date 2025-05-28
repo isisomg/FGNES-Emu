@@ -44,6 +44,7 @@ private:
     bool usuarioLogado = false;
     std::string botaoSelecionado = "";
     std::string nomeUsuarioLogado = "";
+    int botaoAguardandoMapeamento = -1;
 
     enum class EstadoConta {
         FazendoLogin,
@@ -64,6 +65,6 @@ public:
     void destroy();
 
     // M�todos novos para a janela de controle
-    void abrirJanelaControle();
-    void renderizarJanelaControle();
+    //void abrirJanelaControle();
+    //void renderizarJanelaControle();
 };

@@ -50,7 +50,7 @@ public:
 	bool salvarMapeamento();
 
 	//Funções para a GUI
-	SDL_Scancode getScancodeBotao(botoesNES botao) const;
-	void setScancodeBotao(botoesNES botao, SDL_Scancode scancode);
-	void reverterPadrao();
+	SDL_Scancode getScancodeParaBotao(botoesNES botao) const;
+	void setScancodeParaBotao(botoesNES botao, SDL_Scancode scancode);
+	void reverterParaPadrao();
 };

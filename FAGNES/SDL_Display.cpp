@@ -71,23 +71,34 @@ void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo, PPU* p) {
 void SDL_Display::processarEntrada(SDL_Event event) {
 	if (!bus) return;
 	Controles* controles = bus->getControles(); //pega o ponteiro pros controles
+	ImGuiIO& io = ImGui::GetIO();
+
+	if (event.type == SDL_KEYDOWN && mostrarJanelaControle && botaoAguardandoMapeamento != -1) {
+		if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+			botaoAguardandoMapeamento = -1;
+			std::cout << "Mapeamento para o botao cancelado com ESC." << std::endl;
+		}
+		else if (event.key.keysym.scancode != SDL_SCANCODE_UNKNOWN) {
+			controles->setScancodeParaBotao(static_cast<botoesNES>(botaoAguardandoMapeamento), event.key.keysym.scancode);
+			botaoAguardandoMapeamento = -1;
+		}
+		return;
+	}
+
+
+	// ImGui_ImplSDL2_ProcessEvent(&event); // Deixe para o loop principal em main.cpp para ImGui
 
 	if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-		bool pressionado = (event.type == SDL_KEYDOWN);
+		ImGuiIO& io = ImGui::GetIO(); //Se ImGui quiser o teclado ele prioriza as entradas apenas para a ImGUi
 
-		// ImGui_ImplSDL2_ProcessEvent(&event); // Deixe para o loop principal em main.cpp para ImGui
+		if (!io.WantCaptureKeyboard) { //precessa apenas se a ImGui não quiser usar o teclado
 
-		if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-			ImGuiIO& io = ImGui::GetIO(); //Se ImGui quiser o teclado ele prioriza as entradas apenas para a ImGUi
+			bool pressionado = (event.type == SDL_KEYDOWN);
 
-			if (!io.WantCaptureKeyboard) { //precessa apenas se a ImGui não quiser usar o teclado
-
-				bool pressionado = (event.type == SDL_KEYDOWN);
-
-				controles->processarEntrada(event.key.keysym.scancode, pressionado); //Não rodar junto com o switch case abaixo
-			}
-
+			controles->processarEntrada(event.key.keysym.scancode, pressionado); //Não rodar junto com o switch case abaixo
 		}
+
+	}
 
 		/*switch (event.key.keysym.sym) {
 			case SDLK_z:
@@ -123,10 +134,11 @@ void SDL_Display::processarEntrada(SDL_Event event) {
 				std::cout << "APERTOU A TECLA RIGHT" << std::endl;
 				break;
 		}*/
-	}
+	
 }
 
 void SDL_Display::renderizar() {
+	static char popupMessage[256] = ""; // Buffer para mensagens de feedback dos popup
 	void* pixels;
 	int pitch;
 	SDL_LockTexture(TEXTURE, nullptr, &pixels, &pitch);
@@ -163,7 +175,10 @@ void SDL_Display::renderizar() {
 
 		if (ImGui::BeginMenu(u8"Opções")) {
 			if (ImGui::MenuItem("Controle")) {
-				mostrarJanelaControle = true;
+				mostrarJanelaControle = !mostrarJanelaControle;
+				if (!mostrarJanelaControle) {
+					botaoAguardandoMapeamento = -1;
+				}
 			}
 			if (ImGui::MenuItem("Conta")) {
 				mostrarJanelaConta = true;
@@ -359,51 +374,153 @@ void SDL_Display::renderizar() {
 	}
 
 	// Janela de mapeamento de controle
-	if (mostrarJanelaControle) {
-		// Define a posição e tamanho iniciais fora da área da tela do emulador
-		ImGui::SetNextWindowPos(ImVec2(500, 100), ImGuiCond_FirstUseEver); // Altere conforme necessário
-		ImGui::SetNextWindowSize(ImVec2(300, 250), ImGuiCond_FirstUseEver);
 
-		ImGui::Begin("Mapeamento de Controle NES", &mostrarJanelaControle,
-			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+	if (mostrarJanelaControle && bus && bus->getControles()) {
 
-		static const char* nomesBotoesNES[8] = {
-			"Cima", "Baixo", "Esquerda", "Direita", "B", "A", "Start", "Select"
-		};
+		Controles* controles = bus->getControles();
 
-		static SDL_Scancode mapeamentos[8] = {
-			SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
-			SDL_SCANCODE_X, SDL_SCANCODE_Z, SDL_SCANCODE_D, SDL_SCANCODE_F
-		};
+		ImGui::SetNextWindowSize(ImVec2(430, 390), ImGuiCond_FirstUseEver); // Ajuste o tamanho conforme necessário
+		ImGui::Begin("Mapeamento de Controle NES", &mostrarJanelaControle, ImGuiWindowFlags_NoCollapse);
 
-		static int aguardandoBotao = -1;
-
-		for (int i = 0; i < 8; ++i) {
-			ImGui::Text("%s:", nomesBotoesNES[i]);
-			ImGui::SameLine();
-
-			char label[32];
-			snprintf(label, sizeof(label), "Mapear##%d", i);
-			if (ImGui::Button(label)) {
-				aguardandoBotao = i;
-			}
-			ImGui::SameLine();
-			ImGui::Text("%s", SDL_GetScancodeName(mapeamentos[i]));
+		if (!mostrarJanelaControle) {
+			botaoAguardandoMapeamento = -1;
 		}
-		if (aguardandoBotao != -1) {
-			ImGui::Text(u8"Pressione uma tecla para o botão: %s", nomesBotoesNES[aguardandoBotao]);
 
-			const Uint8* state = SDL_GetKeyboardState(nullptr);
-			for (int sc = 0; sc < SDL_NUM_SCANCODES; ++sc) {
-				if (state[sc]) {
-					mapeamentos[aguardandoBotao] = static_cast<SDL_Scancode>(sc);
-					aguardandoBotao = -1;
-					break;
+		ImGui::TextWrapped("Clique em 'Mapear' ao lado de um botao e pressione a tecla desejada.\nPressione ESC para cancelar o mapeamento do botao atual.");
+		ImGui::Separator();
+		ImGui::Spacing();
+
+		const botoesNES ordemBotoesGui[] = {
+			botoesNES::UP, botoesNES::DOWN, botoesNES::LEFT, botoesNES::RIGHT,
+			botoesNES::A, botoesNES::B, botoesNES::SELECT, botoesNES::START
+		};
+
+		for (botoesNES botaoAtualEnum : ordemBotoesGui) {
+			const char* nomeExibicaoBotao = botaoParaString(botaoAtualEnum);
+			SDL_Scancode scancodeMapeado = controles->getScancodeParaBotao(botaoAtualEnum);
+			const char* nomeTeclaMapeada = (scancodeMapeado != SDL_SCANCODE_UNKNOWN) ? SDL_GetScancodeName(scancodeMapeado) : "N/A";
+
+			ImGui::Text("%s:", nomeExibicaoBotao);
+			ImGui::SameLine(150.0f); // Ajuste para alinhar
+
+			if (botaoAguardandoMapeamento == static_cast<int>(botaoAtualEnum)) {
+				ImGui::TextDisabled("[Pressione uma tecla... (ESC para cancelar)]");
+			}
+			else {
+				std::string labelBotaoMapear = std::string("Mapear##") + nomeExibicaoBotao;
+				if (ImGui::Button(labelBotaoMapear.c_str(), ImVec2(100, 0))) {
+					botaoAguardandoMapeamento = static_cast<int>(botaoAtualEnum);
 				}
 			}
+			ImGui::SameLine(270.0f); // Ajuste para alinhar
+			ImGui::TextUnformatted(nomeTeclaMapeada);
 		}
+
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
+
+		if (ImGui::Button("Salvar Mapeamentos", ImVec2(160, 0))) {
+			if (controles->salvarMapeamento()) {
+				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos com sucesso!", _TRUNCATE);
+				ImGui::OpenPopup("FeedbackPopup");
+			}
+			else {
+				strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao salvar mapeamentos.", _TRUNCATE);
+				ImGui::OpenPopup("FeedbackPopup");
+			}
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Carregar Mapeamentos", ImVec2(160, 0))) {
+			botaoAguardandoMapeamento = -1;
+
+			if (controles->carregarMapeamento()) {
+				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados com sucesso!", _TRUNCATE);
+				ImGui::OpenPopup("FeedbackPopup");
+			}
+			else {
+				strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao carregar mapeamentos.\n(Verifique se 'controles.json' existe junto ao .exe)", _TRUNCATE);
+				ImGui::OpenPopup("FeedbackPopup");
+			}
+		}
+
+		ImGui::Spacing();
+
+		if (ImGui::Button("Restaurar Padroes", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+			botaoAguardandoMapeamento = -1;
+			controles->reverterParaPadrao();
+
+			strncpy_s(popupMessage, sizeof(popupMessage), "Padroes restaurados.\nClique em 'Salvar' para persistir.", _TRUNCATE);
+			ImGui::OpenPopup("FeedbackPopup");
+		}
+
+		//Popup de feedback genérico
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		if (ImGui::BeginPopupModal("FeedbackPopup", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings)) {
+			ImGui::TextWrapped("%s", popupMessage);
+			ImGui::Separator();
+			ImGui::Spacing();
+			if (ImGui::Button("OK", ImVec2(120, 0))) {
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SetItemDefaultFocus();
+			ImGui::EndPopup();
+		}
+
 		ImGui::End();
+
 	}
+
+
+	//if (mostrarJanelaControle) {
+	//	// Define a posição e tamanho iniciais fora da área da tela do emulador
+	//	ImGui::SetNextWindowPos(ImVec2(500, 100), ImGuiCond_FirstUseEver); // Altere conforme necessário
+	//	ImGui::SetNextWindowSize(ImVec2(300, 250), ImGuiCond_FirstUseEver);
+
+	//	ImGui::Begin("Mapeamento de Controle NES", &mostrarJanelaControle,
+	//		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+
+	//	static const char* nomesBotoesNES[8] = {
+	//		"Cima", "Baixo", "Esquerda", "Direita", "B", "A", "Start", "Select"
+	//	};
+
+	//	static SDL_Scancode mapeamentos[8] = {
+	//		SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
+	//		SDL_SCANCODE_X, SDL_SCANCODE_Z, SDL_SCANCODE_D, SDL_SCANCODE_F
+	//	};
+
+	//	static int aguardandoBotao = -1;
+
+	//	for (int i = 0; i < 8; ++i) {
+	//		ImGui::Text("%s:", nomesBotoesNES[i]);
+	//		ImGui::SameLine();
+
+	//		char label[32];
+	//		snprintf(label, sizeof(label), "Mapear##%d", i);
+	//		if (ImGui::Button(label)) {
+	//			aguardandoBotao = i;
+	//		}
+	//		ImGui::SameLine();
+	//		ImGui::Text("%s", SDL_GetScancodeName(mapeamentos[i]));
+	//	}
+	//	if (aguardandoBotao != -1) {
+	//		ImGui::Text(u8"Pressione uma tecla para o botão: %s", nomesBotoesNES[aguardandoBotao]);
+
+	//		const Uint8* state = SDL_GetKeyboardState(nullptr);
+	//		for (int sc = 0; sc < SDL_NUM_SCANCODES; ++sc) {
+	//			if (state[sc]) {
+	//				mapeamentos[aguardandoBotao] = static_cast<SDL_Scancode>(sc);
+	//				aguardandoBotao = -1;
+	//				break;
+	//			}
+	//		}
+	//	}
+	//	ImGui::End();
+	//}
 
 	ImGui::Render();
 
