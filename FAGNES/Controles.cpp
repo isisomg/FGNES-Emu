@@ -284,16 +284,40 @@ SDL_Scancode Controles::getScancodeParaBotao(botoesNES botao) const {
     return SDL_SCANCODE_UNKNOWN;
 }
 
-void Controles::setScancodeParaBotao(botoesNES botao, SDL_Scancode scancode) {
+bool Controles::setScancodeParaBotao(botoesNES botaoAlvo, SDL_Scancode novoScancode, botoesNES* pBotaoConflito) {
 
-    if (scancode != SDL_SCANCODE_UNKNOWN) {
+    if (pBotaoConflito) {
+
+    }
+
+    if (novoScancode == SDL_SCANCODE_UNKNOWN) {
+        mapeamentoTeclas[botaoAlvo] = SDL_SCANCODE_UNKNOWN;
+        std::cout << "Botao " << botaoParaString(botaoAlvo) << " foi desmapeado." << std::endl;
+        return true;
+    }
+
+    for (auto const& [botaoExistente, scancodeExistente] : mapeamentoTeclas) {
+        if (scancodeExistente == novoScancode && botaoExistente != botaoAlvo) {
+            std::cerr << "ERRO: Tecla " << SDL_GetScancodeName(novoScancode) << " ja esta mapeada para o botao " << botaoParaString(botaoExistente) << std::endl;
+            if (pBotaoConflito) {
+                *pBotaoConflito = botaoExistente;
+            }
+            return false;
+        }
+    }
+
+    mapeamentoTeclas[botaoAlvo] = novoScancode;
+    std::cout << "Botao " << botaoParaString(botaoAlvo) << " mapeado para a tecla '" << SDL_GetScancodeName(novoScancode) << "'." << std::endl;
+    return true;
+
+    /*if (scancode != SDL_SCANCODE_UNKNOWN) {
         mapeamentoTeclas[botao] = scancode;
         std::cout << "Botao " << botaoParaString(botao) << " remapeado para " << SDL_GetScancodeName(scancode) << std::endl;
 
     }
     else {
         std::cout << "Tentativa de mapear Botao " << botaoParaString(botao) << " para SDL_SCANCODE_UNKNOWN ignorada." << std::endl;
-    }
+    }*/
 }
 
 void Controles::reverterParaPadrao() {

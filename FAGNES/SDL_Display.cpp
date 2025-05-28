@@ -70,10 +70,38 @@ void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo, PPU* p) {
 
 void SDL_Display::processarEntrada(SDL_Event event) {
 	if (!bus) return;
-	Controles* controles = bus->getControles(); //pega o ponteiro pros controles
+	Controles* controles = bus->getControles();
 	ImGuiIO& io = ImGui::GetIO();
 
 	if (event.type == SDL_KEYDOWN && mostrarJanelaControle && botaoAguardandoMapeamento != -1) {
+		SDL_Scancode teclaPressionada = event.key.keysym.scancode;
+
+		if (teclaPressionada == SDL_SCANCODE_ESCAPE) {
+			botaoAguardandoMapeamento = -1; 
+		}
+		else if (teclaPressionada != SDL_SCANCODE_UNKNOWN) {
+			botoesNES botaoParaMapear = static_cast<botoesNES>(botaoAguardandoMapeamento);
+			botoesNES botaoEmConflito; 
+
+			if (controles->setScancodeParaBotao(botaoParaMapear, teclaPressionada, &botaoEmConflito)) {
+			}
+			else {
+
+				this->mensagemPopupTeclaEmUso = "A tecla '";
+				this->mensagemPopupTeclaEmUso += SDL_GetScancodeName(teclaPressionada);
+				this->mensagemPopupTeclaEmUso += "' ja esta em uso pelo botao '";
+				this->mensagemPopupTeclaEmUso += botaoParaString(botaoEmConflito); 
+				this->mensagemPopupTeclaEmUso += "'.\n\nEscolha outra tecla ou desmapeie o botao '";
+				this->mensagemPopupTeclaEmUso += botaoParaString(botaoEmConflito);
+				this->mensagemPopupTeclaEmUso += "' primeiro.";
+				this->mostrarPopupTeclaEmUso = true; 
+			}
+			botaoAguardandoMapeamento = -1; 
+		}
+		return;
+	}
+
+	/*if (event.type == SDL_KEYDOWN && mostrarJanelaControle && botaoAguardandoMapeamento != -1) {
 		if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
 			botaoAguardandoMapeamento = -1;
 			std::cout << "Mapeamento para o botao cancelado com ESC." << std::endl;
@@ -83,7 +111,7 @@ void SDL_Display::processarEntrada(SDL_Event event) {
 			botaoAguardandoMapeamento = -1;
 		}
 		return;
-	}
+	}*/
 
 
 	// ImGui_ImplSDL2_ProcessEvent(&event); // Deixe para o loop principal em main.cpp para ImGui
@@ -472,6 +500,23 @@ void SDL_Display::renderizar() {
 		}
 
 		ImGui::End();
+
+		if (this->mostrarPopupTeclaEmUso) {
+			ImGui::OpenPopup("TeclaJaEmUsoPopup");
+		}
+
+		if (ImGui::BeginPopupModal("TeclaJaEmUsoPopup", &this->mostrarPopupTeclaEmUso, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings)) {
+			ImGui::TextWrapped("%s", this->mensagemPopupTeclaEmUso.c_str());
+			ImGui::Spacing();
+			ImGui::Separator();
+			ImGui::Spacing();
+			if (ImGui::Button("OK", ImVec2(120, 0))) {
+				this->mostrarPopupTeclaEmUso = false; 
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SetItemDefaultFocus();
+			ImGui::EndPopup();
+		}
 
 	}
 

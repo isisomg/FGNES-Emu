@@ -45,6 +45,8 @@ private:
     std::string botaoSelecionado = "";
     std::string nomeUsuarioLogado = "";
     int botaoAguardandoMapeamento = -1;
+    bool mostrarPopupTeclaEmUso = false;
+    std::string mensagemPopupTeclaEmUso = "";
 
     enum class EstadoConta {
         FazendoLogin,

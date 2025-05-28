@@ -51,6 +51,6 @@ public:
 
 	//Funções para a GUI
 	SDL_Scancode getScancodeParaBotao(botoesNES botao) const;
-	void setScancodeParaBotao(botoesNES botao, SDL_Scancode scancode);
+	bool setScancodeParaBotao(botoesNES botaoAlvo, SDL_Scancode novoScancode, botoesNES* pBotaoConflito = nullptr);
 	void reverterParaPadrao();
 };
