@@ -1,5 +1,7 @@
 #include "Cartucho.h"
 #include "Mapper2.h"
+#include "Mapper1.h"
+#include "Mapper24.h"
 #include "Bus.h"
 void Cartucho::init(const std::string& path) {
 	std::ifstream arquivo(path, std::ios::binary);
@@ -61,10 +63,15 @@ void Cartucho::init(const std::string& path) {
 		}
 		break;
 	case 1:
-		//mapper = std::make_unique<Mapper1>(prgBanks, chrBanks, prgROM, chrROM); // MMC1 MAPPER1
+		mapper = std::make_unique<Mapper1>(prgBanks, chrBanks, prgROM, chrROM); // MMC1 MAPPER1
+		adrPCinicial = readPRG(0xFFFC) | (readPRG(0xFFFD) << 8);
 		break;
 	case 2:
 		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM); // UxROM MAPPER2
+		adrPCinicial = readPRG(0xFFFC) | (readPRG(0xFFFD) << 8);
+		break;
+	case 24:
+		mapper = std::make_unique<Mapper24>(prgBanks, chrBanks, prgROM, chrROM);
 		adrPCinicial = readPRG(0xFFFC) | (readPRG(0xFFFD) << 8);
 		break;
 	default:

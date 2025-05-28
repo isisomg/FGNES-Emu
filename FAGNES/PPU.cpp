@@ -89,10 +89,10 @@ Byte PPU::read(DWord address) {
 }
 
 void PPU::carregarCHR(const std::vector<Byte>& chrData) {
-	if (chrData.size() > sizeof(patternTable)) {
+	/*if (chrData.size() > sizeof(patternTable)) {
 		std::cerr << "Erro: CHR-ROM maior que 8KB!" << std::endl;
 		return;
-	}
+	}*/
 
 	// Copia os dados da CHR-ROM para a tabela de padrões
 	std::copy(chrData.begin(), chrData.end(), patternTable);

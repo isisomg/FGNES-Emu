@@ -40,7 +40,17 @@ private:
 
     std::map<std::string, SDL_Scancode> mapeamentoTeclas;
     bool mostrarJanelaControle = false;
+    bool mostrarJanelaConta = false;
+    bool usuarioLogado = false;
     std::string botaoSelecionado = "";
+    std::string nomeUsuarioLogado = "";
+
+    enum class EstadoConta {
+        FazendoLogin,
+        LoginSucesso,
+        Logado
+    };
+    EstadoConta estadoAtualConta = EstadoConta::FazendoLogin;
 
 public:
     bool jogoRodando = false;

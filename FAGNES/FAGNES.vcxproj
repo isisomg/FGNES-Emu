@@ -141,7 +141,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\lilsiru\source\repos\FGNES-Emu3\Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Acer\Desktop\PI5\FGNES-Emu\Libraries\include\nlohmann;C:\Users\lilsiru\source\repos\FGNES-Emu3\Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -193,7 +193,9 @@
     <ClCompile Include="MainJanelaDeTeste.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mapper0.cpp" />
+    <ClCompile Include="Mapper1.cpp" />
     <ClCompile Include="Mapper2.cpp" />
+    <ClCompile Include="Mapper24.cpp" />
     <ClCompile Include="PPU.cpp" />
     <ClCompile Include="SDL_Display.cpp" />
     <ClCompile Include="SDL.cpp" />
@@ -211,7 +213,9 @@
     <ClInclude Include="DMCChannel.h" />
     <ClInclude Include="Mapper.h" />
     <ClInclude Include="Mapper0.h" />
+    <ClInclude Include="Mapper1.h" />
     <ClInclude Include="Mapper2.h" />
+    <ClInclude Include="Mapper24.h" />
     <ClInclude Include="Memoria.h" />
     <ClInclude Include="PPU.h" />
     <ClInclude Include="SDL_Display.h" />
