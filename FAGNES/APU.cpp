@@ -368,7 +368,7 @@ void APU::step() {
 float APU::getMixedSample() const {
     float pulseOut = 0.00752f * (pulse1.getSample() + pulse2.getSample());
     float tndOut =
-        0.00851f * triangle.getSample() +
+        //0.00851f * triangle.getSample() +
         0.00494f * noise.getSample() +
         0.01f * dmc.getSample();
 

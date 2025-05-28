@@ -6,7 +6,7 @@ class Bus;
 
 class APU {
 public:
-    float PITCH_ADJUST = 1.05f;
+    float PITCH_ADJUST = 1.075f;
     uint8_t readRegister(uint16_t addr);
     void clockFrameSequencer();
     void stepCpuCycles(float cpuCycles);
