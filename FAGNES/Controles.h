@@ -44,8 +44,13 @@ public:
 	void escreverStrobe(bool valor);
 	Byte ler();
 
-	bool carregarMapeamento(const std::string& caminhoArquivo);
+	bool carregarMapeamento();
 	void processarEntrada(SDL_Scancode scancode, bool pressionado);
-	bool salvarMapInicial(const std::string& caminhoArquivo);
-	bool salvarMapeamento(const std::string& caminhoArquivo);
+	bool salvarMapInicial();
+	bool salvarMapeamento();
+
+	//Funções para a GUI
+	SDL_Scancode getScancodeBotao(botoesNES botao) const;
+	void setScancodeBotao(botoesNES botao, SDL_Scancode scancode);
+	void reverterPadrao();
 };

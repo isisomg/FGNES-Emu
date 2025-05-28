@@ -54,10 +54,10 @@ int main(int argc, char* argv[]) {
 	
 	Controles controle;
 
-	if (!controle.carregarMapeamento("controles.json")) { //carrega mapeamento e cria arquivo padrão se necessario
+	if (!controle.carregarMapeamento()) { //carrega mapeamento e cria arquivo padrão se necessario
 
 		//Se carregarMapeamento retorna false salvamos o mapeamento padrão no json
-		controle.salvarMapInicial("controles.json");
+		controle.salvarMapInicial();
 	}
 
 	bus->setControles(&controle);
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
 
 	//Teste salvar mapeamento, provavelmente vou remover no futuro
 	std::cout << "Saindo... tentando salvar o mapeamento dos controles." << std::endl;
-	controle.salvarMapeamento("controles.json");
+	controle.salvarMapeamento();
 
 	if (firebase_app) {
 		// Se você criou um AuthStateListener, remova-o aqui
