@@ -7,12 +7,46 @@
 #include <fstream>
 #include "Controles.h"
 
+#include "firebase/app.h"
+#include "firebase/auth.h"
+#include "firebase/log.h"
+
 const int ciclosPorFrame = 29781;
 
 int main(int argc, char* argv[]) {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 		std::cerr << "Erro ao inicializar SDL: " << SDL_GetError() << std::endl;
 		return 1;
+	}
+
+	std::cout << "Tentando inicializar Firebase..." << std::endl;
+
+	firebase::AppOptions options;
+	options.set_api_key("SUA_API_KEY");          // Encontre em Configurações do Projeto -> Geral
+	options.set_app_id("SEU_APP_ID");            // Encontre em Configurações do Projeto -> Geral (ex: 1:1234567890:web:abcdef123456)
+	options.set_project_id("SEU_PROJECT_ID");    // Encontre em Configurações do Projeto -> Geral
+
+	firebase::App* firebase_app = firebase::App::Create(options);
+
+	if (firebase_app) {
+		std::cout << "Firebase App inicializado com sucesso!" << std::endl;
+		std::cout << "Nome do App: " << firebase_app->name() << std::endl;
+		std::cout << "App ID: " << firebase_app->options().app_id() << std::endl;
+
+		// Opcional: Tentar obter o objeto Auth para testar a lib firebase_auth
+		firebase::auth::Auth* auth = firebase::auth::Auth::GetAuth(firebase_app);
+		if (auth) {
+			std::cout << "Firebase Auth obtido com sucesso!" << std::endl;
+		}
+		else {
+			std::cerr << "Erro ao obter Firebase Auth." << std::endl;
+		}
+
+	}
+	else {
+		std::cerr << "Erro ao inicializar Firebase App." << std::endl;
+		// Você pode tentar obter mais detalhes do log se configurar firebase::log::SetLevel(firebase::log::kLogLevelVerbose);
+		// antes de firebase::App::Create()
 	}
 
 	Bus* bus = new Bus();
@@ -88,6 +122,19 @@ int main(int argc, char* argv[]) {
 	//Teste salvar mapeamento, provavelmente vou remover no futuro
 	std::cout << "Saindo... tentando salvar o mapeamento dos controles." << std::endl;
 	controle.salvarMapeamento("controles.json");
+
+	if (firebase_app) {
+		// Se você criou um AuthStateListener, remova-o aqui
+		// if (auth_listener_ && auth) {
+		//    auth->RemoveAuthStateListener(auth_listener_);
+		//    delete auth_listener_;
+		//    auth_listener_ = nullptr;
+		// }
+		// O objeto auth é gerenciado pelo firebase_app, não delete diretamente.
+		delete firebase_app;
+		firebase_app = nullptr;
+		std::cout << "Firebase App finalizado." << std::endl;
+	}
 
 	//salvarArquivo(); // PARA DEBUG CPU
 	display.destroy();
