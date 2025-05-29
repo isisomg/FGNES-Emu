@@ -15,11 +15,28 @@ struct PPUSTATUS {
 	Byte status = 0;
 	Byte read();
 	void setVBlank(bool value);
+	//void setSprite0Hit(bool value);			 Talvez eu tenha que fazer um rework disso, pra funcionar mais eficientemente. Por isso ta aqui como comentário.
+	//void setSpriteOverflow(bool value);		 Disso tb
+	void reset();
+};
+
+struct PPUMASK {
+	bool grayscale = false; // 0x01
+	bool showBackgroundLeft = false; // 0x02
+	bool showSpritesLeft = false; // 0x04
+	bool showBackground = false; // 0x08
+	bool showSprites = false; // 0x10
+	bool emphasizeRed = false; // 0x20
+	bool emphasizeGreen = false; // 0x40
+	bool emphasizeBlue = false; // 0x80
+
+	void write(Byte value);
 };
 
 struct PPU {
 	bool isNMIRequested();
 	PPUCTRL ctrl;
+	PPUMASK mask;
 	PPUSTATUS status;
 
 	// Aqui PRECISA MESMO MESMO EMESMO de um background buffer paralelo, com informações de opacidade do background para que o sprite zero hit funcione corretamente.
@@ -41,24 +58,22 @@ struct PPU {
 
 	void carregarCHR(const std::vector<Byte>& chrData);
 	void putPixel(int x, int y, uint8_t colorIndex); // escrever buffer SDL.
-	uint32_t framebuffer[256 * 240] = {0}; // buffer para o SDL2 desenhar o frame.
+	uint32_t framebuffer[256 * 240] = { 0 }; // buffer para o SDL2 desenhar o frame.
 
 	// $2007 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	Byte readFromPPUData();
 	void writeToPPUData(Byte value);
 
 	DWord mirrorAddress(DWord address);
-	//////////////////////////////////////////////////////
-	//                   Scroller                       //
-	//////////////////////////////////////////////////////
-	void writePPUScroll(Byte value);
 
-	// Scroll registers
-	DWord v = 0;
-	DWord t = 0;
-	Byte x = 0;
-	bool w = false;
+	//////////////////////////////////////////////////////
+		//                   Scroller & VRAM Address        //
+		//////////////////////////////////////////////////////
 
+	DWord v = 0;   // Endereço VRAM atual (15 bits)
+	DWord t = 0;   // Endereço VRAM temporário (15 bits)
+	Byte x = 0;    // Rolagem Fina X (3 bits)
+	bool w = false; // Latch de escrita (para $2005 e $2006)
 
 	// Métodos de incremento
 	void incrementX();
@@ -72,38 +87,27 @@ struct PPU {
 	int scanline = 0;
 	int dot = 0;
 
-
-
 	void step();
 	void renderScanline(int scanline);
 	void renderBackgroundScanline(int scanline);
 	void renderSprites(int scanline);
 	void drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int scanline);
-	void checkSpriteZeroHit(int scanline);  // Aqui eu isis calabresi acabei de adicionar o sprite zero hit
-
-
+	void checkSpriteZeroHit(int scanline);
 
 
 	//////////////////////////////////////////////////////
 	//                      OAM                         //
 	//////////////////////////////////////////////////////
 
-	// Como escrito na biblia do nesdev.org, a OAM e uma memoria que contem uma lista de display de ate 64 sprites. Cada sprite ocupando 4 bytes.
-
-	Byte OAM[256] = { 0 };		// 64 x 4 = 256 bytes de OAM, que é o que vamos implementar aqui.
-	Byte oamAddress = 0x00;		// Endereço de OAM que estamos escrevendo.
+	Byte OAM[256] = { 0 };
+	Byte oamAddress = 0x00;
 
 	void doOAMDMA(const Byte* cpuMemoryPage);
-
-	// Registradores de controle de endereço
-	DWord ppuAddress = 0x0000;
-	bool addressLatch = false;
 
 	void writeToPPUADDR(Byte value);
 
 	// Interface com a CPU
 	void cpuWrite(DWord addr, Byte data);
-
 	Byte cpuRead(DWord addr);
 
 	void (*nmiCallback)() = nullptr;
@@ -120,13 +124,3 @@ enum struct MirroringSelect {
 };
 
 extern MirroringSelect mirroringselect; //tive que fazer esse extern pq tava dando um problema com a APU.
-
-//////////////////////////////////////////////////////////////////////////////////////////		FALTA:  	 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//	O que falta?
-//
-//	Scroll completo
-//
-//	Mirroring configurável
-//
-//	Suporte opcional a sprites 8x16
