@@ -117,14 +117,17 @@ Controles::Controles() {
 void Controles::pressionar(botoesNES botao) {
 	estado |= (1 << static_cast<int>(botao));
     //printf("Controle: botão %d pressionado, estado = 0x%02X\n", botao, estado);
+    std::cout << "Botao PRESSIONADO: " << botaoParaString(botao) << ", Novo Estado: 0x" << std::hex << static_cast<int>(estado) << std::dec << std::endl;
 }
 
 void Controles::soltar(botoesNES botao) {
 	estado &= ~(1 << static_cast<int>(botao));
+    std::cout << "Botao PRESSIONADO: " << botaoParaString(botao) << ", Novo Estado: 0x" << std::hex << static_cast<int>(estado) << std::dec << std::endl;
 }
 
 void Controles::escreverStrobe(bool valor) {
     strobe = valor;
+    std::cout << "STROBE escrito: " << (strobe ? "1 (LATCH/RESET INDICE)" : "0 (ENABLE SHIFT)") << std::endl;
     if (strobe) {
         indice = 0;
     }
@@ -139,6 +142,8 @@ Byte Controles::ler() {
     else {
         retorno = 1; // Após 8 leituras, o NES retorna 1
     }
+
+    std::cout << "Controle::ler() - Strobe: " << strobe << ", Indice Atual: " << static_cast<int>(indice) << ", Estado: 0x" << std::hex << static_cast<int>(estado) << std::dec << ", Retornando bit: " << static_cast<int>(retorno) << std::endl;
 
     if (!strobe) {
         indice++;
