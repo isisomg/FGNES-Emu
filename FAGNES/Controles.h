@@ -2,8 +2,10 @@
 #include "Tipos.h"
 #include <string>
 #include <map>
+#include "SDL.h"
 #include <SDL_scancode.h>
 #include <SDL_keyboard.h>
+#include "firebase/database.h"
 
 //índices dos botões
 enum class botoesNES {
@@ -37,6 +39,9 @@ private:
 	std::map<botoesNES, SDL_Scancode> mapeamentoPadrao; //mapeamento padrão
 	
 public:
+	bool salvarMapeamentoNoFirebase(firebase::database::Database* db, const std::string& user_id);
+	bool carregarMapeamentoDoFirebase(firebase::database::Database* db, const std::string& user_id);
+
 	Controles();
 
 	void pressionar(botoesNES botao);

@@ -454,10 +454,10 @@ void SDL_Display::renderizar() {
 								erroCadastro = u8"As senhas não coincidem.";
 								exibirErroCadastro = true;
 							}
-							else if (firebase::auth::kAuthErrorEmailAlreadyInUse) {
+							/*else if (firebase::auth::kAuthErrorEmailAlreadyInUse) {
 								erroCadastro = u8"E-mail já está em uso.";
 								exibirErroCadastro = true;
-							}
+							}*/
 							else if (strlen(newUser) < 3 || strlen(newPass) < 6) {
 								erroCadastro = u8"Usuário precisa de 3+ letras e senha 6+.";
 								exibirErroCadastro = true;
@@ -554,170 +554,200 @@ void SDL_Display::renderizar() {
 		ImGui::Spacing();
 
 		if (ImGui::Button("Salvar Mapeamentos", ImVec2(160, 0))) {
-			if (controles->salvarMapeamento()) {
-				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos com sucesso!", _TRUNCATE);
+			if (firebaseAuth && firebaseDatabase) {
+				auto user = firebaseAuth->current_user(); // valor, não ponteiro
+				std::string uid = user.uid();
+
+				if (!uid.empty()) {
+					if (controles->salvarMapeamentoNoFirebase(firebaseDatabase, uid)) {
+						strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos no Firebase!", _TRUNCATE);
+					}
+					else {
+						strncpy_s(popupMessage, sizeof(popupMessage), "Erro ao salvar no Firebase. Salvando localmente...", _TRUNCATE);
+						controles->salvarMapeamento();
+					}
+				}
+				else {
+					if (controles->salvarMapeamento()) {
+						strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos localmente!", _TRUNCATE);
+					}
+					else {
+						strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao salvar mapeamentos.", _TRUNCATE);
+					}
+				}
 				ImGui::OpenPopup("FeedbackPopup");
+			}
+		}
+
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Carregar Mapeamentos", ImVec2(160, 0))) {
+				if (firebaseAuth && firebaseDatabase) {
+					auto user = firebaseAuth->current_user(); // valor
+					std::string uid = user.uid();
+
+					if (!uid.empty()) {
+						if (controles->carregarMapeamentoDoFirebase(firebaseDatabase, uid)) {
+							strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados do Firebase!", _TRUNCATE);
+						}
+						else {
+							strncpy_s(popupMessage, sizeof(popupMessage), "Erro ao carregar do Firebase. Tentando local...", _TRUNCATE);
+							controles->carregarMapeamento();
+						}
+					}
+					else {
+						if (controles->carregarMapeamento()) {
+							strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados localmente!", _TRUNCATE);
+						}
+						else {
+							strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao carregar mapeamentos locais.", _TRUNCATE);
+						}
+					}
+					ImGui::OpenPopup("FeedbackPopup");
+				}
+			}
+
+
+				ImGui::Spacing();
+
+				if (ImGui::Button("Restaurar Padroes", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+					botaoAguardandoMapeamento = -1;
+					controles->reverterParaPadrao();
+
+					strncpy_s(popupMessage, sizeof(popupMessage), "Padroes restaurados.\nClique em 'Salvar' para persistir.", _TRUNCATE);
+					ImGui::OpenPopup("FeedbackPopup");
+				}
+
+				//Popup de feedback genérico
+				ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+				ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+				if (ImGui::BeginPopupModal("FeedbackPopup", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings)) {
+					ImGui::TextWrapped("%s", popupMessage);
+					ImGui::Separator();
+					ImGui::Spacing();
+					if (ImGui::Button("OK", ImVec2(120, 0))) {
+						ImGui::CloseCurrentPopup();
+					}
+
+					ImGui::SetItemDefaultFocus();
+					ImGui::EndPopup();
+				}
+
+				ImGui::End();
+
+				if (this->mostrarPopupTeclaEmUso) {
+					ImGui::OpenPopup("TeclaJaEmUsoPopup");
+				}
+
+				if (ImGui::BeginPopupModal("TeclaJaEmUsoPopup", &this->mostrarPopupTeclaEmUso, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings)) {
+					ImGui::TextWrapped("%s", this->mensagemPopupTeclaEmUso.c_str());
+					ImGui::Spacing();
+					ImGui::Separator();
+					ImGui::Spacing();
+					if (ImGui::Button("OK", ImVec2(120, 0))) {
+						this->mostrarPopupTeclaEmUso = false;
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::SetItemDefaultFocus();
+					ImGui::EndPopup();
+				}
+
+			}
+
+
+			//if (mostrarJanelaControle) {
+			//	// Define a posição e tamanho iniciais fora da área da tela do emulador
+			//	ImGui::SetNextWindowPos(ImVec2(500, 100), ImGuiCond_FirstUseEver); // Altere conforme necessário
+			//	ImGui::SetNextWindowSize(ImVec2(300, 250), ImGuiCond_FirstUseEver);
+
+			//	ImGui::Begin("Mapeamento de Controle NES", &mostrarJanelaControle,
+			//		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+
+			//	static const char* nomesBotoesNES[8] = {
+			//		"Cima", "Baixo", "Esquerda", "Direita", "B", "A", "Start", "Select"
+			//	};
+
+			//	static SDL_Scancode mapeamentos[8] = {
+			//		SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
+			//		SDL_SCANCODE_X, SDL_SCANCODE_Z, SDL_SCANCODE_D, SDL_SCANCODE_F
+			//	};
+
+			//	static int aguardandoBotao = -1;
+
+			//	for (int i = 0; i < 8; ++i) {
+			//		ImGui::Text("%s:", nomesBotoesNES[i]);
+			//		ImGui::SameLine();
+
+			//		char label[32];
+			//		snprintf(label, sizeof(label), "Mapear##%d", i);
+			//		if (ImGui::Button(label)) {
+			//			aguardandoBotao = i;
+			//		}
+			//		ImGui::SameLine();
+			//		ImGui::Text("%s", SDL_GetScancodeName(mapeamentos[i]));
+			//	}
+			//	if (aguardandoBotao != -1) {
+			//		ImGui::Text(u8"Pressione uma tecla para o botão: %s", nomesBotoesNES[aguardandoBotao]);
+
+			//		const Uint8* state = SDL_GetKeyboardState(nullptr);
+			//		for (int sc = 0; sc < SDL_NUM_SCANCODES; ++sc) {
+			//			if (state[sc]) {
+			//				mapeamentos[aguardandoBotao] = static_cast<SDL_Scancode>(sc);
+			//				aguardandoBotao = -1;
+			//				break;
+			//			}
+			//		}
+			//	}
+			//	ImGui::End();
+			//}
+
+			ImGui::Render();
+
+			SDL_RenderClear(RENDERER);
+
+			/*SDL_Rect dstRect = { 0, 0, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM };*/
+			// Antes de criar o dstRect, pegue o tamanho atual da janela:
+			int winW, winH;
+			SDL_GetWindowSize(WINDOW, &winW, &winH);
+
+			int dstW = TELA_WIDTH * ZOOM;
+			int dstH = TELA_HEIGHT * ZOOM;
+
+			int offsetX;
+			int offsetY;
+			if (isFull) {
+				// centraliza horizontal e verticalmente
+				offsetX = (winW - dstW) / 2;
+				offsetY = (winH - dstH) / 2;
 			}
 			else {
-				strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao salvar mapeamentos.", _TRUNCATE);
-				ImGui::OpenPopup("FeedbackPopup");
-			}
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("Carregar Mapeamentos", ImVec2(160, 0))) {
-			botaoAguardandoMapeamento = -1;
-
-			if (controles->carregarMapeamento()) {
-				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados com sucesso!", _TRUNCATE);
-				ImGui::OpenPopup("FeedbackPopup");
-			}
-			else {
-				strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao carregar mapeamentos.\n(Verifique se 'controles.json' existe junto ao .exe)", _TRUNCATE);
-				ImGui::OpenPopup("FeedbackPopup");
-			}
-		}
-
-		ImGui::Spacing();
-
-		if (ImGui::Button("Restaurar Padroes", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-			botaoAguardandoMapeamento = -1;
-			controles->reverterParaPadrao();
-
-			strncpy_s(popupMessage, sizeof(popupMessage), "Padroes restaurados.\nClique em 'Salvar' para persistir.", _TRUNCATE);
-			ImGui::OpenPopup("FeedbackPopup");
-		}
-
-		//Popup de feedback genérico
-		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-		if (ImGui::BeginPopupModal("FeedbackPopup", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings)) {
-			ImGui::TextWrapped("%s", popupMessage);
-			ImGui::Separator();
-			ImGui::Spacing();
-			if (ImGui::Button("OK", ImVec2(120, 0))) {
-				ImGui::CloseCurrentPopup();
+				// mantém o menu bar no topo quando não é fullscreen
+				float menuBarAltura = ImGui::GetFrameHeight();
+				offsetX = 0;
+				offsetY = static_cast<int>(menuBarAltura);
 			}
 
-			ImGui::SetItemDefaultFocus();
-			ImGui::EndPopup();
+			SDL_Rect dstRect = { offsetX, offsetY, dstW, dstH };
+			SDL_RenderCopy(RENDERER, TEXTURE, nullptr, &dstRect);
+
+
+			ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), RENDERER);
+
+			SDL_RenderPresent(RENDERER);
+
+			// INFELIZMENTE SO DA PRA USAR COM A BRANCH DOCCKING DO IMGUI, se alguem quiser mudar, sinta-se a vontade
+
+			//// atualiza as janelas adicionais pra fora do main viewport
+			//ImGuiIO& io = ImGui::GetIO();
+			//if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			//{
+			//	ImGui::UpdatePlatformWindows();
+			//	ImGui::RenderPlatformWindowsDefault();
+			//}
+
+			SDL_Delay(16);
 		}
-
-		ImGui::End();
-
-		if (this->mostrarPopupTeclaEmUso) {
-			ImGui::OpenPopup("TeclaJaEmUsoPopup");
-		}
-
-		if (ImGui::BeginPopupModal("TeclaJaEmUsoPopup", &this->mostrarPopupTeclaEmUso, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings)) {
-			ImGui::TextWrapped("%s", this->mensagemPopupTeclaEmUso.c_str());
-			ImGui::Spacing();
-			ImGui::Separator();
-			ImGui::Spacing();
-			if (ImGui::Button("OK", ImVec2(120, 0))) {
-				this->mostrarPopupTeclaEmUso = false;
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SetItemDefaultFocus();
-			ImGui::EndPopup();
-		}
-
-	}
-
-
-	//if (mostrarJanelaControle) {
-	//	// Define a posição e tamanho iniciais fora da área da tela do emulador
-	//	ImGui::SetNextWindowPos(ImVec2(500, 100), ImGuiCond_FirstUseEver); // Altere conforme necessário
-	//	ImGui::SetNextWindowSize(ImVec2(300, 250), ImGuiCond_FirstUseEver);
-
-	//	ImGui::Begin("Mapeamento de Controle NES", &mostrarJanelaControle,
-	//		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-
-	//	static const char* nomesBotoesNES[8] = {
-	//		"Cima", "Baixo", "Esquerda", "Direita", "B", "A", "Start", "Select"
-	//	};
-
-	//	static SDL_Scancode mapeamentos[8] = {
-	//		SDL_SCANCODE_UP, SDL_SCANCODE_DOWN, SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT,
-	//		SDL_SCANCODE_X, SDL_SCANCODE_Z, SDL_SCANCODE_D, SDL_SCANCODE_F
-	//	};
-
-	//	static int aguardandoBotao = -1;
-
-	//	for (int i = 0; i < 8; ++i) {
-	//		ImGui::Text("%s:", nomesBotoesNES[i]);
-	//		ImGui::SameLine();
-
-	//		char label[32];
-	//		snprintf(label, sizeof(label), "Mapear##%d", i);
-	//		if (ImGui::Button(label)) {
-	//			aguardandoBotao = i;
-	//		}
-	//		ImGui::SameLine();
-	//		ImGui::Text("%s", SDL_GetScancodeName(mapeamentos[i]));
-	//	}
-	//	if (aguardandoBotao != -1) {
-	//		ImGui::Text(u8"Pressione uma tecla para o botão: %s", nomesBotoesNES[aguardandoBotao]);
-
-	//		const Uint8* state = SDL_GetKeyboardState(nullptr);
-	//		for (int sc = 0; sc < SDL_NUM_SCANCODES; ++sc) {
-	//			if (state[sc]) {
-	//				mapeamentos[aguardandoBotao] = static_cast<SDL_Scancode>(sc);
-	//				aguardandoBotao = -1;
-	//				break;
-	//			}
-	//		}
-	//	}
-	//	ImGui::End();
-	//}
-
-	ImGui::Render();
-
-	SDL_RenderClear(RENDERER);
-
-	/*SDL_Rect dstRect = { 0, 0, TELA_WIDTH * ZOOM, TELA_HEIGHT * ZOOM };*/
-	// Antes de criar o dstRect, pegue o tamanho atual da janela:
-	int winW, winH;
-	SDL_GetWindowSize(WINDOW, &winW, &winH);
-
-	int dstW = TELA_WIDTH * ZOOM;
-	int dstH = TELA_HEIGHT * ZOOM;
-
-	int offsetX;
-	int offsetY;
-	if (isFull) {
-		// centraliza horizontal e verticalmente
-		offsetX = (winW - dstW) / 2;
-		offsetY = (winH - dstH) / 2;
-	}
-	else {
-		// mantém o menu bar no topo quando não é fullscreen
-		float menuBarAltura = ImGui::GetFrameHeight();
-		offsetX = 0;
-		offsetY = static_cast<int>(menuBarAltura);
-	}
-
-	SDL_Rect dstRect = { offsetX, offsetY, dstW, dstH };
-	SDL_RenderCopy(RENDERER, TEXTURE, nullptr, &dstRect);
-
-
-	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), RENDERER);
-
-	SDL_RenderPresent(RENDERER);
-
-	// INFELIZMENTE SO DA PRA USAR COM A BRANCH DOCCKING DO IMGUI, se alguem quiser mudar, sinta-se a vontade
-
-	//// atualiza as janelas adicionais pra fora do main viewport
-	//ImGuiIO& io = ImGui::GetIO();
-	//if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	//{
-	//	ImGui::UpdatePlatformWindows();
-	//	ImGui::RenderPlatformWindowsDefault();
-	//}
-
-	SDL_Delay(16);
-}
 
 void SDL_Display::destroy() {
 	//minhas coisinhassss
@@ -795,4 +825,8 @@ void SDL_Display::inicializarAudio() {
 
 void SDL_Display::setFirebaseAuth(firebase::auth::Auth* auth) {
 	firebaseAuth = auth;
+}
+
+void SDL_Display::setFirebaseDatabase(firebase::database::Database* db) {
+	firebaseDatabase = db;
 }

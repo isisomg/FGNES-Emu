@@ -6,10 +6,10 @@
 #include <iostream>
 #include <fstream>
 #include "Controles.h"
-
 #include "firebase/app.h"
 #include "firebase/auth.h"
 #include "firebase/log.h"
+#include "firebase/database.h"
 
 const int ciclosPorFrame = 29781;
 
@@ -29,6 +29,8 @@ int main(int argc, char* argv[]) {
 	options.set_project_id("fagnes-db");
 
 	firebase::App* firebase_app = firebase::App::Create(options);
+	firebase::database::Database* db = firebase::database::Database::GetInstance(firebase_app, "https://fagnes-db-default-rtdb.firebaseio.com/");
+	display.setFirebaseDatabase(db);
 
 	if (firebase_app) {
 		std::cout << "Firebase App inicializado com sucesso!" << std::endl;

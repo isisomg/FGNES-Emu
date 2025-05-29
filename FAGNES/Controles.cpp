@@ -8,8 +8,53 @@
 #define NOMINMAX
 #endif
 #include <windows.h>
+#include "firebase/database.h"
+#include "firebase/variant.h"
 
 using json = nlohmann::json;
+
+bool Controles::salvarMapeamentoNoFirebase(firebase::database::Database* db, const std::string& user_id) {
+    json j;
+    for (auto const& [botaoEnum, scancode] : mapeamentoTeclas) {
+        const char* nomeTecla = SDL_GetScancodeName(scancode);
+        j[botaoParaString(botaoEnum)] = nomeTecla && nomeTecla[0] != '\0' ? nomeTecla : "UNKNOWN";
+    }
+
+    std::string jsonString = j.dump();
+    auto ref = db->GetReference().Child("mapeamentos").Child(user_id);
+    ref.SetValue(jsonString);
+    return true;
+}
+
+bool Controles::carregarMapeamentoDoFirebase(firebase::database::Database* db, const std::string& user_id) {
+    auto ref = db->GetReference().Child("mapeamentos").Child(user_id);
+    firebase::Future<firebase::database::DataSnapshot> future = ref.GetValue();
+
+    while (future.status() != firebase::kFutureStatusComplete) {
+        SDL_Delay(10);
+    }
+
+    if (future.error() != 0) {
+        std::cerr << "Erro ao carregar mapeamento do Firebase: " << future.error_message() << std::endl;
+        return false;
+    }
+
+    std::string jsonStr = future.result()->value().string_value();
+    json j = json::parse(jsonStr);
+
+    for (int i = 0; i < static_cast<int>(botoesNES::COUNT); i++) {
+        botoesNES botao = static_cast<botoesNES>(i);
+        std::string nome = botaoParaString(botao);
+        if (j.contains(nome)) {
+            SDL_Scancode sc = SDL_GetScancodeFromName(j[nome].get<std::string>().c_str());
+            if (sc != SDL_SCANCODE_UNKNOWN) {
+                mapeamentoTeclas[botao] = sc;
+            }
+        }
+    }
+
+    return true;
+}
 
 //Função auxiliar para caminho do executável
 
