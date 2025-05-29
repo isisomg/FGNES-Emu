@@ -200,6 +200,7 @@ iphlpapi.lib
     <ClCompile Include="Mapper1.cpp" />
     <ClCompile Include="Mapper2.cpp" />
     <ClCompile Include="Mapper24.cpp" />
+    <ClCompile Include="Mapper3.cpp" />
     <ClCompile Include="PPU.cpp" />
     <ClCompile Include="SDL_Display.cpp" />
     <ClCompile Include="SDL.cpp" />
@@ -220,6 +221,7 @@ iphlpapi.lib
     <ClInclude Include="Mapper1.h" />
     <ClInclude Include="Mapper2.h" />
     <ClInclude Include="Mapper24.h" />
+    <ClInclude Include="Mapper3.h" />
     <ClInclude Include="Memoria.h" />
     <ClInclude Include="PPU.h" />
     <ClInclude Include="SDL_Display.h" />
