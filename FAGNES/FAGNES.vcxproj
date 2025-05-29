@@ -141,15 +141,19 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Acer\Desktop\PI5\FGNES-Emu\Libraries\include\nlohmann;C:\Users\lilsiru\source\repos\FGNES-Emu3\Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Acer\Desktop\PI5\FGNES-Emu\Libraries\include\firebase;C:\Users\Acer\Desktop\PI5\FGNES-Emu\Libraries\include\nlohmann;C:\Users\lilsiru\source\repos\FGNES-Emu3\Libraries\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64;$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);C:\Users\alexa\source\repos\FGNES-Emu\Libraries\lib;I:\Visual Studio 2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib;%(AdditionalDependencies) </AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Acer\Desktop\PI5\FGNES-Emu\Libraries\include\firebase;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64;$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);C:\Users\alexa\source\repos\FGNES-Emu\Libraries\lib;I:\Visual Studio 2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib;firebase_app.lib;firebase_auth.lib;Ws2_32.lib
+;Crypt32.lib;
+Bcrypt.lib;
+iphlpapi.lib
+;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -196,6 +200,7 @@
     <ClCompile Include="Mapper1.cpp" />
     <ClCompile Include="Mapper2.cpp" />
     <ClCompile Include="Mapper24.cpp" />
+    <ClCompile Include="Mapper3.cpp" />
     <ClCompile Include="PPU.cpp" />
     <ClCompile Include="SDL_Display.cpp" />
     <ClCompile Include="SDL.cpp" />
@@ -216,6 +221,7 @@
     <ClInclude Include="Mapper1.h" />
     <ClInclude Include="Mapper2.h" />
     <ClInclude Include="Mapper24.h" />
+    <ClInclude Include="Mapper3.h" />
     <ClInclude Include="Memoria.h" />
     <ClInclude Include="PPU.h" />
     <ClInclude Include="SDL_Display.h" />

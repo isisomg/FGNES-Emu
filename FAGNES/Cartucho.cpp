@@ -3,6 +3,10 @@
 #include "Mapper1.h"
 #include "Mapper24.h"
 #include "Bus.h"
+#include "Mapper3.h"
+
+
+
 void Cartucho::init(const std::string& path) {
 	std::ifstream arquivo(path, std::ios::binary);
 
@@ -68,6 +72,10 @@ void Cartucho::init(const std::string& path) {
 		break;
 	case 2:
 		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM); // UxROM MAPPER2
+		adrPCinicial = readPRG(0xFFFC) | (readPRG(0xFFFD) << 8);
+		break;
+	case 3: 
+		mapper = std::make_unique<Mapper3>(prgBanks, chrBanks, prgROM, chrROM); // CNROM MAPPER3
 		adrPCinicial = readPRG(0xFFFC) | (readPRG(0xFFFD) << 8);
 		break;
 	case 24:

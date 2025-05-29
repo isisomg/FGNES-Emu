@@ -10,6 +10,7 @@
 #include "Cartucho.h"
 #include "CPU.h"
 #include <map>
+#include "firebase/auth.h"
 
 class SDL_Display {
 private:
@@ -44,13 +45,22 @@ private:
     bool usuarioLogado = false;
     std::string botaoSelecionado = "";
     std::string nomeUsuarioLogado = "";
+    int botaoAguardandoMapeamento = -1;
+    bool mostrarPopupTeclaEmUso = false;
+    std::string mensagemPopupTeclaEmUso = "";
+    bool exibirMensagemErroLogin = false;
+    std::string mensagemErroLogin = "";
+    bool exibirErroCadastro = false;
+    std::string erroCadastro = "";
 
     enum class EstadoConta {
         FazendoLogin,
         LoginSucesso,
-        Logado
+        Logado,
+        Cadastro
     };
     EstadoConta estadoAtualConta = EstadoConta::FazendoLogin;
+    firebase::auth::Auth* firebaseAuth = nullptr;
 
 public:
     bool jogoRodando = false;
@@ -62,8 +72,11 @@ public:
     void processarEntrada(SDL_Event event);
     void renderizar();
     void destroy();
+    void setFirebaseAuth(firebase::auth::Auth* auth);
+    static void CallbackLogin(const firebase::Future<firebase::auth::AuthResult>* future, void* user_data);
+    static void CallbackCadastro(const firebase::Future<firebase::auth::AuthResult>* future, void* user_data);
 
     // M�todos novos para a janela de controle
-    void abrirJanelaControle();
-    void renderizarJanelaControle();
+    //void abrirJanelaControle();
+    //void renderizarJanelaControle();
 };
