@@ -11,6 +11,7 @@
 #include "CPU.h"
 #include <map>
 #include "firebase/auth.h"
+#include "firebase/database.h"
 
 class SDL_Display {
 private:
@@ -23,7 +24,7 @@ private:
 
     const int TELA_WIDTH = 256;
     const int TELA_HEIGHT = 240;
-    int ZOOM = 1;
+    int ZOOM = 2;
     int prevZOOM = 1;
     bool isFull = false;
     const int FPS = 30;
@@ -62,6 +63,8 @@ private:
     EstadoConta estadoAtualConta = EstadoConta::FazendoLogin;
     firebase::auth::Auth* firebaseAuth = nullptr;
 
+    firebase::database::Database* firebaseDatabase = nullptr;
+
 public:
     bool jogoRodando = false;
 
@@ -75,6 +78,8 @@ public:
     void setFirebaseAuth(firebase::auth::Auth* auth);
     static void CallbackLogin(const firebase::Future<firebase::auth::AuthResult>* future, void* user_data);
     static void CallbackCadastro(const firebase::Future<firebase::auth::AuthResult>* future, void* user_data);
+
+    void setFirebaseDatabase(firebase::database::Database* db);
 
     // M�todos novos para a janela de controle
     //void abrirJanelaControle();
