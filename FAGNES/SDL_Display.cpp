@@ -70,18 +70,18 @@ void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo, PPU* p) {
 
 void SDL_Display::processarEntrada(SDL_Event event) {
 	if (!bus) return;
-	Controles* controles = bus->getControles();
+	Controles* controles = bus->getControles(); //pega o ponteiro pros controles
 	ImGuiIO& io = ImGui::GetIO();
 
 	if (event.type == SDL_KEYDOWN && mostrarJanelaControle && botaoAguardandoMapeamento != -1) {
 		SDL_Scancode teclaPressionada = event.key.keysym.scancode;
 
 		if (teclaPressionada == SDL_SCANCODE_ESCAPE) {
-			botaoAguardandoMapeamento = -1; 
+			botaoAguardandoMapeamento = -1;
 		}
 		else if (teclaPressionada != SDL_SCANCODE_UNKNOWN) {
 			botoesNES botaoParaMapear = static_cast<botoesNES>(botaoAguardandoMapeamento);
-			botoesNES botaoEmConflito; 
+			botoesNES botaoEmConflito;
 
 			if (controles->setScancodeParaBotao(botaoParaMapear, teclaPressionada, &botaoEmConflito)) {
 			}
@@ -90,13 +90,13 @@ void SDL_Display::processarEntrada(SDL_Event event) {
 				this->mensagemPopupTeclaEmUso = "A tecla '";
 				this->mensagemPopupTeclaEmUso += SDL_GetScancodeName(teclaPressionada);
 				this->mensagemPopupTeclaEmUso += "' ja esta em uso pelo botao '";
-				this->mensagemPopupTeclaEmUso += botaoParaString(botaoEmConflito); 
+				this->mensagemPopupTeclaEmUso += botaoParaString(botaoEmConflito);
 				this->mensagemPopupTeclaEmUso += "'.\n\nEscolha outra tecla ou desmapeie o botao '";
 				this->mensagemPopupTeclaEmUso += botaoParaString(botaoEmConflito);
 				this->mensagemPopupTeclaEmUso += "' primeiro.";
-				this->mostrarPopupTeclaEmUso = true; 
+				this->mostrarPopupTeclaEmUso = true;
 			}
-			botaoAguardandoMapeamento = -1; 
+			botaoAguardandoMapeamento = -1;
 		}
 		return;
 	}
@@ -128,41 +128,85 @@ void SDL_Display::processarEntrada(SDL_Event event) {
 
 	}
 
-		/*switch (event.key.keysym.sym) {
-			case SDLK_z:
-				pressionado ? controles->pressionar(A) : controles->soltar(A);
-				std::cout << "APERTOU A TECLA Z" << std::endl;
-				break;
-			case SDLK_x:
-				pressionado ? controles->pressionar(B) : controles->soltar(B);
-				std::cout << "APERTOU A TECLA X" << std::endl;
-				break;
-			case SDLK_d:
-				pressionado ? controles->pressionar(START) : controles->soltar(START);
-				std::cout << "APERTOU A TECLA START" << std::endl;
-				break;
-			case SDLK_f:
-				pressionado ? controles->pressionar(SELECT) : controles->soltar(SELECT);
-				std::cout << "APERTOU A TECLA SELECT" << std::endl;
-				break;
-			case SDLK_UP:
-				pressionado ? controles->pressionar(UP) : controles->soltar(UP);
-				std::cout << "APERTOU A TECLA UP" << std::endl;
-				break;
-			case SDLK_DOWN:
-				pressionado ? controles->pressionar(DOWN) : controles->soltar(DOWN);
-				std::cout << "APERTOU A TECLA DOWN" << std::endl;
-				break;
-			case SDLK_LEFT:
-				pressionado ? controles->pressionar(LEFT) : controles->soltar(LEFT);
-				std::cout << "APERTOU A TECLA LEFT" << std::endl;
-				break;
-			case SDLK_RIGHT:
-				pressionado ? controles->pressionar(RIGHT) : controles->soltar(RIGHT);
-				std::cout << "APERTOU A TECLA RIGHT" << std::endl;
-				break;
-		}*/
-	
+	/*switch (event.key.keysym.sym) {
+		case SDLK_z:
+			pressionado ? controles->pressionar(A) : controles->soltar(A);
+			std::cout << "APERTOU A TECLA Z" << std::endl;
+			break;
+		case SDLK_x:
+			pressionado ? controles->pressionar(B) : controles->soltar(B);
+			std::cout << "APERTOU A TECLA X" << std::endl;
+			break;
+		case SDLK_d:
+			pressionado ? controles->pressionar(START) : controles->soltar(START);
+			std::cout << "APERTOU A TECLA START" << std::endl;
+			break;
+		case SDLK_f:
+			pressionado ? controles->pressionar(SELECT) : controles->soltar(SELECT);
+			std::cout << "APERTOU A TECLA SELECT" << std::endl;
+			break;
+		case SDLK_UP:
+			pressionado ? controles->pressionar(UP) : controles->soltar(UP);
+			std::cout << "APERTOU A TECLA UP" << std::endl;
+			break;
+		case SDLK_DOWN:
+			pressionado ? controles->pressionar(DOWN) : controles->soltar(DOWN);
+			std::cout << "APERTOU A TECLA DOWN" << std::endl;
+			break;
+		case SDLK_LEFT:
+			pressionado ? controles->pressionar(LEFT) : controles->soltar(LEFT);
+			std::cout << "APERTOU A TECLA LEFT" << std::endl;
+			break;
+		case SDLK_RIGHT:
+			pressionado ? controles->pressionar(RIGHT) : controles->soltar(RIGHT);
+			std::cout << "APERTOU A TECLA RIGHT" << std::endl;
+			break;
+	}*/
+
+}
+
+void SDL_Display::CallbackLogin(const firebase::Future<firebase::auth::AuthResult>* future, void* user_data) {
+	SDL_Display* self = static_cast<SDL_Display*>(user_data);
+	if (future->error() == firebase::auth::kAuthErrorNone) {
+		const firebase::auth::User* user = &future->result()->user;
+		if (user) {
+			self->usuarioLogado = true;
+			self->nomeUsuarioLogado = std::string(user->email().c_str());
+			self->estadoAtualConta = EstadoConta::LoginSucesso;
+		}
+
+		std::cout << "Login Firebase bem-sucedido!\n";
+		self->usuarioLogado = true;
+		self->nomeUsuarioLogado = std::string(user->email().c_str());
+		self->estadoAtualConta = EstadoConta::LoginSucesso;
+	}
+	else {
+		self->mensagemErroLogin = future->error_message();
+		self->exibirMensagemErroLogin = true;
+		self->usuarioLogado = false;
+	}
+}
+
+void SDL_Display::CallbackCadastro(const firebase::Future<firebase::auth::AuthResult>* future, void* user_data) {
+	SDL_Display* self = static_cast<SDL_Display*>(user_data);
+	if (future->error() == firebase::auth::kAuthErrorNone) {
+		const firebase::auth::User* user = &future->result()->user;
+		if (user) {
+			self->usuarioLogado = true;
+			self->nomeUsuarioLogado = std::string(user->email().c_str());
+			self->estadoAtualConta = EstadoConta::LoginSucesso;
+		}
+
+		std::cout << "Cadastro Firebase bem-sucedido!\n";
+		self->usuarioLogado = true;
+		self->nomeUsuarioLogado = std::string(user->email().c_str());
+		self->estadoAtualConta = EstadoConta::LoginSucesso;
+		self->exibirErroCadastro = false;
+	}
+	else {
+		self->erroCadastro = future->error_message();
+		self->exibirErroCadastro = true;
+	}
 }
 
 void SDL_Display::renderizar() {
@@ -314,7 +358,7 @@ void SDL_Display::renderizar() {
 						ImGui::Separator();
 						ImGui::Spacing();
 
-						ImGui::Text("Nome de Usuário:");
+						ImGui::Text(u8"Nome de Usuário:");
 						ImGui::SetNextItemWidth(-FLT_MIN);
 						ImGui::InputText("##NomeUsuarioLogin", usernameBuffer, IM_ARRAYSIZE(usernameBuffer));
 						ImGui::Spacing();
@@ -323,29 +367,28 @@ void SDL_Display::renderizar() {
 						ImGui::SetNextItemWidth(-FLT_MIN);
 						ImGui::InputText("##SenhaLogin", passwordBuffer, IM_ARRAYSIZE(passwordBuffer), ImGuiInputTextFlags_Password);
 						ImGui::Spacing();
+
+						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.2f, 0.5f, 1.0f, 1.0f));
+						if (ImGui::Selectable("Cadastrar-se")) {
+							estadoAtualConta = EstadoConta::Cadastro;
+							memset(passwordBuffer, 0, sizeof(passwordBuffer)); // Limpa senha antiga
+						}
+						ImGui::PopStyleColor();
+
 						ImGui::Separator();
 						ImGui::Spacing();
 
 						if (ImGui::Button("Login", ImVec2(ImGui::GetContentRegionAvail().x * 0.48f, 0))) {
-							std::string user = usernameBuffer;
-							std::string pass = passwordBuffer;
+							if (firebaseAuth) {
+								firebase::Future<firebase::auth::AuthResult> result =
+									firebaseAuth->SignInWithEmailAndPassword(usernameBuffer, passwordBuffer);
 
-							if (user == "fagnes" && pass == "emu123") { // SUA LÓGICA DE AUTENTICAÇÃO
-								std::cout << "Login da conta bem-sucedido!" << std::endl;
-								usuarioLogado = true;
-								nomeUsuarioLogado = user;
-								estadoAtualConta = EstadoConta::LoginSucesso;
-								exibirMensagemErroLogin = false;
-								memset(usernameBuffer, 0, sizeof(usernameBuffer));
-								memset(passwordBuffer, 0, sizeof(passwordBuffer));
+								result.OnCompletion(
+									[](const firebase::Future<firebase::auth::AuthResult>& future, void* user_data) {
+										SDL_Display::CallbackLogin(&future, user_data);
+									}, this);
 							}
-							else {
-								std::cout << "Falha no login da conta!" << std::endl;
-								mensagemErroLogin = u8"Usuário ou senha incorretos.";
-								exibirMensagemErroLogin = true;
-								usuarioLogado = false; // Garantir que não está logado
-								memset(passwordBuffer, 0, sizeof(passwordBuffer));
-							}
+
 						}
 
 						ImGui::SameLine(0.0f, ImGui::GetStyle().ItemSpacing.x * 0.5f);
@@ -382,6 +425,68 @@ void SDL_Display::renderizar() {
 							estadoAtualConta = EstadoConta::FazendoLogin; // Reseta UI para próxima vez
 						}
 						break;
+					case EstadoConta::Cadastro: {
+						static char newUser[128] = "";
+						static char newPass[128] = "";
+						static char confirmPass[128] = "";
+						static std::string erroCadastro = "";
+						static bool exibirErroCadastro = false;
+
+						ImGui::Text(u8"Nome de Usuário:");
+						ImGui::SetNextItemWidth(-FLT_MIN);
+						ImGui::InputText("##CadastroUsuario", newUser, IM_ARRAYSIZE(newUser));
+						ImGui::Spacing();
+
+						ImGui::Text("Senha:");
+						ImGui::SetNextItemWidth(-FLT_MIN);
+						ImGui::InputText("##CadastroSenha", newPass, IM_ARRAYSIZE(newPass), ImGuiInputTextFlags_Password);
+						ImGui::Spacing();
+
+						ImGui::Text("Confirmar Senha:");
+						ImGui::SetNextItemWidth(-FLT_MIN);
+						ImGui::InputText("##CadastroConfirmaSenha", confirmPass, IM_ARRAYSIZE(confirmPass), ImGuiInputTextFlags_Password);
+						ImGui::Spacing();
+						ImGui::Separator();
+						ImGui::Spacing();
+
+						if (ImGui::Button("Cadastrar", ImVec2(ImGui::GetContentRegionAvail().x * 0.48f, 0))) {
+							if (strcmp(newPass, confirmPass) != 0) {
+								erroCadastro = u8"As senhas não coincidem.";
+								exibirErroCadastro = true;
+							}
+							else if (firebase::auth::kAuthErrorEmailAlreadyInUse) {
+								erroCadastro = u8"E-mail já está em uso.";
+								exibirErroCadastro = true;
+							}
+							else if (strlen(newUser) < 3 || strlen(newPass) < 6) {
+								erroCadastro = u8"Usuário precisa de 3+ letras e senha 6+.";
+								exibirErroCadastro = true;
+							}
+							else if (firebaseAuth) {
+								firebase::Future<firebase::auth::AuthResult> result =
+									firebaseAuth->CreateUserWithEmailAndPassword(newUser, newPass);
+
+								result.OnCompletion(
+									[](const firebase::Future<firebase::auth::AuthResult>& future, void* user_data) {
+										SDL_Display::CallbackCadastro(&future, user_data);
+									}, this);
+							}
+						}
+
+						ImGui::SameLine();
+
+						if (ImGui::Button("Cancelar", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+							estadoAtualConta = EstadoConta::FazendoLogin;
+							exibirErroCadastro = false;
+						}
+
+						if (exibirErroCadastro) {
+							ImGui::Spacing();
+							ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), erroCadastro.c_str());
+						}
+
+						break;
+					}
 					}
 					ImGui::End();
 				}
@@ -511,7 +616,7 @@ void SDL_Display::renderizar() {
 			ImGui::Separator();
 			ImGui::Spacing();
 			if (ImGui::Button("OK", ImVec2(120, 0))) {
-				this->mostrarPopupTeclaEmUso = false; 
+				this->mostrarPopupTeclaEmUso = false;
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SetItemDefaultFocus();
@@ -686,4 +791,8 @@ void SDL_Display::inicializarAudio() {
 	else {
 		SDL_PauseAudioDevice(audioDevice, 0);
 	}
+}
+
+void SDL_Display::setFirebaseAuth(firebase::auth::Auth* auth) {
+	firebaseAuth = auth;
 }

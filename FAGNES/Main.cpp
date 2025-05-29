@@ -14,6 +14,8 @@
 const int ciclosPorFrame = 29781;
 
 int main(int argc, char* argv[]) {
+	SDL_Display display;
+
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
 		std::cerr << "Erro ao inicializar SDL: " << SDL_GetError() << std::endl;
 		return 1;
@@ -22,9 +24,9 @@ int main(int argc, char* argv[]) {
 	std::cout << "Tentando inicializar Firebase..." << std::endl;
 
 	firebase::AppOptions options;
-	options.set_api_key("SUA_API_KEY");          // Encontre em Configurações do Projeto -> Geral
-	options.set_app_id("SEU_APP_ID");            // Encontre em Configurações do Projeto -> Geral (ex: 1:1234567890:web:abcdef123456)
-	options.set_project_id("SEU_PROJECT_ID");    // Encontre em Configurações do Projeto -> Geral
+	options.set_api_key("AIzaSyCSCplMociGdPynKD4x0d_NA0wE77sZs8E");
+	options.set_app_id("1:581274369648:web:b03a83d3abab3c3ffb3eb5");
+	options.set_project_id("fagnes-db");
 
 	firebase::App* firebase_app = firebase::App::Create(options);
 
@@ -35,6 +37,7 @@ int main(int argc, char* argv[]) {
 
 		// Opcional: Tentar obter o objeto Auth para testar a lib firebase_auth
 		firebase::auth::Auth* auth = firebase::auth::Auth::GetAuth(firebase_app);
+		display.setFirebaseAuth(auth);
 		if (auth) {
 			std::cout << "Firebase Auth obtido com sucesso!" << std::endl;
 		}
@@ -51,7 +54,7 @@ int main(int argc, char* argv[]) {
 
 	Bus* bus = new Bus();
 	Cartucho cartucho;
-	
+
 	Controles controle;
 
 	if (!controle.carregarMapeamento()) { //carrega mapeamento e cria arquivo padrão se necessario
@@ -65,15 +68,13 @@ int main(int argc, char* argv[]) {
 	CPU cpu;
 	PPU ppu;
 	APU apu;
-
-	SDL_Display display;
 	display.init(bus, &cartucho, &ppu);
 
 	bus->setPPU(&ppu);
 	// Ativa NMI
 	ppu.cpuWrite(0x2000, 0x80);
 
-	
+
 	//cpu.inicializar(bus);
 
 	//carregarROM(cpu); // remover quando for testar ROM. APENAS PARA TESTAR SNAKE
@@ -92,7 +93,7 @@ int main(int argc, char* argv[]) {
 		if (display.jogoRodando) {
 			if (cpu.iniciou == false) { // inicializacoes necessarias para o jogo
 				cpu.inicializar(bus);
-				cpu.PC = cartucho.adrPCinicial; 
+				cpu.PC = cartucho.adrPCinicial;
 				bus->setCartucho(&cartucho);
 				ppu.carregarCHR(cartucho.chrROM);
 			}
@@ -114,9 +115,9 @@ int main(int argc, char* argv[]) {
 			//std::cout << std::hex << (int)cpu.PC << std::endl;
 
 		}
-		
+
 		display.renderizar();
-		
+
 	}
 
 	//Teste salvar mapeamento, provavelmente vou remover no futuro
