@@ -71,21 +71,21 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)libraries\include</IncludePath>
+    <IncludePath>$(SolutionDir)libraries\include;$(WindowsSDK_IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.29.30133\lib\x64;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)libraries\include</IncludePath>
+    <IncludePath>$(SolutionDir)libraries\include;$(WindowsSDK_IncludePath)</IncludePath>
     <ExternalIncludePath>$(ExternalIncludePath)</ExternalIncludePath>
     <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.29.30133\lib\x64;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)libraries\include</IncludePath>
+    <IncludePath>$(SolutionDir)libraries\include;$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.29.30133\lib\x64;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)libraries\include</IncludePath>
+    <IncludePath>$(SolutionDir)libraries\include;$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.29.30133\lib\x64;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\lib\x64;$(SolutionDir)libraries\lib;$(WindowsSdkDir)Lib;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/um/x64;C:/Program Files (x86)/Windows Kits/10/lib/10.0.22621.0/ucrt/x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -102,7 +102,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib;firebase_app.lib;firebase_auth.lib;firebase_database.lib;advapi32.lib;ws2_32.lib;crypt32.lib;Ole32.lib;iphlpapi.lib;psapi.lib;Userenv.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -128,7 +128,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib;firebase_app.lib;firebase_auth.lib;firebase_database.lib;advapi32.lib;ws2_32.lib;crypt32.lib;Ole32.lib;iphlpapi.lib;psapi.lib;Userenv.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
@@ -149,11 +149,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Users\Acer\Desktop\PI5\FGNES-Emu\Libraries\include\firebase;C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64;$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);C:\Users\alexa\source\repos\FGNES-Emu\Libraries\lib;I:\Visual Studio 2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib;firebase_app.lib;firebase_auth.lib;Ws2_32.lib
-;Crypt32.lib;
-Bcrypt.lib;
-iphlpapi.lib
-;Secur32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib;firebase_app.lib;firebase_auth.lib;firebase_database.lib;advapi32.lib;ws2_32.lib;crypt32.lib;Ole32.lib;iphlpapi.lib;psapi.lib;Userenv.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -179,8 +175,7 @@ iphlpapi.lib
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib;firebase_app.lib;firebase_auth.lib;firebase_database.lib;advapi32.lib;ws2_32.lib;crypt32.lib;Ole32.lib;iphlpapi.lib;psapi.lib
-;userenv.lib</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;shell32.lib;user32.lib;dearImgui.lib;comdlg32.lib;firebase_app.lib;firebase_auth.lib;firebase_database.lib;advapi32.lib;ws2_32.lib;crypt32.lib;Ole32.lib;iphlpapi.lib;psapi.lib;Userenv.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(WindowsSdkDir)lib\$(WindowsSDKLibVersion)\um\$(PlatformTarget);I:\Visual Studio 2022\Community\VC\Tools\MSVC\14.44.35207\lib\x64</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
@@ -225,8 +220,15 @@ iphlpapi.lib
     <ClInclude Include="Mapper3.h" />
     <ClInclude Include="Memoria.h" />
     <ClInclude Include="PPU.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SDL_Display.h" />
     <ClInclude Include="Tipos.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\FAGNESICON.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
