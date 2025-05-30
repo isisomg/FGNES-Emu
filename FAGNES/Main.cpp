@@ -108,11 +108,23 @@ int main(int argc, char* argv[]) {
 			int cpuCiclos = 0;
 			while (cpuCiclos < ciclosPorFrame) { // RODA UM FRAME
 				int ciclos = cpu.executar();
+				
 				cpuCiclos += ciclos;
 
 				for (int c = 0; c < ciclos; ++c) {
 					apu.step();
 					ppu.step(); ppu.step(); ppu.step();
+				}
+
+				if (cpu.ocorreuDMA) {
+					cpu.ocorreuDMA = false;
+					int ciclosStallDMA = 514;
+					cpuCiclos += ciclosStallDMA;
+
+					for (int c = 0; c < ciclosStallDMA; ++c) {
+						apu.step();
+						ppu.step(); ppu.step(); ppu.step();
+					}
 				}
 			}
 			//std::cout << std::hex << (int)cpu.PC << std::endl;

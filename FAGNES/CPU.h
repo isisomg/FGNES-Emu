@@ -38,6 +38,7 @@ public:
 		return p;
 	}
 	
+	bool ocorreuDMA = false;
 	bool iniciou = false;
 
 	void handleNMI();

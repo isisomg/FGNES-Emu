@@ -41,6 +41,9 @@ void CPU::handleNMI() { // Implementar corretamente
 		return bus->read(adr);
 	}
 	void CPU::writeByte(DWord adr, Byte valor) {
+		if (adr == 0x4014){ // OCORREU DMA
+			ocorreuDMA = true;
+		}
 		bus->write(adr, valor);
 	}
 
@@ -457,30 +460,29 @@ void CPU::handleNMI() { // Implementar corretamente
 
 		PC = returnAddress + 1;
 	}
-	void CPU::BRK() { // AJUSTAR
+	void CPU::BRK() {
+		PC++;
 
-		//PC = 0xFFFF; // TESTE
-		//return; // TESTE
+		// Empilha PC 
+		writeByte(0x0100 + SP, (PC >> 8) & 0xFF);
+		SP--;
+		writeByte(0x0100 + SP, PC & 0xFF);
+		SP--;
 
-		// Empilha o endere�o de retorno (PC + 1) na pilha
-		DWord returnAddress = PC + 1;
+		// Empilha o status com B=1 e bit 5=1
+		Byte status_pushed = ((N << 7) | (V << 6) | (1 << 5) | (1 << 4) | // B flag (bit 4) é 1
+			(D << 3) | (I << 2) | (Z << 1) | C);
+		writeByte(0x0100 + SP, status_pushed);
+		SP--;
 
-		// Empilha o byte de retorno
-		writeByte(0x0100 + SP--, (returnAddress >> 8) & 0xFF);  // Empilha o byte alto
-		writeByte(0x0100 + SP--, returnAddress & 0xFF);         // Empilha o byte baixo
+		I = 1; 
 
-		// Empilha o status de flags
-		Byte status = (N << 7) | (V << 6) | (B << 4) | (D << 3) | (I << 2) | (Z << 1) | C;
-		writeByte(0x0100 + SP--, status);
-
-		// Desativa interrup��es (I = 1) e seta B flag (B = 1)
-		I = 1;  // Desabilita interrup��es
-		B = 1;  // Setar a flag de Break
-
-		// O endere�o de interrup��o de BRK � 0xFFFE e 0xFFFF
-		PC = (readByte(0xFFFE) | (readByte(0xFFFF) << 8));
-
+		Byte low = readByte(0xFFFE);
+		Byte high = readByte(0xFFFF);
+		PC = (high << 8) | low;
+		
 	}
+
 	void CPU::RTI() {
 		// Desempilha o byte de status (flags) primeiro
 		Byte status = readByte(0x0100 + ++SP);
@@ -664,6 +666,7 @@ void CPU::handleNMI() { // Implementar corretamente
 	int CPU::executar() {
 		if (bus->checkNMI()) {
 			handleNMI();
+			return 7;
 		}
 		Byte op = fetchByte();
 		switch (op)
@@ -1184,7 +1187,7 @@ void CPU::handleNMI() { // Implementar corretamente
 			return crossed ? 5 : 4;
 			break;
 		}
-		case 0x019:
+		case 0x19:
 		{
 			auto [adr, crossed] = absoluteY();
 			ORA(adr);
@@ -1598,6 +1601,7 @@ void CPU::handleNMI() { // Implementar corretamente
 		case 0xE1:
 		{
 			SBC(indirectX());
+			return 6;
 			break;
 		}
 		case 0xF1:

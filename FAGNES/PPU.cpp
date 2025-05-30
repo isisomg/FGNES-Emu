@@ -83,6 +83,11 @@ Byte PPU::read(DWord address) {
 	if (address >= 0x3F00 && address <= 0x3FFF) {
 		// Paleta
 		DWord paletteAddress = (address - 0x3F00) % 32;
+		// espelhamento
+		if (paletteAddress == 0x10) { paletteAddress = 0x00; }
+		else if (paletteAddress == 0x14) { paletteAddress = 0x04; }
+		else if (paletteAddress == 0x18) { paletteAddress = 0x08; }
+		else if (paletteAddress == 0x1C) { paletteAddress = 0x0C; }
 		return paletteRAM[paletteAddress];
 	}
 	return 0x00;
@@ -165,7 +170,7 @@ void PPUMASK::write(Byte value) {
 //	Rocman X(Sachen) 																(Que é um bootleg)
 //	Todos os jogos Vs.System. que sao basicamente uma versao arcade do NES.
 
-MirroringSelect mirroringselect = MirroringSelect::Horizontal;
+//MirroringSelect mirroringselect = MirroringSelect::Horizontal; // DEFINIDO PELO CARTUCHO AGORA
 
 DWord PPU::mirrorAddress(DWord address) {
 	address = (address - 0x2000) % 0x1000; // Só parte da nametable (0x2000~0x2FFF)
@@ -177,7 +182,7 @@ DWord PPU::mirrorAddress(DWord address) {
 	case MirroringSelect::Vertical:
 		// 0 e 2 → NT0, 1 e 3 vai fica NT1
 		return (table % 2) * 0x400 + offset;
-
+	
 	case MirroringSelect::Horizontal:
 		// 0 e 1 → NT0, 2 e 3 vai fica NT1
 		return (table / 2) * 0x400 + offset;

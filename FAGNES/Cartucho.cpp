@@ -5,7 +5,7 @@
 #include "Bus.h"
 #include "Mapper3.h"
 
-
+MirroringSelect mirroringselect = MirroringSelect::Horizontal;
 
 void Cartucho::init(const std::string& path) {
 	std::ifstream arquivo(path, std::ios::binary);
@@ -25,6 +25,22 @@ void Cartucho::init(const std::string& path) {
 
 	int prgBanks = header[4]; // quantidade de bancos prg, sendo cada um deles de 16kb.
 	int chrBanks = header[5]; // quantidade de bancos chr, sendo cada um deles de 8kb.
+
+	
+	// ESPEPLHAMENTO - SEM 4 screen por enquanto
+	Byte flags6 = header[6];
+	if (flags6 & 0x08) {
+		mirroringselect = MirroringSelect::FourScreen;
+		std::cout << "Mirroring: Vertical (setado pelo header)" << std::endl;
+	}
+	if (flags6 & 0x01) { // Checa o Bit 0 para espelhamento Vertical
+		mirroringselect = MirroringSelect::Vertical;
+		std::cout << "Mirroring: Vertical (setado pelo header)" << std::endl;
+	}
+	else { // Se o Bit 0 é 0, eh espelhamento Horizontal
+		mirroringselect = MirroringSelect::Horizontal;
+		std::cout << "Mirroring: Horizontal (setado pelo header)" << std::endl;
+	}
 
 	bool ehINES2_0 = (header[7] & 0x0C) == 0x08;
 	if (ehINES2_0) {

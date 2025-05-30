@@ -120,7 +120,8 @@ struct PPU {
 
 enum struct MirroringSelect {
 	Horizontal,
-	Vertical
+	Vertical,
+	FourScreen // NAO IMPLEMENTTADO MEDONHO
 };
 
 extern MirroringSelect mirroringselect; //tive que fazer esse extern pq tava dando um problema com a APU.
