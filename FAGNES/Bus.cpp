@@ -1,7 +1,8 @@
 #include "Bus.h"
 
-void Bus::setControles(Controles* ctrl) {
+void Bus::setControles(Controles* ctrl, Controles* ctrl2) {
 	controles = ctrl;
+	controles2 = ctrl2;
 }
 
 Byte Bus::read(DWord adr) {
@@ -12,12 +13,15 @@ Byte Bus::read(DWord adr) {
 		if (ppu)
 			return ppu->cpuRead((adr - 0x2000) % 8); // Acesso real � PPU
 		else {										// FIZ ISSO PQ SE DER ERRADO VOLTA PRO VBLANK FAKE MAS PODE COMENTAR SE QUISER!
-			Bus::write(0x2002, 0xFF); // VBLANK fake pro teste!!
+			//Bus::write(0x2002, 0xFF); // VBLANK fake pro teste!!
 			return Bus::memPPU[(adr - 0x2000) % 8];
 		}
 	}
 	else if (adr == 0x4016) {
 		return controles->ler(); //leitura dos Controles
+	}
+	if (adr == 0x4017) {
+		return controles2->ler(); //leitura dos Controles
 	}
 	else if (adr >= 0x8000 && adr <= 0xFFFF) { // Ta na PGR ROM
 		if (cartucho) // mapper0 read
@@ -25,6 +29,8 @@ Byte Bus::read(DWord adr) {
 	}
 	return 0xFF; // Leitura fora do endere�o. Retorna qualquer coisa 
 }
+
+
 void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espelhamento
 	if (adr >= 0x0000 && adr <= 0x1FFF) {
 		Bus::memCPU[adr % 0x0800] = dado;
@@ -48,6 +54,9 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 	}
 	else if (adr == 0x4016) {
 		controles->escreverStrobe(dado & 1); //escrita dos Controles
+	}
+	else if (adr == 0x4017) {
+		controles2->escreverStrobe(dado & 1); //escrita dos Controles
 	}
 	else if (adr >= 0x4000 && adr <= 0x4017) {
 		//std::cout << "APU write $" << std::hex << adr << " = " << (int)dado << std::endl;

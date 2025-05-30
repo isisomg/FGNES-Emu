@@ -58,6 +58,7 @@ int main(int argc, char* argv[]) {
 	Cartucho cartucho;
 
 	Controles controle;
+	Controles controle2;
 
 	if (!controle.carregarMapeamento()) { //carrega mapeamento e cria arquivo padrão se necessario
 
@@ -65,7 +66,7 @@ int main(int argc, char* argv[]) {
 		controle.salvarMapInicial();
 	}
 
-	bus->setControles(&controle);
+	bus->setControles(&controle, &controle2);
 
 	CPU cpu;
 	PPU ppu;

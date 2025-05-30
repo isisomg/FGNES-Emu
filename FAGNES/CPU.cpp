@@ -20,8 +20,6 @@ void CPU::handleNMI() { // Implementar corretamente
 	Byte low = readByte(0xFFFA);
 	Byte high = readByte(0xFFFB);
 	PC = (high << 8) | low;
-	//std::cout << "NMI mudou o PC para " << std::hex << (int)PC << std::endl;
-	//PC = 0x8220; // SMB. ARRUMAR
 }
 
 	// Reseta para os valores iniciais

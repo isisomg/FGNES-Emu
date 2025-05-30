@@ -113,6 +113,20 @@ void PPU::write(DWord address, Byte value) {
 	else if (address >= 0x3F00 && address <= 0x3FFF) {
 		// Paleta
 		DWord paletteAddress = (address - 0x3F00) % 32;
+		// Trata os espelhamentos de $3F10, $3F14, $3F18, $3F1C
+		if (paletteAddress == 0x10) { // $3F10
+			paletteAddress = 0x00;    // Espelha para $3F00
+		}
+		else if (paletteAddress == 0x14) { // $3F14
+			paletteAddress = 0x04;    // Espelha para $3F04
+		}
+		else if (paletteAddress == 0x18) { // $3F18
+			paletteAddress = 0x08;    // Espelha para $3F08
+		}
+		else if (paletteAddress == 0x1C) { // $3F1C
+			paletteAddress = 0x0C;    // Espelha para $3F0C
+		}
+
 		paletteRAM[paletteAddress] = value;
 	}
 }
@@ -569,7 +583,8 @@ Byte PPU::cpuRead(DWord addr) {
 
 void PPU::writeToPPUADDR(Byte value) {
 	if (!w) { // Primeira escrita
-		t = (t & 0x80FF) | ((DWord)(value & 0x3F) << 8);
+		// Garante que os bits 14 e 15 de 't' (formados por esta escrita) sejam 0
+		t = (t & 0x00FF) | (((DWord)value & 0x3F) << 8);
 		w = true;
 	}
 	else {  // Segunda escrita
