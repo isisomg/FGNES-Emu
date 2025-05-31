@@ -1,194 +1,140 @@
-//#define SDL_MAIN_HANDLED
-//#include <SDL.h>
 //#include <iostream>
-////#include "audio.h"
 //#include <fstream>
-//#include <algorithm>
+//#include <SDL.h>
 //#include "APU.h"
+//#include "Bus.h"
 //
-//APU pulse1;
-//APU pulse2;
-//APU triangle;
-//APU noise;
-//APU dmc;
+//constexpr int sampleRate = 44100;
+//constexpr float cpuCyclesPerSample = 1789773.0f / sampleRate;
 //
-//void setupPulses() {
-//	float canais = 8.0f; // 8 canais do duty
+//Bus dummyBus;
+//APU apu;
+//std::ofstream csv;
 //
-//    pulse1.setDuty(2);        // 50% duty
-//    pulse1.setFrequency(440, canais);
-//    pulse1.setVolume(32);     // Volume razoável
-//    pulse2.setDuty(1);        // 25%
-//    pulse2.setFrequency(660, canais);
-//    pulse2.setVolume(8);      // Mais fraco
-//}
+//bool running = true;
 //
-//void setupTriangle() {
-//	float canais = 32.0f; // 32 canais da tabela
-//
-//    triangle.setEnabled(true);
-//    triangle.setFrequency(220, canais);
-//}
-//
-//void setupNoise() {
-//	float canal = 1.0f; // 1 canal do noise
-//
-//    noise.setEnabled(true);
-//    noise.setVolume(6);
-//    noise.setMode(false);      // false = modo longo, true = curto
-//    noise.setFrequency(4000, canal);
-//}
-//
-//void setupDMC() {
-//    dmc.setEnabled(true); // Apenas ativa o canal
-//}
-//
-//
-////void setupDMC() {
-////    dmc.setSampleData(APU::fakeSample, sizeof(APU::fakeSample));
-////    dmc.setSampleAddress(0);       // índice inicial do sample
-////    dmc.setSampleLength(sizeof(APU::fakeSample));
-////    dmc.setRate(0);        // index 0 = 428 ciclos
-////    dmc.setLoop(true);
-////    dmc.dmcSetEnabled(true);
-////}
-//
-////DMCChannel dmc;
-//// 
-////void setupDMC() {
-////    dmc.setSampleData(DMCChannel::fakeSample, sizeof(DMCChannel::fakeSample));
-////    dmc.setSampleAddress(0);       // índice inicial do sample
-////    dmc.setSampleLength(sizeof(DMCChannel::fakeSample));
-////    dmc.setRate(0);        // index 0 = 428 ciclos
-////    dmc.setLoop(true);
-////    dmc.setEnabled(true);
-////}
-//
-////std::ofstream triangleOut("triangle_samples.csv"); // isso é para gerar um .csv para visualizar se o formato das ondas está certo
-////std::ofstream pulseOut("pulse_samples.csv");
-//
-////void audioCallback(void* userdata, Uint8* stream, int len) {
-////    float* buffer = (float*)stream;
-////    int samples = len / sizeof(float);
-////    for (int i = 0; i < samples; ++i) {
-////        pulse1.tick();
-////        pulse2.tick();
-////        triangle.tick();
-////        noise.tick();
-////
-////        float samplePulse = pulse1.getSample() + pulse2.getSample();
-////        float sampleTriangle = triangle.getSample();
-////        float mixed = (samplePulse + sampleTriangle) / 2.0f;
-////
-////        // Grava os samples de pulse em CSV
-////        if (i % 2 == 0 && pulseOut.is_open()) {
-////            pulseOut << samplePulse << "\n";
-////        }
-////
-////        // Grava triangle como antes
-////        if (i % 2 == 0 && triangleOut.is_open()) {
-////            triangleOut << sampleTriangle << "\n";
-////        }
-////
-////        buffer[i] = mixed;
-////    }
-////}
-//
+//// Callback chamado pelo SDL para preencher o buffer de áudio
 //void audioCallback(void* userdata, Uint8* stream, int len) {
-//    float* buffer = (float*)stream;
+//    float* buffer = reinterpret_cast<float*>(stream);
 //    int samples = len / sizeof(float);
-//    for (int i = 0; i < samples; ++i) {
-//        pulse1.tick(1);
-//        pulse2.tick(1);
-//        triangle.tick(2);
-//        noise.tick(3);
-//        dmc.tick(4);
 //
-//        float pulseMix = 0.00752f * (pulse1.getSample(1) + pulse2.getSample(1));
-//        float tndMix = 0.00851f * triangle.getSample(2)
-//            + 0.00494f * noise.getSample(3)
-//            + 0.00335f * dmc.getSample(4);
+//    for (int i = 0; i < samples; i++) {
+//        apu.stepCpuCycles(cpuCyclesPerSample);
 //
-//        float sample = pulseMix + tndMix;
+//        float pulse1 = apu.getSample(1);
+//        float pulse2 = apu.getSample(2);
+//        float triangle = apu.getSample(3);
+//        float noise = apu.getSample(4);
+//        float dmc = apu.getSample(5);
+//        float mixed = apu.getMixedSample();
 //
+//        buffer[i] = mixed;
 //
-//        // Clipping prevention simples
-//        if (sample > 1.0f) sample = 1.0f;
-//        buffer[i] = sample;
+//        if (csv.is_open()) {
+//            static int sampleIndex = 0;
+//            csv << sampleIndex++ << "," << pulse1 << "," << pulse2 << "," << triangle << "," << noise << "," << dmc << "," << mixed << "\n";
+//        }
 //    }
 //}
 //
-//int main() {
-//    if (SDL_Init(SDL_INIT_AUDIO) != 0) {
-//        std::cerr << "Erro SDL: " << SDL_GetError() << "\n";
+//int main(int argc, char* argv[]) {
+//    // --- Inicialização da APU ---
+//    apu.setBus(&dummyBus);
+//    apu.setEnabled(true);
+//
+//    // Pulse 1
+//    apu.writeRegister(0x4000, 0b00111111);
+//    apu.writeRegister(0x4002, 0x00);
+//    apu.writeRegister(0x4003, 0x07);
+//
+//    // Pulse 2
+//    apu.writeRegister(0x4004, 0b01100001);
+//    apu.writeRegister(0x4006, 0xFF);
+//    apu.writeRegister(0x4007, 0x07);
+//
+//    // Triangle - Adicionar configuração
+//    apu.writeRegister(0x4008, 0b11111111); // Linear counter control flag = 1 (ativa halt do length counter), reload value = 127
+//    apu.writeRegister(0x400A, 0x88);       // Timer low (ex: período um pouco maior para tom mais baixo)
+//    apu.writeRegister(0x400B, 0b00001011);
+//
+//    // Noise
+//    apu.writeRegister(0x400C, 0b00111111); // LC Halt/Env Loop, Const Vol, Vol = 15
+//    apu.writeRegister(0x400E, 0b00000011); // Mode 0, Period index 3 (era 0b000011, sem diferença)
+//    apu.writeRegister(0x400F, 0x00);
+//
+//    // DMC
+//    apu.writeRegister(0x4010, 0x4F); // IRQ off, Loop ON, Rate (ex: máximo, 0x0F, ou 0x00 como antes 0x40)
+//    apu.writeRegister(0x4011, 0x40); // Nível de saída inicial 64
+//    apu.writeRegister(0x4012, 0x00); // Sample address C000 + (0 * 64) = $C000
+//    apu.writeRegister(0x4013, 0x0F);
+//
+//    // Habilita todos os canais
+//    apu.writeRegister(0x4015, 0x1F);
+//
+//
+//    // --- CSV ---
+//    csv.open("audio_amostras.csv");
+//    if (!csv.is_open()) {
+//        std::cerr << "Erro ao abrir CSV\n";
+//        return 1;
+//    }
+//    csv << "sample,pulse1,pulse2,triangle,noise,dmc,mixed\n";
+//
+//    // --- SDL ---
+//    if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) < 0) {
+//        std::cerr << "Erro ao inicializar SDL: " << SDL_GetError() << "\n";
 //        return 1;
 //    }
 //
-//    /*AudioSystem audio;*/
-//    //audio.pulse.setVolume(15);     // volume máximo
-//    //audio.pulse.setDuty(2);        // 50%
-//    //audio.pulse.setTimer(40);     // frequência ~ NES 441000 / 200 * 8, quanto menor, mais agudo, quanto maior, mais grave
-//    //audio.pulse.resetPhase();
-//    //audio.start();
+//    SDL_AudioSpec desiredSpec{};
+//    desiredSpec.freq = sampleRate;
+//    desiredSpec.format = AUDIO_F32SYS;
+//    desiredSpec.channels = 1;
+//    desiredSpec.samples = 512;
+//    desiredSpec.callback = audioCallback;
 //
-//    SDL_AudioSpec want{};
-//    want.freq = 44100; // frequencia em hertz do dispositivo de audio
-//    want.format = AUDIO_F32;
-//    want.channels = 1; // canal mono, o NES funcionava apenas com um canal de audio
-//    want.samples = 512; // tamanho do buffer de audio, pede n amostras de audio por vez
-//    want.callback = audioCallback;
-//
-//
-//    SDL_AudioDeviceID device = SDL_OpenAudioDevice(nullptr, 0, &want, nullptr, 0);
-//    if (!device) {
-//        SDL_Log("Erro ao abrir o dispositivo de áudio: %s", SDL_GetError());
+//    if (SDL_OpenAudio(&desiredSpec, nullptr) < 0) {
+//        std::cerr << "Erro ao abrir áudio: " << SDL_GetError() << "\n";
 //        SDL_Quit();
 //        return 1;
 //    }
 //
-//    setupPulses();
-//    setupTriangle();
-//    setupNoise();
-//	setupDMC();
-//
-//    SDL_PauseAudioDevice(device, 0); // inicia audio
-//
-//    // OBS cria uma janela so pra eu poder testar mesmo, pode tirar isso depois
-//
-//    std::cout << "Tocando som... Pressione Q ou feche a janela para sair.\n";
-//    SDL_Window* window = SDL_CreateWindow("Emulador APU NES",
+//    // Cria uma janela simples
+//    SDL_Window* window = SDL_CreateWindow("Teste de Áudio APU",
 //        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-//        640, 480, SDL_WINDOW_SHOWN);
+//        400, 200, SDL_WINDOW_SHOWN);
 //
 //    if (!window) {
 //        std::cerr << "Erro ao criar janela: " << SDL_GetError() << "\n";
+//        SDL_CloseAudio();
 //        SDL_Quit();
 //        return 1;
 //    }
 //
+//    SDL_PauseAudio(0); // Inicia o áudio
+//
+//    std::cout << "Pressione Q para sair...\n";
+//
+//    // --- Loop principal SDL ---
 //    SDL_Event e;
-//    bool running = true;
 //    while (running) {
 //        while (SDL_PollEvent(&e)) {
 //            if (e.type == SDL_QUIT) {
 //                running = false;
 //            }
-//            else if (e.type == SDL_KEYDOWN) {
-//                if (e.key.keysym.sym == SDLK_q) {
-//                    running = false;
-//                }
+//            else if (e.type == SDL_KEYDOWN && (e.key.keysym.sym == SDLK_q || e.key.keysym.sym == SDLK_ESCAPE)) {
+//                running = false;
 //            }
 //        }
-//        SDL_Delay(16); // Aproximadamente 60 FPS
+//
+//        SDL_Delay(16); // ~60 FPS
 //    }
 //
-//
-//    /*std::cin.get();*/
-//    SDL_CloseAudioDevice(device);
+//    SDL_CloseAudio();
 //    SDL_DestroyWindow(window);
-//
-//    /*audio.stop();*/
-//
 //    SDL_Quit();
+//    csv.close();
+//
+//    std::cout << "Encerrado com sucesso.\n";
 //    return 0;
 //}

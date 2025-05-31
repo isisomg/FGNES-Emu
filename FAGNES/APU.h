@@ -39,7 +39,6 @@ private:
         float timerPeriod = 0;
         bool isInverted = false; // Canal 2 invertido para testes de cancelamento
 
-        // Campos necessários
         bool envelopeStart = false;
         int envelopeDivider = 0;
         int envelopeDecayLevel = 0;
@@ -136,7 +135,6 @@ private:
         int linearCounterReload = 0;
         uint8_t sequencerStep = 0;
 
-        // Campos necessários
         int linearCounter = 0;
         bool linearReloadFlag = false;
         bool linearControlFlag = false;
@@ -165,14 +163,9 @@ private:
         }
 
         float getSample() const {
-            if (!enabled) return 0.0f;
-            static const int triangleTable[32] = {
-                15, 14, 13, 12, 11, 10, 9, 8,
-                7, 6, 5, 4, 3, 2, 1, 0,
-                0, 1, 2, 3, 4, 5, 6, 7,
-                8, 9, 10, 11, 12, 13, 14, 15
-            };
-            return triangleTable[phase] / 15.0f;
+            if (!enabled || linearCounter == 0 || lengthCounter == 0) return 0.0f;
+
+            return APU::triangleTable[phase] / 15.0f;
         }
     } triangle;
 
@@ -189,7 +182,6 @@ private:
         float timer = 0;
         float timerPeriod = 0;
 
-        // Campos necessários
         bool envelopeStart = false;
         int envelopeDivider = 0;
         int envelopeDecayLevel = 0;

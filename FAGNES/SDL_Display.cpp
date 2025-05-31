@@ -41,31 +41,6 @@ void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo, PPU* p) {
 		SDL_Log("Erro ao criar textura: %s", SDL_GetError());
 		exit(1);
 	}
-	//// 1. Criar e configurar APU
-	//apu = new APU();
-	//apu->setFrequency(44100.0f, 4); // 4 canais
-	//apu->setEnabled(true);
-
-	//// 2. Passar APU para o Bus
-	//novoBus->setAPU(apu);
-
-	//// 3. Inicializar áudio SDL
-	//SDL_AudioSpec desiredSpec;
-	//SDL_zero(desiredSpec);
-	//desiredSpec.freq = 44100;
-	//desiredSpec.format = AUDIO_F32SYS;
-	//desiredSpec.channels = 1;
-	//desiredSpec.samples = 512;
-	//desiredSpec.callback = audioCallback;
-	//desiredSpec.userdata = this;
-
-	//audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desiredSpec, nullptr, 0);
-	//if (audioDevice == 0) {
-	//	SDL_Log("Erro ao abrir dispositivo de audio: %s", SDL_GetError());
-	//	exit(1);
-	//}
-
-	//SDL_PauseAudioDevice(audioDevice, 0);
 }
 
 void SDL_Display::processarEntrada(SDL_Event event) {
@@ -311,11 +286,8 @@ void SDL_Display::renderizar() {
 			ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
-			std::string tituloJanelaConta = u8"Conta"; // Título padrão
+			std::string tituloJanelaConta = u8"Conta"; 
 
-			// Se o usuário já está logado, e a UI está no estado inicial de login,
-			// pulamos direto para uma UI de "Logado" simplificada (apenas botão de logout).
-			// Se não, processamos os estados da UI de login.
 			if (usuarioLogado && estadoAtualConta == EstadoConta::FazendoLogin) {
 				tituloJanelaConta = u8"Minha Conta";
 				ImGui::SetNextWindowSize(ImVec2(300, 0), ImGuiCond_Appearing); // Pode ser menor
@@ -398,8 +370,6 @@ void SDL_Display::renderizar() {
 							// Resetar estado da UI se fechar no meio do login
 							estadoAtualConta = EstadoConta::FazendoLogin;
 							exibirMensagemErroLogin = false; // Limpa msg de erro
-							// Não mexer em usuarioLogado aqui, pois pode estar logado e cancelando uma nova tentativa
-							// Limpar buffers apenas se não estiver logado ou se desejar limpar sempre
 							if (!usuarioLogado) {
 								memset(usernameBuffer, 0, sizeof(usernameBuffer));
 							}
@@ -491,15 +461,9 @@ void SDL_Display::renderizar() {
 					ImGui::End();
 				}
 				else {
-					// Se a janela "Conta" foi fechada pelo 'X', resetamos a UI para o estado de login
-					// para a próxima vez que for aberta, independentemente do estado de login do usuário.
 					if (!mostrarJanelaConta) {
 						estadoAtualConta = EstadoConta::FazendoLogin;
 						exibirMensagemErroLogin = false;
-						// Não limpar buffers aqui, pois podem ser úteis se o usuário reabrir imediatamente
-						// ou limpar se preferir um comportamento mais "resetado":
-						// memset(usernameBuffer, 0, sizeof(usernameBuffer));
-						// memset(passwordBuffer, 0, sizeof(passwordBuffer));
 					}
 				}
 			}
