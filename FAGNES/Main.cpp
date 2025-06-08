@@ -10,6 +10,7 @@
 #include "firebase/auth.h"
 #include "firebase/log.h"
 #include "firebase/database.h"
+#include "utils.h"
 
 const int ciclosPorFrame = 29781;
 
@@ -57,16 +58,26 @@ int main(int argc, char* argv[]) {
 	Bus* bus = new Bus();
 	Cartucho cartucho;
 
-	Controles controle;
-	Controles controle2;
+	std::string execDir = getExecutableDir();
+	std::string caminhoP1 = execDir + "\\controles_p1.json";
+	std::string caminhoP2 = execDir + "\\controles_p2.json";
 
-	if (!controle.carregarMapeamento()) { //carrega mapeamento e cria arquivo padrão se necessario
+	Controles controleP1;
+	Controles controleP2;
+
+	if (!controleP1.carregarMapeamento(caminhoP1)) { //carrega mapeamento e cria arquivo padrão se necessario
 
 		//Se carregarMapeamento retorna false salvamos o mapeamento padrão no json
-		controle.salvarMapInicial();
+		controleP1.salvarMapInicial(caminhoP1);
+	}
+	if (!controleP2.carregarMapeamento(caminhoP2)) { //carrega mapeamento e cria arquivo padrão se necessario
+
+		//Se carregarMapeamento retorna false salvamos o mapeamento padrão no json
+		controleP2.salvarMapInicial(caminhoP2);
 	}
 
-	bus->setControles(&controle, &controle2);
+	bus->setControlesP1(&controleP1);
+	bus->setControlesP2(&controleP2);
 
 	CPU cpu;
 	PPU ppu;
@@ -137,7 +148,11 @@ int main(int argc, char* argv[]) {
 
 	//Teste salvar mapeamento, provavelmente vou remover no futuro
 	std::cout << "Saindo... tentando salvar o mapeamento dos controles." << std::endl;
-	controle.salvarMapeamento();
+	//controle.salvarMapeamento();
+	std::string caminhoP1_final = getExecutableDir() + "\\controles_p1.json";
+	std::string caminhoP2_final = getExecutableDir() + "\\controles_p2.json";
+	controleP1.salvarMapeamento(caminhoP1_final);
+	controleP2.salvarMapeamento(caminhoP2_final);
 
 	if (firebase_app) {
 		// Se você criou um AuthStateListener, remova-o aqui

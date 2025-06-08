@@ -1,8 +1,16 @@
 #include "Bus.h"
 
-void Bus::setControles(Controles* ctrl, Controles* ctrl2) {
-	controles = ctrl;
-	controles2 = ctrl2;
+//void Bus::setControles(Controles* ctrl, Controles* ctrl2) {
+//	controles = ctrl;
+//	controles2 = ctrl2;
+//}
+
+void Bus::setControlesP1(Controles* controle) {
+	this->controlesP1 = controle;
+}
+
+void Bus::setControlesP2(Controles* controle) {
+	this->controlesP2 = controle;
 }
 
 Byte Bus::read(DWord adr) {
@@ -18,10 +26,10 @@ Byte Bus::read(DWord adr) {
 		}
 	}
 	else if (adr == 0x4016) {
-		return controles->ler(); //leitura dos Controles
+		if (controlesP1) return controlesP1->ler(); //leitura dos Controles
 	}
 	if (adr == 0x4017) {
-		return controles2->ler(); //leitura dos Controles
+		if (controlesP2) return controlesP2->ler(); //leitura dos Controles
 	}
 	else if (adr >= 0x8000 && adr <= 0xFFFF) { // Ta na PGR ROM
 		if (cartucho) // mapper0 read
@@ -53,11 +61,14 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 		}
 	}
 	else if (adr == 0x4016) {
-		controles->escreverStrobe(dado & 1); //escrita dos Controles
+		bool strobe_val = (dado & 0x01); //escrita dos Controles
+		if (controlesP1) controlesP1->escreverStrobe(strobe_val);
+		if (controlesP2) controlesP2->escreverStrobe(strobe_val);
 	}
-	else if (adr == 0x4017) {
-		controles2->escreverStrobe(dado & 1); //escrita dos Controles
-	}
+	//else if (adr == 0x4017) {
+	//	controles2->escreverStrobe(dado & 1); //escrita dos Controles
+	//}
+
 	else if (adr >= 0x4000 && adr <= 0x4017) {
 		//std::cout << "APU write $" << std::hex << adr << " = " << (int)dado << std::endl;
 		if (apu)

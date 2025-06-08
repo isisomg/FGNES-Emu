@@ -14,8 +14,8 @@ private:
 	Memoria<0x0800> memCPU;
 	Memoria<0x4000> memPPU;
 	Cartucho* cartucho = nullptr;
-	Controles* controles = nullptr;
-	Controles* controles2 = nullptr;
+	Controles* controlesP1 = nullptr;
+	Controles* controlesP2 = nullptr;
 
 public:
 	void setPPU(PPU* novaPPU);
@@ -24,6 +24,8 @@ public:
 	void setCartucho(Cartucho* cart);
 	void write(DWord adr, Byte dado);
 	Byte read(DWord adr);
-	void setControles(Controles* ctrl, Controles* ctrl2);
-	Controles* getControles() { return controles; };
+	void setControlesP1(Controles* controle);
+	void setControlesP2(Controles* controle);
+	Controles* getControlesP1() const { return controlesP1; };
+	Controles* getControlesP2() const { return controlesP2; };
 };

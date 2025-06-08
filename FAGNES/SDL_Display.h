@@ -40,13 +40,14 @@ private:
     SDL_Renderer* controleRenderer = nullptr;
     bool janelaControleAberta = false;
 
-    std::map<std::string, SDL_Scancode> mapeamentoTeclas;
+    //std::map<std::string, SDL_Scancode> mapeamentoTeclas;
     bool mostrarJanelaControle = false;
     bool mostrarJanelaConta = false;
     bool usuarioLogado = false;
     std::string botaoSelecionado = "";
     std::string nomeUsuarioLogado = "";
-    int botaoAguardandoMapeamento = -1;
+    int jogadorAguardandoMapeamento = 0; // 0 = ninguém, 1 = P1, 2 = P2
+    botoesNES botaoAguardandoMapeamento = botoesNES::COUNT;
     bool mostrarPopupTeclaEmUso = false;
     std::string mensagemPopupTeclaEmUso = "";
     bool exibirMensagemErroLogin = false;

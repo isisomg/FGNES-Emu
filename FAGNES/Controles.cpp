@@ -58,20 +58,20 @@ bool Controles::carregarMapeamentoDoFirebase(firebase::database::Database* db, c
 
 //Função auxiliar para caminho do executável
 
-std::wstring getExecutableDirW() {
-    std::vector<wchar_t> buffer(MAX_PATH + 1);
-    DWORD bytes = GetModuleFileNameW(NULL, buffer.data(), static_cast<DWORD>(buffer.size()));
-    if (bytes == 0 || bytes >= buffer.size()) {
-        return L"";
-    }
-
-    std::wstring exePath(buffer.data());
-    size_t lastBackslash = exePath.find_last_of(L"\\/");
-    if (std::wstring::npos != lastBackslash) {
-        return exePath.substr(0, lastBackslash);
-    }
-    return L"";
-}
+//std::wstring getExecutableDirW() {
+//    std::vector<wchar_t> buffer(MAX_PATH + 1);
+//    DWORD bytes = GetModuleFileNameW(NULL, buffer.data(), static_cast<DWORD>(buffer.size()));
+//    if (bytes == 0 || bytes >= buffer.size()) {
+//        return L"";
+//    }
+//
+//    std::wstring exePath(buffer.data());
+//    size_t lastBackslash = exePath.find_last_of(L"\\/");
+//    if (std::wstring::npos != lastBackslash) {
+//        return exePath.substr(0, lastBackslash);
+//    }
+//    return L"";
+//}
 
 //Implementação das funções auxiliares
 const char* botaoParaString(botoesNES botao) {
@@ -117,12 +117,12 @@ Controles::Controles() {
 void Controles::pressionar(botoesNES botao) {
 	estado |= (1 << static_cast<int>(botao));
     //printf("Controle: botão %d pressionado, estado = 0x%02X\n", botao, estado);
-    //std::cout << "Botao PRESSIONADO: " << botaoParaString(botao) << ", Novo Estado: 0x" << std::hex << static_cast<int>(estado) << std::dec << std::endl;
+    std::cout << "Botao PRESSIONADO: " << botaoParaString(botao) << ", Novo Estado: 0x" << std::hex << static_cast<int>(estado) << std::dec << std::endl;
 }
 
 void Controles::soltar(botoesNES botao) {
 	estado &= ~(1 << static_cast<int>(botao));
-    //std::cout << "Botao PRESSIONADO: " << botaoParaString(botao) << ", Novo Estado: 0x" << std::hex << static_cast<int>(estado) << std::dec << std::endl;
+    std::cout << "Botao PRESSIONADO: " << botaoParaString(botao) << ", Novo Estado: 0x" << std::hex << static_cast<int>(estado) << std::dec << std::endl;
 }
 
 void Controles::escreverStrobe(bool valor) {
@@ -168,27 +168,28 @@ void Controles::processarEntrada(SDL_Scancode scancode, bool pressionado) {
     }
 }
 
-bool Controles::carregarMapeamento() {
+bool Controles::carregarMapeamento(const std::string& caminhoArquivo) {
 
-    std::wstring execDir = getExecutableDirW();
-    if (execDir.empty()) {
+    //std::wstring execDir = getExecutableDirW();
+    std::ifstream arquivo(caminhoArquivo);
+    if (!arquivo.is_open()) {
         std::cerr << "ERRO: Nao foi possivel obter o diretorio do executavel. Usando mapeamento padrao." << std::endl;
-        mapeamentoTeclas = mapeamentoPadrao;
+        this->mapeamentoTeclas = this->mapeamentoPadrao;
         return false;
     }
-    std::wstring caminhoCompletoW = execDir + L"\\controles.json";
+    //std::wstring caminhoCompletoW = execDir + L"\\controles.json";
 
-    std::ifstream arquivo(caminhoCompletoW);
-    if (!arquivo.is_open()) {
-        std::wcerr << "Aviso: Não foi possivel abrir o arquivo de mapeamento: " << caminhoCompletoW << ". Usando mapeamento padrão." << std::endl;
-        mapeamentoTeclas = mapeamentoPadrao; //usa o mapeamento padrão
-        return false; //retorna que o carregamento do arquivo falhou
-    }
+    //std::ifstream arquivo(caminhoCompletoW);
+    //if (!arquivo.is_open()) {
+    //    std::wcerr << "Aviso: Não foi possivel abrir o arquivo de mapeamento: " << caminhoCompletoW << ". Usando mapeamento padrão." << std::endl;
+    //    mapeamentoTeclas = mapeamentoPadrao; //usa o mapeamento padrão
+    //    return false; //retorna que o carregamento do arquivo falhou
+    //}
 
     try {
         json j;
         arquivo >> j;
-        std::map<botoesNES, SDL_Scancode> novoMapeamento = mapeamentoPadrao; //começa com o mapeamento padrão para preencher os faltantes
+        std::map<botoesNES, SDL_Scancode> novoMapeamento = this->mapeamentoPadrao; //começa com o mapeamento padrão para preencher os faltantes
 
         for (int i = 0; i < static_cast<int>(botoesNES::COUNT); i++) {
             botoesNES botao = static_cast<botoesNES>(i);
@@ -210,31 +211,31 @@ bool Controles::carregarMapeamento() {
                  // novoMapeamento[botao] já tem o padrão
             }
         }
-        mapeamentoTeclas = novoMapeamento;
-        std::wcerr << "Mapeamento de controles carregado de " << caminhoCompletoW << std::endl;
+        this->mapeamentoTeclas = novoMapeamento;
+        std::cerr << "Mapeamento de controles carregado de " << caminhoArquivo << std::endl;
         return true;
 
     }
     catch (json::exception& e) {
-        std::wcerr << "Erro ao fazer parse do JSON de: " << caminhoCompletoW << L". " << e.what() << ". Usando mapeamento padrao." << std::endl;
-        mapeamentoTeclas = mapeamentoPadrao;
+        std::cerr << "Erro ao fazer parse do JSON de: " << caminhoArquivo << L". " << e.what() << ". Usando mapeamento padrao." << std::endl;
+        this->mapeamentoTeclas = this->mapeamentoPadrao;
         return false;
         }   
 
 }
 
-bool Controles::salvarMapeamento() {
+bool Controles::salvarMapeamento(const std::string& caminhoArquivo) {
 
-    std::wstring execDir = getExecutableDirW();
+    /*std::wstring execDir = getExecutableDirW();
     if (execDir.empty()) {
         std::cerr << "ERRO: Nao foi possivel obter o diretorio do executavel. Mapeamento NAO salvo." << std::endl;
         return false;
     }
-    std::wstring caminhoCompletoW = execDir + L"\\controles.json";
+    std::wstring caminhoCompletoW = execDir + L"\\controles.json";*/
 
 
     json j;
-    for (auto const& [botaoEnum, scancode] : mapeamentoTeclas) { //itera sobre o mapeamento de teclas atual e salva
+    for (auto const& [botaoEnum, scancode] : this->mapeamentoTeclas) { //itera sobre o mapeamento de teclas atual e salva
         const char* nomeTecla = SDL_GetScancodeName(scancode);
         
         if (nomeTecla && nomeTecla[0] != '\0') {
@@ -247,16 +248,16 @@ bool Controles::salvarMapeamento() {
 
     }
 
-    std::ofstream arquivo(caminhoCompletoW);
+    std::ofstream arquivo(caminhoArquivo);
 
     if (!arquivo.is_open()) {
-        std::wcerr << "Erro: Nao foi possivel abrir o arquivo para salvar o mapeamento: " << caminhoCompletoW << std::endl;
+        std::cerr << "Erro: Nao foi possivel abrir o arquivo para salvar o mapeamento: " << caminhoArquivo << std::endl;
         return false;
     }
 
     try {
         arquivo << j.dump(4);
-        std::wcerr << "Mapeamento de controles salvo em " << caminhoCompletoW << std::endl;
+        std::cout << "Mapeamento de controles salvo em " << caminhoArquivo << std::endl;
         return true;
     }
     catch(json::exception& e){
@@ -265,26 +266,26 @@ bool Controles::salvarMapeamento() {
     }
 }
 
-bool Controles::salvarMapInicial() {
+bool Controles::salvarMapInicial(const std::string& caminhoArquivo) {
 
-    std::wstring execDir = getExecutableDirW();
-    if (execDir.empty()) {
-        std::cerr << "ERRO: Nao foi possivel obter o diretorio do executavel para salvar o mapa inicial." << std::endl;
-        return false; // Não podemos verificar ou salvar se não sabemos onde.
-    }
-    std::wstring caminhoCompletoW = execDir + L"\\controles.json";
+    //std::wstring execDir = getExecutableDirW();
+    //if (execDir.empty()) {
+    //    std::cerr << "ERRO: Nao foi possivel obter o diretorio do executavel para salvar o mapa inicial." << std::endl;
+    //    return false; // Não podemos verificar ou salvar se não sabemos onde.
+    //}
+    //std::wstring caminhoCompletoW = execDir + L"\\controles.json";
 
 
-    std::ifstream verificaArquivo(caminhoCompletoW);
+    std::ifstream verificaArquivo(caminhoArquivo);
     if (verificaArquivo.good()) {
         verificaArquivo.close();
         return true;
     }
     verificaArquivo.close();
 
-    std::wcerr << L"Arquivo de mapeamento inicial nao encontrado em " << caminhoCompletoW << L". Criando um novo com os padroes." << std::endl;
+    std::cout << L"Arquivo de mapeamento inicial nao encontrado em " << caminhoArquivo << L". Criando um novo com os padroes." << std::endl;
 
-    return salvarMapeamento();
+    return salvarMapeamento(caminhoArquivo);
 
     /*json j;
     for (auto const& [botao, scancode] : mapeamentoTeclas) {

@@ -2,6 +2,8 @@
 #include "SDL_Display.h"
 #include "AbrirRom.h"
 #include "Controles.h"
+#include "utils.h"
+
 
 
 void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo, PPU* p) {
@@ -45,20 +47,38 @@ void SDL_Display::init(Bus* novoBus, Cartucho* cartuchoNovo, PPU* p) {
 
 void SDL_Display::processarEntrada(SDL_Event event) {
 	if (!bus) return;
-	Controles* controles = bus->getControles(); //pega o ponteiro pros controles
+	Controles* p1 = bus->getControlesP1(); //pega o ponteiro pros controles
+	Controles* p2 = bus->getControlesP2();
 	ImGuiIO& io = ImGui::GetIO();
 
-	if (event.type == SDL_KEYDOWN && mostrarJanelaControle && botaoAguardandoMapeamento != -1) {
+	if (event.type == SDL_KEYDOWN && mostrarJanelaControle && jogadorAguardandoMapeamento != 0) {
 		SDL_Scancode teclaPressionada = event.key.keysym.scancode;
 
 		if (teclaPressionada == SDL_SCANCODE_ESCAPE) {
-			botaoAguardandoMapeamento = -1;
+			jogadorAguardandoMapeamento = 0;
 		}
 		else if (teclaPressionada != SDL_SCANCODE_UNKNOWN) {
-			botoesNES botaoParaMapear = static_cast<botoesNES>(botaoAguardandoMapeamento);
-			botoesNES botaoEmConflito;
+			Controles* controleAlvo = (jogadorAguardandoMapeamento == 1) ? p1 : p2;
+			if (controleAlvo) {
+				botoesNES botaoParaMapear = static_cast<botoesNES>(botaoAguardandoMapeamento);
+				botoesNES botaoEmConflito;
+				if (!controleAlvo->setScancodeParaBotao(botaoParaMapear, teclaPressionada, &botaoEmConflito)) {
+					// Prepara mensagem de erro para o popup
+					this->mensagemPopupTeclaEmUso = "A tecla '";
+					this->mensagemPopupTeclaEmUso += SDL_GetScancodeName(teclaPressionada);
+					this->mensagemPopupTeclaEmUso += "' ja esta em uso pelo botao '";
+					this->mensagemPopupTeclaEmUso += botaoParaString(botaoEmConflito);
+					this->mensagemPopupTeclaEmUso += "'.";
+					this->mostrarPopupTeclaEmUso = true;
+				}
+			}
 
-			if (controles->setScancodeParaBotao(botaoParaMapear, teclaPressionada, &botaoEmConflito)) {
+			jogadorAguardandoMapeamento = 0;
+			botaoAguardandoMapeamento = botoesNES::COUNT;
+			
+			/*botoesNES botaoParaMapear = static_cast<botoesNES>(botaoAguardandoMapeamento);
+			botoesNES botaoEmConflito;*/
+			/*if (controles->setScancodeParaBotao(botaoParaMapear, teclaPressionada, &botaoEmConflito)) {
 			}
 			else {
 
@@ -71,7 +91,7 @@ void SDL_Display::processarEntrada(SDL_Event event) {
 				this->mensagemPopupTeclaEmUso += "' primeiro.";
 				this->mostrarPopupTeclaEmUso = true;
 			}
-			botaoAguardandoMapeamento = -1;
+			botaoAguardandoMapeamento = -1;*/
 		}
 		return;
 	}
@@ -91,15 +111,21 @@ void SDL_Display::processarEntrada(SDL_Event event) {
 
 	// ImGui_ImplSDL2_ProcessEvent(&event); // Deixe para o loop principal em main.cpp para ImGui
 
-	if (event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-		ImGuiIO& io = ImGui::GetIO(); //Se ImGui quiser o teclado ele prioriza as entradas apenas para a ImGUi
+	if ((event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) && !io.WantCaptureKeyboard) {
 
-		if (!io.WantCaptureKeyboard) { //precessa apenas se a ImGui não quiser usar o teclado
+		bool pressionado = (event.type == SDL_KEYDOWN);
+		SDL_Scancode scancode = event.key.keysym.scancode;
+		if (p1) p1->processarEntrada(scancode, pressionado);
+		if (p2) p2->processarEntrada(scancode, pressionado);
 
-			bool pressionado = (event.type == SDL_KEYDOWN);
+		//ImGuiIO& io = ImGui::GetIO(); //Se ImGui quiser o teclado ele prioriza as entradas apenas para a ImGUi
 
-			controles->processarEntrada(event.key.keysym.scancode, pressionado); //Não rodar junto com o switch case abaixo
-		}
+		//if (!io.WantCaptureKeyboard) { //precessa apenas se a ImGui não quiser usar o teclado
+
+		//	bool pressionado = (event.type == SDL_KEYDOWN);
+
+		//	controles->processarEntrada(event.key.keysym.scancode, pressionado); //Não rodar junto com o switch case abaixo
+		//}
 
 	}
 
@@ -224,7 +250,7 @@ void SDL_Display::renderizar() {
 			if (ImGui::MenuItem("Controle")) {
 				mostrarJanelaControle = !mostrarJanelaControle;
 				if (!mostrarJanelaControle) {
-					botaoAguardandoMapeamento = -1;
+					jogadorAguardandoMapeamento = 0;
 				}
 			}
 			if (ImGui::MenuItem("Conta")) {
@@ -472,131 +498,237 @@ void SDL_Display::renderizar() {
 
 	// Janela de mapeamento de controle
 
-	if (mostrarJanelaControle && bus && bus->getControles()) {
+	if (mostrarJanelaControle && bus) {
 
-		Controles* controles = bus->getControles();
+		Controles* p1 = bus->getControlesP1();
+		Controles* p2 = bus->getControlesP2();
 
-		ImGui::SetNextWindowSize(ImVec2(430, 390), ImGuiCond_FirstUseEver); // Ajuste o tamanho conforme necessário
+		ImGui::SetNextWindowSize(ImVec2(450, 420), ImGuiCond_FirstUseEver); // Ajuste o tamanho conforme necessário
 		ImGui::Begin("Mapeamento de Controle NES", &mostrarJanelaControle, ImGuiWindowFlags_NoCollapse);
 
 		if (!mostrarJanelaControle) {
-			botaoAguardandoMapeamento = -1;
+			jogadorAguardandoMapeamento = 0;
+			botaoAguardandoMapeamento = botoesNES::COUNT;
 		}
 
-		ImGui::TextWrapped("Clique em 'Mapear' ao lado de um botao e pressione a tecla desejada.\nPressione ESC para cancelar o mapeamento do botao atual.");
+		if (ImGui::BeginTabBar("AbasJogadores")) {
+			if (ImGui::BeginTabItem("Jogador 1") && p1) {
+				for (int i = 0; i < static_cast<int>(botoesNES::COUNT); ++i) {
+					botoesNES b = static_cast<botoesNES>(i);
+					ImGui::Text("%s:", botaoParaString(b));
+					ImGui::SameLine(150);
+					if (jogadorAguardandoMapeamento == 1 && botaoAguardandoMapeamento == b) {
+						ImGui::TextDisabled("[Pressione uma tecla...]");
+					}
+					else {
+						std::string label = "Mapear##P1_" + std::string(botaoParaString(b));
+						if (ImGui::Button(label.c_str(), ImVec2(100, 0))) {
+							jogadorAguardandoMapeamento = 1;
+							botaoAguardandoMapeamento = b;
+						}
+					}
+					ImGui::SameLine(270);
+					ImGui::TextUnformatted(SDL_GetScancodeName(p1->getScancodeParaBotao(b)));
+				}
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Jogador 2") && p2) {
+				for (int i = 0; i < static_cast<int>(botoesNES::COUNT); ++i) {
+					botoesNES b = static_cast<botoesNES>(i);
+					ImGui::Text("%s:", botaoParaString(b));
+					ImGui::SameLine(150);
+					if (jogadorAguardandoMapeamento == 2 && botaoAguardandoMapeamento == b) {
+						ImGui::TextDisabled("[Pressione uma tecla...]");
+					}
+					else {
+						std::string label = "Mapear##P2_" + std::string(botaoParaString(b));
+						if (ImGui::Button(label.c_str(), ImVec2(100, 0))) {
+							jogadorAguardandoMapeamento = 2;
+							botaoAguardandoMapeamento = b;
+						}
+					}
+					ImGui::SameLine(270);
+					ImGui::TextUnformatted(SDL_GetScancodeName(p2->getScancodeParaBotao(b)));
+				}
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
+		}
+
 		ImGui::Separator();
 		ImGui::Spacing();
 
-		const botoesNES ordemBotoesGui[] = {
-			botoesNES::UP, botoesNES::DOWN, botoesNES::LEFT, botoesNES::RIGHT,
-			botoesNES::A, botoesNES::B, botoesNES::SELECT, botoesNES::START
-		};
-
-		for (botoesNES botaoAtualEnum : ordemBotoesGui) {
-			const char* nomeExibicaoBotao = botaoParaString(botaoAtualEnum);
-			SDL_Scancode scancodeMapeado = controles->getScancodeParaBotao(botaoAtualEnum);
-			const char* nomeTeclaMapeada = (scancodeMapeado != SDL_SCANCODE_UNKNOWN) ? SDL_GetScancodeName(scancodeMapeado) : "N/A";
-
-			ImGui::Text("%s:", nomeExibicaoBotao);
-			ImGui::SameLine(150.0f); // Ajuste para alinhar
-
-			if (botaoAguardandoMapeamento == static_cast<int>(botaoAtualEnum)) {
-				ImGui::TextDisabled("[Pressione uma tecla... (ESC para cancelar)]");
+		if (ImGui::Button("Salvar Mapeamentos", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+			// Verifica se o usuário está logado para decidir onde salvar
+			if (usuarioLogado && firebaseDatabase && firebaseAuth && firebaseAuth->current_user().is_valid()) {
+				std::string uid = firebaseAuth->current_user().uid();
+				if (p1) p1->salvarMapeamentoNoFirebase(firebaseDatabase, uid + "_p1");
+				if (p2) p2->salvarMapeamentoNoFirebase(firebaseDatabase, uid + "_p2");
+				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos na nuvem (Firebase)!", _TRUNCATE);
 			}
 			else {
-				std::string labelBotaoMapear = std::string("Mapear##") + nomeExibicaoBotao;
-				if (ImGui::Button(labelBotaoMapear.c_str(), ImVec2(100, 0))) {
-					botaoAguardandoMapeamento = static_cast<int>(botaoAtualEnum);
-				}
+				// Salva localmente se não estiver logado
+				std::string execDir = getExecutableDir();
+				if (p1) p1->salvarMapeamento(execDir + "\\controles_p1.json");
+				if (p2) p2->salvarMapeamento(execDir + "\\controles_p2.json");
+				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos localmente!", _TRUNCATE);
 			}
-			ImGui::SameLine(270.0f); // Ajuste para alinhar
-			ImGui::TextUnformatted(nomeTeclaMapeada);
+			ImGui::OpenPopup("FeedbackPopup");
 		}
 
-		ImGui::Spacing();
-		ImGui::Separator();
-		ImGui::Spacing();
+		if (ImGui::Button("Carregar Mapeamentos", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+			// Reseta qualquer estado de espera antes de carregar novos mapeamentos
+			jogadorAguardandoMapeamento = 0;
+			botaoAguardandoMapeamento = botoesNES::COUNT;
 
-		if (ImGui::Button("Salvar Mapeamentos", ImVec2(160, 0))) {
-			if (firebaseAuth && firebaseDatabase) {
-				auto user = firebaseAuth->current_user(); // valor, não ponteiro
-				std::string uid = user.uid();
-
-				if (!uid.empty()) {
-					if (controles->salvarMapeamentoNoFirebase(firebaseDatabase, uid)) {
-						strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos no Firebase!", _TRUNCATE);
-					}
-					else {
-						strncpy_s(popupMessage, sizeof(popupMessage), "Erro ao salvar no Firebase. Salvando localmente...", _TRUNCATE);
-						controles->salvarMapeamento();
-					}
-				}
-				else {
-					if (controles->salvarMapeamento()) {
-						strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos localmente!", _TRUNCATE);
-					}
-					else {
-						strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao salvar mapeamentos.", _TRUNCATE);
-					}
-				}
-				ImGui::OpenPopup("FeedbackPopup");
+			// Verifica se o usuário está logado para decidir de onde carregar
+			if (usuarioLogado && firebaseDatabase && firebaseAuth && firebaseAuth->current_user().is_valid()) {
+				std::string uid = firebaseAuth->current_user().uid();
+				if (p1) p1->carregarMapeamentoDoFirebase(firebaseDatabase, uid + "_p1");
+				if (p2) p2->carregarMapeamentoDoFirebase(firebaseDatabase, uid + "_p2");
+				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados da nuvem (Firebase)!", _TRUNCATE);
 			}
+			else {
+				// Carrega localmente se não estiver logado
+				std::string execDir = getExecutableDir();
+				if (p1) p1->carregarMapeamento(execDir + "\\controles_p1.json");
+				if (p2) p2->carregarMapeamento(execDir + "\\controles_p2.json");
+				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados dos arquivos locais!", _TRUNCATE);
+			}
+			ImGui::OpenPopup("FeedbackPopup");
+		}
+
+		if (ImGui::Button("Restaurar Padroes", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+			// Reseta qualquer estado de espera
+			jogadorAguardandoMapeamento = 0;
+			botaoAguardandoMapeamento = botoesNES::COUNT;
+
+			// Reverte para os padrões em ambos os controles
+			if (p1) p1->reverterParaPadrao();
+			if (p2) p2->reverterParaPadrao();
+
+			strncpy_s(popupMessage, sizeof(popupMessage), "Padroes restaurados.\nClique em 'Salvar' para persistir as mudancas.", _TRUNCATE);
+			ImGui::OpenPopup("FeedbackPopup");
 		}
 
 
-			ImGui::SameLine();
+		// Adicionar botões Salvar/Carregar/Restaurar aqui se desejar
 
-			if (ImGui::Button("Carregar Mapeamentos", ImVec2(160, 0))) {
-				if (firebaseAuth && firebaseDatabase) {
-					auto user = firebaseAuth->current_user(); // valor
-					std::string uid = user.uid();
+		//ImGui::TextWrapped("Clique em 'Mapear' ao lado de um botao e pressione a tecla desejada.\nPressione ESC para cancelar o mapeamento do botao atual.");
+		//ImGui::Separator();
+		//ImGui::Spacing();
 
-					if (!uid.empty()) {
-						if (controles->carregarMapeamentoDoFirebase(firebaseDatabase, uid)) {
-							strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados do Firebase!", _TRUNCATE);
-						}
-						else {
-							strncpy_s(popupMessage, sizeof(popupMessage), "Erro ao carregar do Firebase. Tentando local...", _TRUNCATE);
-							controles->carregarMapeamento();
-						}
-					}
-					else {
-						if (controles->carregarMapeamento()) {
-							strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados localmente!", _TRUNCATE);
-						}
-						else {
-							strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao carregar mapeamentos locais.", _TRUNCATE);
-						}
-					}
-					ImGui::OpenPopup("FeedbackPopup");
-				}
-			}
+		//const botoesNES ordemBotoesGui[] = {
+		//	botoesNES::UP, botoesNES::DOWN, botoesNES::LEFT, botoesNES::RIGHT,
+		//	botoesNES::A, botoesNES::B, botoesNES::SELECT, botoesNES::START
+		//};
+
+		//for (botoesNES botaoAtualEnum : ordemBotoesGui) {
+		//	const char* nomeExibicaoBotao = botaoParaString(botaoAtualEnum);
+		//	SDL_Scancode scancodeMapeado = controles->getScancodeParaBotao(botaoAtualEnum);
+		//	const char* nomeTeclaMapeada = (scancodeMapeado != SDL_SCANCODE_UNKNOWN) ? SDL_GetScancodeName(scancodeMapeado) : "N/A";
+
+		//	ImGui::Text("%s:", nomeExibicaoBotao);
+		//	ImGui::SameLine(150.0f); // Ajuste para alinhar
+
+		//	if (botaoAguardandoMapeamento == static_cast<int>(botaoAtualEnum)) {
+		//		ImGui::TextDisabled("[Pressione uma tecla... (ESC para cancelar)]");
+		//	}
+		//	else {
+		//		std::string labelBotaoMapear = std::string("Mapear##") + nomeExibicaoBotao;
+		//		if (ImGui::Button(labelBotaoMapear.c_str(), ImVec2(100, 0))) {
+		//			botaoAguardandoMapeamento = static_cast<int>(botaoAtualEnum);
+		//		}
+		//	}
+		//	ImGui::SameLine(270.0f); // Ajuste para alinhar
+		//	ImGui::TextUnformatted(nomeTeclaMapeada);
+		//}
+
+		//ImGui::Spacing();
+		//ImGui::Separator();
+		//ImGui::Spacing();
+
+		//if (ImGui::Button("Salvar Mapeamentos", ImVec2(160, 0))) {
+		//	if (firebaseAuth && firebaseDatabase) {
+		//		auto user = firebaseAuth->current_user(); // valor, não ponteiro
+		//		std::string uid = user.uid();
+
+		//		if (!uid.empty()) {
+		//			if (controles->salvarMapeamentoNoFirebase(firebaseDatabase, uid)) {
+		//				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos no Firebase!", _TRUNCATE);
+		//			}
+		//			else {
+		//				strncpy_s(popupMessage, sizeof(popupMessage), "Erro ao salvar no Firebase. Salvando localmente...", _TRUNCATE);
+		//				controles->salvarMapeamento();
+		//			}
+		//		}
+		//		else {
+		//			if (controles->salvarMapeamento()) {
+		//				strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos salvos localmente!", _TRUNCATE);
+		//			}
+		//			else {
+		//				strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao salvar mapeamentos.", _TRUNCATE);
+		//			}
+		//		}
+		//		ImGui::OpenPopup("FeedbackPopup");
+		//	}
+		//}
 
 
-				ImGui::Spacing();
+		//	ImGui::SameLine();
 
-				if (ImGui::Button("Restaurar Padroes", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-					botaoAguardandoMapeamento = -1;
-					controles->reverterParaPadrao();
+		//	if (ImGui::Button("Carregar Mapeamentos", ImVec2(160, 0))) {
+		//		if (firebaseAuth && firebaseDatabase) {
+		//			auto user = firebaseAuth->current_user(); // valor
+		//			std::string uid = user.uid();
 
-					strncpy_s(popupMessage, sizeof(popupMessage), "Padroes restaurados.\nClique em 'Salvar' para persistir.", _TRUNCATE);
-					ImGui::OpenPopup("FeedbackPopup");
-				}
+		//			if (!uid.empty()) {
+		//				if (controles->carregarMapeamentoDoFirebase(firebaseDatabase, uid)) {
+		//					strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados do Firebase!", _TRUNCATE);
+		//				}
+		//				else {
+		//					strncpy_s(popupMessage, sizeof(popupMessage), "Erro ao carregar do Firebase. Tentando local...", _TRUNCATE);
+		//					controles->carregarMapeamento();
+		//				}
+		//			}
+		//			else {
+		//				if (controles->carregarMapeamento()) {
+		//					strncpy_s(popupMessage, sizeof(popupMessage), "Mapeamentos carregados localmente!", _TRUNCATE);
+		//				}
+		//				else {
+		//					strncpy_s(popupMessage, sizeof(popupMessage), "ERRO ao carregar mapeamentos locais.", _TRUNCATE);
+		//				}
+		//			}
+		//			ImGui::OpenPopup("FeedbackPopup");
+		//		}
+		//	}
 
-				//Popup de feedback genérico
-				ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-				ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-				if (ImGui::BeginPopupModal("FeedbackPopup", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings)) {
-					ImGui::TextWrapped("%s", popupMessage);
-					ImGui::Separator();
-					ImGui::Spacing();
-					if (ImGui::Button("OK", ImVec2(120, 0))) {
-						ImGui::CloseCurrentPopup();
-					}
 
-					ImGui::SetItemDefaultFocus();
-					ImGui::EndPopup();
-				}
+		//		ImGui::Spacing();
+
+		//		if (ImGui::Button("Restaurar Padroes", ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+		//			botaoAguardandoMapeamento = -1;
+		//			controles->reverterParaPadrao();
+
+		//			strncpy_s(popupMessage, sizeof(popupMessage), "Padroes restaurados.\nClique em 'Salvar' para persistir.", _TRUNCATE);
+		//			ImGui::OpenPopup("FeedbackPopup");
+		//		}
+
+		//		//Popup de feedback genérico
+		//		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		//		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+		//		if (ImGui::BeginPopupModal("FeedbackPopup", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings)) {
+		//			ImGui::TextWrapped("%s", popupMessage);
+		//			ImGui::Separator();
+		//			ImGui::Spacing();
+		//			if (ImGui::Button("OK", ImVec2(120, 0))) {
+		//				ImGui::CloseCurrentPopup();
+		//			}
+
+		//			ImGui::SetItemDefaultFocus();
+		//			ImGui::EndPopup();
+		//		}
 
 				ImGui::End();
 
@@ -604,13 +736,28 @@ void SDL_Display::renderizar() {
 					ImGui::OpenPopup("TeclaJaEmUsoPopup");
 				}
 
-				if (ImGui::BeginPopupModal("TeclaJaEmUsoPopup", &this->mostrarPopupTeclaEmUso, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings)) {
+				ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+				ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+				if (ImGui::BeginPopupModal("TeclaJaEmUsoPopup", &this->mostrarPopupTeclaEmUso, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
 					ImGui::TextWrapped("%s", this->mensagemPopupTeclaEmUso.c_str());
 					ImGui::Spacing();
 					ImGui::Separator();
 					ImGui::Spacing();
 					if (ImGui::Button("OK", ImVec2(120, 0))) {
 						this->mostrarPopupTeclaEmUso = false;
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::SetItemDefaultFocus();
+					ImGui::EndPopup();
+				}
+
+				// Popup de feedback geral para Salvar/Carregar/Restaurar
+				ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+				if (ImGui::BeginPopupModal("FeedbackPopup", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove)) {
+					ImGui::TextWrapped("%s", popupMessage);
+					ImGui::Separator();
+					if (ImGui::Button("OK", ImVec2(120, 0))) {
 						ImGui::CloseCurrentPopup();
 					}
 					ImGui::SetItemDefaultFocus();
