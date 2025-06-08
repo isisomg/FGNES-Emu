@@ -68,7 +68,7 @@ private:
 
 public:
     bool jogoRodando = false;
-
+    bool reset = false;
     SDL_Renderer* RENDERER;
 
     //SDL_Display();

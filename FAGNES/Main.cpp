@@ -105,11 +105,12 @@ int main(int argc, char* argv[]) {
 		}
 
 		if (display.jogoRodando) {
-			if (cpu.iniciou == false) { // inicializacoes necessarias para o jogo
+			if (cpu.iniciou == false || display.reset == true) { // inicializacoes necessarias para o jogo
 				cpu.inicializar(bus);
 				cpu.PC = cartucho.adrPCinicial;
 				bus->setCartucho(&cartucho);
 				ppu.carregarCHR(cartucho.chrROM);
+				display.reset = false;
 			}
 
 			if (cpu.PC == 0xFFFF) {

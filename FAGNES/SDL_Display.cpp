@@ -241,6 +241,7 @@ void SDL_Display::renderizar() {
 					cartucho->init(arquivoROM);
 					inicializarAudio();
 					jogoRodando = true;
+					reset = true;
 				}
 			}
 			ImGui::EndMenu();
