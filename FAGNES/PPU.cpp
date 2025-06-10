@@ -417,6 +417,9 @@ void PPU::drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int sc
 	// Flipping horizontal (bit 6)
 	bool flipH = attributes & 0x40;
 
+	// Verifica o bit de prioridade de sprite que eh o bit tinco
+	bool backgroundPriority = (attributes & 0x20) != 0;
+
 	for (int i = 0; i < 8; ++i) {
 		int bit = flipH ? i : (7 - i);
 
@@ -434,6 +437,11 @@ void PPU::drawSpriteTile(Byte tileIndex, Byte x, Byte y, Byte attributes, int sc
 		// X do pixel
 		int finalX = x + i;
 		if (finalX >= 256 || scanline >= 240) continue; // Bounds check
+
+		// Se o pixel do fundo não for transparente e o sprite estiver atras do fundo, ele nao vai ser desenhado. (O mario por exemplo nao vai aparecer atras do cano e tals)
+		if (backgroundBuffer[scanline * 256 + finalX] && backgroundPriority) {
+			continue;
+		}
 
 		// Aqui você deve desenhar: substitua por sua função real de renderização
 		putPixel(finalX, scanline, color);
