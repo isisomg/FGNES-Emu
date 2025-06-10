@@ -224,46 +224,58 @@ void PPU::step() {
 	if (scanline == 261 && dot == 1) {
 		status.setVBlank(false);
 		status.status &= ~0x40; // Limpa o flag de Sprite 0 Hit
+		status.status &= ~0x20; // Limpa o flag de Sprite Overflow
 	}
 
-	if (renderingEnabled) {
-		// Durante scanlines visíveis e de pré-renderização
-		if ((scanline < 240) || scanline == 261) {
-			// A cada 8 dots, o PPU busca um tile. Após a busca, incrementamos o X
-			if (dot > 0 && dot <= 256 && dot % 8 == 0) {
-				incrementX();
-			}
-			// No final da busca de tiles da linha, incrementamos o Y
+	// Scanline visiveis de 0 á 240
+	if (scanline >= 0 && scanline < 240) {
+		if (renderingEnabled) {
+
+			// No dot 256 a PPU conseguiu pegar todo o background e os sprites da scanline atual!!!!!
+		
+			// Aqui vamos fazer a renderizacao dela e coisar o Y para a prox scanline!
+			
 			if (dot == 256) {
-				incrementY();
+				renderBackgroundScanline(scanline);
+				renderSprites(scanline);
+				checkSpriteZeroHit(scanline);
+
+				incrementY(); // Aqui tamo preparando o scroll vertical pra prox scanline
 			}
-			// No dot 257, a posição horizontal é restaurada de t para v
-			if (dot == 257) {
+			// No dot 257, a PPU vai restaurar a posição horizontal de 't' para 'v'.
+			// 
+			// Isso vai resetar a posicao horizontal pro começo da prox scanline!!!
+			else if (dot == 257) {
 				v = (v & ~0x041F) | (t & 0x041F);
 			}
-			// Na pré-renderização, a posição vertical é restaurada de t para v
-			if (scanline == 261 && dot >= 280 && dot <= 304) {
+		}
+	}
+	// Agora durante a scanline 241 e no dot 1, começa o V-Blank!!!
+	else if (scanline == 241 && dot == 1) {
+		status.setVBlank(true);
+		if (ctrl.isNMIEnabled()) {
+			nmiRequested = true;
+		}
+	}
+	// Scanline de Pre Renderizaxcao
+	else if (scanline == 261) {
+		// No dot 1, todas as flags de renderizacao setadas vao ser limpas!!
+		if (dot == 1) {
+			status.setVBlank(false);
+			status.status &= ~0x40; // Limpa a tag de sprite 0 hit
+			status.status &= ~0x20; // Limpa o flag de Sprite Overflow
+		}
+
+		if (renderingEnabled) {
+			// Durante os dots 280-304, a PPU copia repetinamente repetitidamente repetitivemamente (??? SEILA CARA) os bits verticais de t pra v.
+			// Isso carrega a posicao do scroll vertical pro prox frame!
+			if (dot >= 280 && dot <= 304) {
 				v = (v & ~0x7BE0) | (t & 0x7BE0);
 			}
 		}
 	}
-
-	// Renderiza a scanline após todos os dados terem sido buscados
-	if (scanline < 240 && dot == 256) {
-		renderBackgroundScanline(scanline);
-		renderSprites(scanline);
-		checkSpriteZeroHit(scanline);
-	}
-
-	// Ativa o VBlank e a NMI
-	if (scanline == 241 && dot == 1) {
-		status.setVBlank(true);
-		if (ctrl.isNMIEnabled()) {
-			nmiRequested = true;
-			if (nmiCallback) nmiCallback();
-		}
-	}
 }
+
 
 void PPU::renderBackgroundScanline(int scanline) {
 	if (!mask.showBackground) {
@@ -623,6 +635,4 @@ void PPU::writeToPPUData(Byte value) {
 	v += (ctrl.control & 0x04) ? 32 : 1;
 }
 
-// O que falta ent amiga isis????
-
-//	ent, falta so o mirroring horizontal funcionando direito e umas coisas da ppumask. Talvez eu tenha que retornar no zero hit dnv, mas ele em questao funciona conforme o q se espera dele. 
+// oq da pra melhorar? Sprite 0-hit (dnv GRAHGRHSGARHSGRHG) e sprite overflow, maioria dos jogos agora ja se torna jogaveis eba :)
