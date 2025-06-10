@@ -37,6 +37,12 @@ Byte PPUCTRL::getNameTableAddr() const {
 	return control & 0x03;
 }
 
+bool PPUCTRL::isSpriteHeight16() const {
+	// Retorna true se o bit 5 (0x20) estiver setado!!
+	// ASSINADO: ISIS. >:(
+	return (control & 0x20) != 0;
+}
+
 
 // ESTOU PARANDO DE ASSINAR!!!!!
 
@@ -474,36 +480,61 @@ void PPU::checkSpriteZeroHit(int scanline) {
 	Byte attributes = OAM[2];
 	Byte x = OAM[3];
 
-	// Verifica se o scanline atual atinge o sprite 0
-	if (scanline >= y + 1 && scanline < y + 1 + 8) {
+	// O hit so pode acontecer se a renderização de background e sprites estiver habilitada
+	if (!mask.showBackground || !mask.showSprites) {
+		return;
+	}
+
+	int spriteHeight = ctrl.isSpriteHeight16() ? 16 : 8;
+
+	// Aqui vamos verificar se a scanline atual atinge a faixa vertical do sprite 0
+
+	if (scanline >= y + 1 && scanline < y + 1 + spriteHeight) { // 8 ou 16 pixeis de altura
+		DWord patternAddr;
 		int rowInTile = scanline - (y + 1);
-		if (attributes & 0x80) {
-			rowInTile = 7 - rowInTile; // flip vertical (QUE FOI TESTADO E FUNCIONA CORRETAMENTE EBAAAA)
+
+		if (spriteHeight == 16) {		// No caso de sprites de 16 pixels de altura
+			bool flipV = (attributes & 0x80) != 0;
+			if (flipV) rowInTile = 15 - rowInTile;		// Inverte a linha se o sprite estiver flipado verticalmente
+
+			Byte targetTile;
+			if (rowInTile < 8) {
+				targetTile = tileIndex & 0xFE;		// Mantém o tile original (0-7)
+			}
+			else {
+				targetTile = (tileIndex & 0xFE) + 1;
+				rowInTile -= 8;		// Ajusta a linha para o segundo tile (8-15)
+			}
+			DWord patternTableBase = (tileIndex & 0x01) ? 0x1000 : 0x0000;
+			patternAddr = patternTableBase + targetTile * 16 + rowInTile;		// Calcula o endereço do padrao do tile
+		}
+		else {		// No caso de sprites de 8 pixels de altura
+			if (attributes & 0x80) rowInTile = 7 - rowInTile;
+			DWord patternTableBase = (ctrl.control & 0x08) ? 0x1000 : 0x0000;
+			patternAddr = patternTableBase + tileIndex * 16 + rowInTile;		// Calcula o endereço do padrao do tile
 		}
 
-		DWord baseAddress = tileIndex * 16;
-		Byte low = patternTable[baseAddress + rowInTile];
-		Byte high = patternTable[baseAddress + rowInTile + 8];
+		Byte lowPlane = read(patternAddr);
+		Byte highPlane = read(patternAddr + 8);
 
-		for (int i = 0; i < 8; i++) {
-			int bit = (attributes & 0x40) ? i : (7 - i);
+		for (int i = 0; i < 8; ++i) {			// Verifica os 8 pixels do tile
+			int finalX = x + i;
+			if (finalX >= 256) continue;
 
-			Byte bit0 = (low >> bit) & 1;
-			Byte bit1 = (high >> bit) & 1;
+			// Verificacoes de bordas!!!!
+			if (finalX == 255) continue;		// Evita overflow no buffer de background
+			if (finalX < 8 && (!mask.showBackgroundLeft || !mask.showSpritesLeft)) continue;	// Se os 8 pixels da esquerda nao devem ser mostrado ele pula
+
+			bool flipH = (attributes & 0x40) != 0;		// Verifica se o sprite está flipado horizontalmente
+			int bit = flipH ? i : (7 - i);		// Inverte o bit se estiver flipado horizontalmente
+
+			Byte bit0 = (lowPlane >> bit) & 1;
+			Byte bit1 = (highPlane >> bit) & 1;
 			Byte colorIndex = (bit1 << 1) | bit0;
 
-			if (colorIndex == 0) continue;
-
-			Byte paletteIndex = 0x10 + (attributes & 0x03) * 4 + colorIndex;
-			Byte color = read(0x3F00 + (paletteIndex % 32));
-
-			int finalX = x + i;
-			if (finalX >= 0 && finalX < 256 && scanline >= 0 && scanline < 240) {
-				// Sprite 0 com pixel não transparente no background
-				if (backgroundBuffer[scanline * 256 + finalX]) {
-					status.status |= 0x40; // Sprite 0 hit
-					return;
-				}
+			if (colorIndex != 0 && backgroundBuffer[scanline * 256 + finalX]) {
+				status.status |= 0x40;
+				return;
 			}
 		}
 	}
@@ -515,7 +546,7 @@ void PPU::renderSprites(int scanline) {
 
 	// Sprite Height depende de config, aqui 8 como padrão
 
-	int spriteHeight = 8;
+	int spriteHeight = ctrl.isSpriteHeight16() ? 16 : 8; // Aqui mudei pra aceitar sprites de 16 pixels de altura!!
 	int spritesOnThisLine = 0;
 
 	for (int i = 0; i < 64; ++i) {
@@ -524,10 +555,79 @@ void PPU::renderSprites(int scanline) {
 		Byte attributes = OAM[i * 4 + 2];
 		Byte x = OAM[i * 4 + 3];
 
+		// Ignora sprites que estão fora da tela (y > 239)
+		if (y >= 0xEF) continue;
+
 		if (scanline >= y + 1 && scanline < y + 1 + spriteHeight) {
 			if (spritesOnThisLine >= 8) break;
 			drawSpriteTile(tileIndex, x, y + 1, attributes, scanline);
 			spritesOnThisLine++;
+
+			DWord patternAddr;
+			int rowInTile = scanline - (y + 1);
+
+			// Lógica para sprites 8x16
+			if (spriteHeight == 16) {
+				bool flipV = (attributes & 0x80) != 0;
+
+				// Se houver flip vertical, a ordem dos tiles é invertida
+				if (flipV) {
+					rowInTile = 15 - rowInTile;
+				}
+
+				// Determina qual tile (superior ou inferior) usar
+				Byte targetTile;
+				if (rowInTile < 8) { // Scanline está na metade superior do sprite
+					targetTile = tileIndex & 0xFE; // Usa o primeiro tile do par
+				}
+				else { // Scanline está na metade inferior
+					targetTile = (tileIndex & 0xFE) + 1; // Usa o segundo tile
+					rowInTile -= 8; // Ajusta a linha para ser relativa ao tile inferior
+				}
+				
+				// O bit 0 do índice original do tile seleciona a pattern table
+				
+				DWord patternTableBase = (tileIndex & 0x01) ? 0x1000 : 0x0000;
+				patternAddr = patternTableBase + targetTile * 16 + rowInTile;
+			}
+			
+			// Lógica original para sprites 8x8
+			else {
+				if (attributes & 0x80) { // Flip Vertical
+					rowInTile = 7 - rowInTile;
+				}
+				// A pattern table é selecionada pelo PPUCTRL bit 3
+				DWord patternTableBase = (ctrl.control & 0x08) ? 0x1000 : 0x0000;
+				patternAddr = patternTableBase + tileIndex * 16 + rowInTile;
+			}
+			
+			// Aqui vamos renderizar o tile
+			
+			Byte lowPlane = read(patternAddr);
+			Byte highPlane = read(patternAddr + 8);
+			Byte palette = attributes & 0x03;
+			bool flipH = (attributes & 0x40) != 0;
+			bool backgroundPriority = (attributes & 0x20) != 0;
+
+			for (int pixel = 0; pixel < 8; ++pixel) {
+				int finalX = x + pixel;
+				if (finalX >= 256) continue;
+
+				int bit = flipH ? pixel : (7 - pixel);
+				Byte bit0 = (lowPlane >> bit) & 1;
+				Byte bit1 = (highPlane >> bit) & 1;
+				Byte colorIndex = (bit1 << 1) | bit0;
+
+				if (colorIndex == 0) continue;
+
+				if (backgroundPriority && backgroundBuffer[scanline * 256 + finalX]) {
+					continue;
+				}
+
+				Byte paletteIndex = 0x10 + palette * 4 + colorIndex;
+				Byte finalColor = read(0x3F00 + paletteIndex);
+				putPixel(finalX, scanline, finalColor);
+			}
 		}
 	}
 }
@@ -643,4 +743,9 @@ void PPU::writeToPPUData(Byte value) {
 	v += (ctrl.control & 0x04) ? 32 : 1;
 }
 
-// oq da pra melhorar? Sprite 0-hit (dnv GRAHGRHSGARHSGRHG) e sprite overflow, maioria dos jogos agora ja se torna jogaveis eba :)
+// Oq da pra melhorar? SOMENTE sprite overflow, maioria dos jogos agora ja se torna jogaveis (mapper 0 - testado) eba :)
+
+// Jogos nao jogaveis sabe-se la pq:
+
+// Paperboy (mapper 0) - Fica todo maluco doido morto
+// Kung-Fu (mapper 0) - Vc da UM soco e ele MORRE e CRASHA INTEIRO.

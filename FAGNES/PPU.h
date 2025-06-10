@@ -9,6 +9,7 @@ struct PPUCTRL {
 	bool isNMIEnabled() const;
 	bool isMasterSlave() const;
 	Byte getNameTableAddr() const;
+	bool isSpriteHeight16() const;
 };
 
 struct PPUSTATUS {
