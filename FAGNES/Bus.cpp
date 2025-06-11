@@ -74,6 +74,10 @@ void Bus::write(DWord adr, Byte dado) { // Usa o mesmo conceito de tirar o espel
 		if (apu)
 			apu->writeRegister(adr, dado);
 	}
+	else if (adr >= 0x8000 && adr <= 0xFFFF) {
+		if (cartucho)
+			cartucho->writePRG(adr, dado); 
+	}
 
 }
 

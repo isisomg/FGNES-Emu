@@ -121,7 +121,6 @@ int main(int argc, char* argv[]) {
 			int cpuCiclos = 0;
 			while (cpuCiclos < ciclosPorFrame) { // RODA UM FRAME
 				int ciclos = cpu.executar();
-				
 				cpuCiclos += ciclos;
 
 				for (int c = 0; c < ciclos; ++c) {

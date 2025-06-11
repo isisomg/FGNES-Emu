@@ -51,9 +51,6 @@
     <ClCompile Include="Controles.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
-    <ClCompile Include="Mapper2.cpp">
-      <Filter>Arquivos de Origem</Filter>
-    </ClCompile>
     <ClCompile Include="APU.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>

@@ -88,7 +88,7 @@ void Cartucho::init(const std::string& path) {
 		break;
 	case 2:
 		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM); // UxROM MAPPER2
-		adrPCinicial = readPRG(0xFFFC) | (readPRG(0xFFFD) << 8);
+		adrPCinicial = mapper->cpuRead(0xFFFC) | (mapper->cpuRead(0xFFFD) << 8);
 		break;
 	case 3: 
 		mapper = std::make_unique<Mapper3>(prgBanks, chrBanks, prgROM, chrROM); // CNROM MAPPER3
@@ -102,9 +102,7 @@ void Cartucho::init(const std::string& path) {
 		std::cerr << "Mapper " << (int)valorMapper << " não suportado ainda.\n";
 		exit(3);
 	}
-
-
-	std::cout << "Jogo carregado. Mapper" << (int)valorMapper << " sendo usado. PC inicial: " << std::hex << (int)adrPCinicial << std::endl;
+	
 }
 
 Byte Cartucho::readPRG(DWord adr) {

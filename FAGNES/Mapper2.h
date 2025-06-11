@@ -5,19 +5,72 @@
 #include <iostream>
 
 class Mapper2 : public Mapper {
-private:
-	Byte prgBankSelect = 0;
-	std::vector<Byte> prgROM;
-	std::vector<Byte> chrROM;
-	int prgBanks;
-	int chrBanks;
-
 public:
-	Mapper2(Byte prgBanks, Byte chrBanks, const std::vector<Byte>& prg, const std::vector<Byte>& chr);
+    Mapper2(Byte prgBanks, Byte chrBanks, const std::vector<Byte>& prgROM, const std::vector<Byte>& chrROM)
+        : prgROM(prgROM), chrROM(chrROM), numPRGBanks(prgBanks), numCHRBanks(chrBanks)
+    {
+        // Começa com banco 0 selecionado
+        selectedBank = 0;
+    }
 
-	Byte cpuRead(DWord addr) override;
-	void cpuWrite(DWord addr, Byte data) override;
+    Byte cpuRead(DWord addr) override {
+        if (addr >= 0x8000 && addr <= 0xBFFF) {
+            uint32_t offset = (static_cast<uint32_t>(selectedBank) * 0x4000) + (addr - 0x8000);
+            return prgROM[offset % prgROM.size()];
+        }
+        else if (addr >= 0xC000 && addr <= 0xFFFF) {
+            uint32_t bankIndex = static_cast<uint32_t>(numPRGBanks - 1);
+            uint32_t offset = (bankIndex * 0x4000) + (addr - 0xC000);
+            if (offset < prgROM.size()) {
+                return prgROM[offset];
+            }
+            else {
+                return 0xFF;
+            }
+        }
+        return 0xFF;
+    }
 
-	Byte ppuRead(DWord addr) override;
-	void ppuWrite(DWord addr, Byte data) override;
+
+
+
+    void cpuWrite(DWord addr, Byte data) override {
+        if (addr == 0xFFFC || addr == 0xFFFD) {
+            uint32_t bankIndex = static_cast<uint32_t>(numPRGBanks - 1);
+            uint32_t offset = (bankIndex * 0x4000) + (addr - 0xC000);
+        }
+
+        if (addr >= 0x8000 && addr <= 0xFFFF) {
+            // Apenas os 3 bits inferiores são usados
+            selectedBank = data & 0x07;
+
+            // Proteção para não ultrapassar o número de bancos disponíveis
+            if (selectedBank >= numPRGBanks - 1) {
+                selectedBank = selectedBank % (numPRGBanks - 1);
+            }
+        }
+    }
+
+
+    Byte ppuRead(DWord addr) override {
+        if (addr < 0x2000) {
+            return chrROM[addr % chrROM.size()];
+        }
+        return 0xFF;
+    }
+
+    void ppuWrite(DWord addr, Byte data) override {
+        // Só permite escrita se for CHR-RAM (tamanho == 0 ou não fornecido)
+        if (addr < 0x2000 && chrROM.size() == 0) {
+            // Exemplo: chrRAM[addr] = data;
+        }
+    }
+    Byte numPRGBanks = 1;
+
+private:
+    std::vector<Byte> prgROM;
+    std::vector<Byte> chrROM;
+    Byte selectedBank = 0;
+    
+    Byte numCHRBanks = 0;
 };
