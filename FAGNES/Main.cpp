@@ -52,8 +52,6 @@ int main(int argc, char* argv[]) {
 	}
 	else {
 		std::cerr << "Erro ao inicializar Firebase App." << std::endl;
-		// Você pode tentar obter mais detalhes do log se configurar firebase::log::SetLevel(firebase::log::kLogLevelVerbose);
-		// antes de firebase::App::Create()
 	}
 
 	Bus* bus = new Bus();
@@ -158,13 +156,6 @@ int main(int argc, char* argv[]) {
 	controleP2.salvarMapeamento(caminhoP2_final);
 
 	if (firebase_app) {
-		// Se você criou um AuthStateListener, remova-o aqui
-		// if (auth_listener_ && auth) {
-		//    auth->RemoveAuthStateListener(auth_listener_);
-		//    delete auth_listener_;
-		//    auth_listener_ = nullptr;
-		// }
-		// O objeto auth é gerenciado pelo firebase_app, não delete diretamente.
 		delete firebase_app;
 		firebase_app = nullptr;
 		std::cout << "Firebase App finalizado." << std::endl;

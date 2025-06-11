@@ -390,33 +390,75 @@ void APU::stepCpuCycles(float cpuCycles) {
 	}
 }
 
+//void APU::clockFrameSequencer() {
+//	frameSequencerStep++;
+//
+//	if (frameSequencerMode == 0) { // Modo de 4 passos
+//		// Passo 2 e 4 (contados como 1 e 3 no array)
+//		if (frameSequencerStep == 2 || frameSequencerStep == 4) {
+//			clockEnvelopesAndLinear();
+//		}
+//		// Passo 1, 2, 3 e 4
+//		clockLengthAndSweep();
+//
+//		// O IRQ é gerado no final do passo 4, se não estiver inibido
+//		if (frameSequencerStep == 4) {
+//			if (!inhibitIrq) {
+//				irqFlag = true;
+//			}
+//			frameSequencerStep = 0;
+//		}
+//	}
+//	else { // Modo de 5 passos
+//		// Passo 1, 2, 3 e 5
+//		if (frameSequencerStep != 4) {
+//			clockLengthAndSweep();
+//		}
+//		// Passo 2 e 5
+//		if (frameSequencerStep == 2 || frameSequencerStep == 5) {
+//			clockEnvelopesAndLinear();
+//		}
+//
+//		if (frameSequencerStep == 5) {
+//			frameSequencerStep = 0;
+//		}
+//	}
+//}
+
+// refiz tava ruim
+
 void APU::clockFrameSequencer() {
 	frameSequencerStep++;
 
-	if (frameSequencerMode == 0) { // Modo de 4 passos
-		// Passo 2 e 4 (contados como 1 e 3 no array)
-		if (frameSequencerStep == 2 || frameSequencerStep == 4) {
-			clockEnvelopesAndLinear();
-		}
-		// Passo 1, 2, 3 e 4
+	if (frameSequencerMode == 0) { // Modo 0:
+		// passo 1
+		clockEnvelopesAndLinear();
+
+		// passo 2
+		clockEnvelopesAndLinear();
 		clockLengthAndSweep();
 
-		// O IRQ é gerado no final do passo 4, se não estiver inibido
-		if (frameSequencerStep == 4) {
-			if (!inhibitIrq) {
-				irqFlag = true;
-			}
-			frameSequencerStep = 0;
+		// passo 3
+		clockEnvelopesAndLinear();
+
+		// passo 4
+		clockEnvelopesAndLinear();
+		clockLengthAndSweep();
+		if (!inhibitIrq) {
+			irqFlag = true;
 		}
+		frameSequencerStep = 0;
+
 	}
-	else { // Modo de 5 passos
-		// Passo 1, 2, 3 e 5
+	else { // Modo 1:
+		// passo 1, 2, 3 e 5
 		if (frameSequencerStep != 4) {
-			clockLengthAndSweep();
-		}
-		// Passo 2 e 5
-		if (frameSequencerStep == 2 || frameSequencerStep == 5) {
 			clockEnvelopesAndLinear();
+		}
+
+		// passo 2 e 5
+		if (frameSequencerStep == 2 || frameSequencerStep == 5) {
+			clockLengthAndSweep();
 		}
 
 		if (frameSequencerStep == 5) {

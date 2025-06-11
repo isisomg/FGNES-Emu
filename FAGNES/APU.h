@@ -135,17 +135,21 @@ private:
             }
         }
 
-        // Método para verificar se o sweep está silenciando o canal
         bool isSweepMuting() const {
-            if (timerValue < 8) return true;
+            if (timerValue < 8 || timerValue > 0x7FF) {
+                return true;
+            }
 
             if (sweepEnable && !sweepNegate) {
                 uint16_t change = timerValue >> sweepShift;
-                if ((timerValue + change) > 0x7FF) return true;
+                if ((timerValue + change) > 0x7FF) {
+                    return true;
+                }
             }
 
             return false;
         }
+
         float getSample() const {
             if (!enabled || lengthCounter == 0 || isSweepMuting() || APU::dutyTable[dutyCycle][phase] == 0) {
                 return 0.0f;
