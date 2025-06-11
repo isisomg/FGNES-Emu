@@ -12,7 +12,8 @@
 #include "firebase/database.h"
 #include "utils.h"
 
-const int ciclosPorFrame = 29781;
+//const int ciclosPorFrame = 29781;
+ const int ciclosPorFrame = 33248;
 
 int main(int argc, char* argv[]) {
 	SDL_Display display;
@@ -124,7 +125,8 @@ int main(int argc, char* argv[]) {
 				cpuCiclos += ciclos;
 
 				for (int c = 0; c < ciclos; ++c) {
-					apu.step();
+					//apu.step();
+					apu.irq();
 					ppu.step(); ppu.step(); ppu.step();
 				}
 
@@ -134,7 +136,8 @@ int main(int argc, char* argv[]) {
 					cpuCiclos += ciclosStallDMA;
 
 					for (int c = 0; c < ciclosStallDMA; ++c) {
-						apu.step();
+						//apu.step();
+						apu.irq();
 						ppu.step(); ppu.step(); ppu.step();
 					}
 				}

@@ -3,6 +3,10 @@
 #include <algorithm>
 #include <iostream>
 
+APU::APU() {
+	pulse2.isInverted = true;
+}
+
 // Tabela de períodos do canal de ruído (Noise)
 const uint16_t noisePeriodTable[16] = {
 	4, 8, 16, 32, 64, 96, 128, 160,
@@ -56,21 +60,24 @@ float APU::getSample(int channel) const {
 }
 
 void APU::writeRegister(uint16_t addr, uint8_t value) {
+	/*if (addr >= 0x4000 && addr <= 0x4003) {
+		std::cout << "ESCRITA NO PULSE 1 -> Endereco: 0x" << std::hex << addr
+			<< ", Valor: 0x" << std::hex << (int)value << std::endl;
+	}*/
 	switch (addr) {
 		// Pulse 1
 	case 0x4000:
 		pulse1.dutyCycle = (value >> 6) & 0x03;
+		pulse1.lengthCounterHalt = (value & 0x20) != 0;
+		pulse1.envelopeLoop = (value & 0x20) != 0;
 		pulse1.envelopeConstant = (value & 0x10) != 0;
 		pulse1.envelopeDividerPeriod = value & 0x0F;
-		pulse1.envelopeLoop = (value & 0x20) != 0;
-		pulse1.lengthCounterHalt = (value & 0x20) != 0;
-		pulse1.envelopeStart = true;
 		break;
 	case 0x4001: // Pulse 1 sweep
 		pulse1.sweepEnable = (value & 0x80) != 0;
-		pulse1.sweepPeriod = ((value >> 4) & 0x07) + 1;
+		pulse1.sweepPeriod = ((value >> 4) & 0x07) + 1; // Período é P+1
 		pulse1.sweepNegate = (value & 0x08) != 0;
-		pulse1.sweepShift = (value & 0x07);
+		pulse1.sweepShift = value & 0x07;
 		pulse1.sweepReload = true;
 		break;
 	case 0x4002:
@@ -78,63 +85,61 @@ void APU::writeRegister(uint16_t addr, uint8_t value) {
 		break;
 	case 0x4003:
 		pulse1.timerValue = (pulse1.timerValue & 0x00FF) | ((value & 0x07) << 8);
+		pulse1.timer = pulse1.timerValue + 1;
+		if (pulse1.enabled) {
+			pulse1.lengthCounter = lengthTable[(value >> 3) & 0x1F];
+		}
 		pulse1.phase = 0;
 		pulse1.envelopeStart = true;
-		pulse1.timerPeriod = (float)(((pulse1.timerValue + 1) * 2) * PITCH_ADJUST);
-		pulse1.timer = pulse1.timerPeriod;
-		pulse1.lengthCounter = lengthTable[(value >> 3) & 0x1F];
-		pulse1.sweepDivider = pulse1.sweepPeriod;
 		break;
 
 		// Pulse 2
 	case 0x4004:
 		pulse2.dutyCycle = (value >> 6) & 0x03;
+		pulse2.lengthCounterHalt = (value & 0x20) != 0;
+		pulse2.envelopeLoop = (value & 0x20) != 0;
 		pulse2.envelopeConstant = (value & 0x10) != 0;
 		pulse2.envelopeDividerPeriod = value & 0x0F;
-		pulse2.envelopeLoop = (value & 0x20) != 0;
-		pulse2.lengthCounterHalt = (value & 0x20) != 0;
-		pulse2.envelopeStart = true;
 		break;
 	case 0x4005: { // Pulse 2 sweep
 		pulse2.sweepEnable = (value & 0x80) != 0;
 		pulse2.sweepPeriod = ((value >> 4) & 0x07) + 1;
 		pulse2.sweepNegate = (value & 0x08) != 0;
-		pulse2.sweepShift = (value & 0x07);
+		pulse2.sweepShift = value & 0x07;
 		pulse2.sweepReload = true;
 		break;
 	}
-
 	case 0x4006:
 		pulse2.timerValue = (pulse2.timerValue & 0xFF00) | value;
 		break;
 	case 0x4007:
 		pulse2.timerValue = (pulse2.timerValue & 0x00FF) | ((value & 0x07) << 8);
+		pulse2.timer = pulse2.timerValue + 1;
+		if (pulse2.enabled) {
+			pulse2.lengthCounter = lengthTable[(value >> 3) & 0x1F];
+		}
 		pulse2.phase = 0;
 		pulse2.envelopeStart = true;
-		//pulse2.timerPeriod = (pulse2.timerValue + 1) * 2;
-		pulse2.timerPeriod = (float)(((pulse2.timerValue + 1) * 2) * PITCH_ADJUST);
-		pulse2.timer = pulse2.timerPeriod;
-		pulse2.lengthCounter = lengthTable[(value >> 3) & 0x1F];
-		pulse2.sweepDivider = pulse2.sweepPeriod;
 		break;
 
 		// Triangle
 	case 0x4008:
 		triangle.linearControlFlag = (value >> 7) & 1;
 		triangle.linearCounterReload = value & 0x7F;
-		triangle.lengthCounterHalt = triangle.linearControlFlag;
+		//triangle.lengthCounterHalt = triangle.linearControlFlag;
 		break;
 	case 0x400A:
 		triangle.timerValue = (triangle.timerValue & 0x0700) | value;
+		triangle.timerPeriod = (float)((triangle.timerValue + 1) * PITCH_ADJUST);
 		break;
 	case 0x400B:
 		triangle.timerValue = (triangle.timerValue & 0x00FF) | ((value & 0x07) << 8);
-		triangle.lengthCounter = lengthTable[(value >> 3) & 0x1F];
-		triangle.linearReloadFlag = true;
-		//timerPeriod = timerValue + 1;
 		triangle.timerPeriod = (float)((triangle.timerValue + 1) * PITCH_ADJUST);
-		triangle.timer = triangle.timerPeriod;
-		triangle.sequencerStep = 0;
+		if (triangle.enabled) {
+			triangle.lengthCounter = lengthTable[(value >> 3) & 0x1F];
+		}
+
+		triangle.linearReloadFlag = true;
 		break;
 
 		// Noise
@@ -181,6 +186,19 @@ void APU::writeRegister(uint16_t addr, uint8_t value) {
 		noise.enabled = value & 0x08;
 		dmc.enabled = value & 0x10;
 
+		if (!pulse1.enabled) {
+			pulse1.lengthCounter = 0;
+		}
+		if (!pulse2.enabled) {
+			pulse2.lengthCounter = 0;
+		}
+		if (!triangle.enabled) {
+			triangle.lengthCounter = 0;
+		}
+		if (!noise.enabled) {
+			noise.lengthCounter = 0;
+		}
+
 		if (!dmc.enabled) {
 			// **Zera tudo** para parar imediatamente
 			dmc.dmcOutputLevel = 0;
@@ -202,6 +220,19 @@ void APU::writeRegister(uint16_t addr, uint8_t value) {
 			dmc.irqFlag = false;
 		}
 		break;
+	case 0x4017:
+		frameSequencerMode = (value >> 7) & 1; 
+		inhibitIrq = (value >> 6) & 1;
+
+		if (inhibitIrq) {
+			irqFlag = false;
+		}
+		frameSequencerCounter = 0;
+		if (frameSequencerMode == 1) {
+			clockEnvelopesAndLinear();
+			clockLengthAndSweep();
+		}
+		break;
 	}
 }
 
@@ -214,7 +245,7 @@ uint8_t APU::readRegister(uint16_t addr) {
 		if (noise.enabled)    status |= 0x08;
 		if (dmc.enabled)      status |= 0x10;
 		if (dmc.irqFlag)      status |= 0x80;
-		dmc.irqFlag = false;    // limpar IRQ ao ler
+		dmc.irqFlag = false;
 		return status;
 	}
 	return 0;
@@ -224,34 +255,37 @@ uint8_t APU::readRegister(uint16_t addr) {
 void APU::step() {
 	if (!enabled) return;
 
-	// Pulse 1
-	if (pulse1.enabled) {
-		if ((pulse1.timer -= 1.0f) <= 0.0f) {
-			pulse1.timer += pulse1.timerPeriod;
+	// Pulse 
+	if (totalCycles % 2 == 0) {
+		// Pulse 1
+		if (--pulse1.timer < 0) {
+			pulse1.timer = pulse1.timerValue + 1;
 			pulse1.phase = (pulse1.phase + 1) % 8;
 		}
-	}
-
-	// Pulse 2
-	if (pulse2.enabled) {
-		if ((pulse2.timer -= 1.0f) <= 0.0f) {
-			pulse2.timer += pulse2.timerPeriod;
+		// Pulse 2
+		if (--pulse2.timer < 0) {
+			pulse2.timer = pulse2.timerValue + 1;
 			pulse2.phase = (pulse2.phase + 1) % 8;
 		}
 	}
 
 	// Triangle
-	if (triangle.enabled) {
+	if (triangle.linearCounter > 0 && triangle.lengthCounter > 0) {
 		if ((triangle.timer -= 1.0f) <= 0.0f) {
+			// Recarrega o timer com o período. Note o +1 para corresponder ao hardware.
 			triangle.timer += triangle.timerPeriod;
-			triangle.phase = (triangle.phase + 1) % 32;
+
+			// Avança a fase da onda (0 a 31)
+			if (triangle.timerValue > 0) { // Evita avançar a fase se o período for 0
+				triangle.phase = (triangle.phase + 1) % 32;
+			}
 		}
 	}
 
 	// Noise
 	if (noise.enabled) {
 		// Shift Register
-		if (--noise.timer <= 0.0f) {
+		if ((noise.timer -= 0.5f) <= 0.0f) {
 			noise.timer += noise.timerPeriod;
 
 			uint16_t feedback;
@@ -272,7 +306,7 @@ void APU::step() {
 
 	// DMC
 	if (dmc.enabled) {
-		if ((dmc.dmcTimer -= 1.0f) <= 0.0f) {
+		if ((dmc.dmcTimer -= 0.5f) <= 0.0f) {
 			dmc.dmcTimer += dmc.dmcTimerPeriod;
 
 			// MEMORY READER: preenche sampleBuffer
@@ -319,6 +353,12 @@ void APU::step() {
 			dmc.dmcBitCount--;
 		}
 	}
+	/*constexpr int FRAME_SEQUENCER_PERIOD = 8313;*/
+
+	/*if (++frameSequencerCounter >= FRAME_SEQUENCER_PERIOD) {
+		frameSequencerCounter = 0;
+		clockFrameSequencer();
+	}*/
 }
 
 
@@ -338,9 +378,10 @@ void APU::stepCpuCycles(float cpuCycles) {
 	// chama step() para cada ciclo inteiro de CPU
 	while (cpuCycleRemainder >= 1.0f) {
 		step();
+		totalCycles++;
 		cpuCycleRemainder -= 1.0f;
-		// a cada 7457 ciclos, clock do frame sequencer (~240Hz)
-		static const int SEQ_PERIOD = 7457;
+		//static const int SEQ_PERIOD = 7457;
+		static const int SEQ_PERIOD = 8313;
 		static int seqCounter = 0;
 		if (++seqCounter >= SEQ_PERIOD) {
 			seqCounter = 0;
@@ -350,19 +391,52 @@ void APU::stepCpuCycles(float cpuCycles) {
 }
 
 void APU::clockFrameSequencer() {
-	frameSequencerStep = (frameSequencerStep + 1) & 3;
-	// passo 1 e 3: clock envelopes e linear counter
-	if (frameSequencerStep == 1 || frameSequencerStep == 3) {
-		pulse1.clockEnvelope();  pulse2.clockEnvelope();
-		noise.clockEnvelope();   triangle.clockLinearCounter();
-	}
-	// passo 0 e 2: clock length counters (e sweep)
-	if (frameSequencerStep == 0 || frameSequencerStep == 2) {
-		pulse1.clockLength();  pulse2.clockLength();  noise.clockLength();
-		if (frameSequencerStep == 2) {
-			triangle.clockLength();
-			pulse1.clockSweep();
-			pulse2.clockSweep();
+	frameSequencerStep++;
+
+	if (frameSequencerMode == 0) { // Modo de 4 passos
+		// Passo 2 e 4 (contados como 1 e 3 no array)
+		if (frameSequencerStep == 2 || frameSequencerStep == 4) {
+			clockEnvelopesAndLinear();
+		}
+		// Passo 1, 2, 3 e 4
+		clockLengthAndSweep();
+
+		// O IRQ é gerado no final do passo 4, se não estiver inibido
+		if (frameSequencerStep == 4) {
+			if (!inhibitIrq) {
+				irqFlag = true;
+			}
+			frameSequencerStep = 0;
 		}
 	}
+	else { // Modo de 5 passos
+		// Passo 1, 2, 3 e 5
+		if (frameSequencerStep != 4) {
+			clockLengthAndSweep();
+		}
+		// Passo 2 e 5
+		if (frameSequencerStep == 2 || frameSequencerStep == 5) {
+			clockEnvelopesAndLinear();
+		}
+
+		if (frameSequencerStep == 5) {
+			frameSequencerStep = 0;
+		}
+	}
+}
+
+void APU::clockEnvelopesAndLinear() {
+	pulse1.clockEnvelope();
+	pulse2.clockEnvelope();
+	noise.clockEnvelope();
+	triangle.clockLinearCounter();
+}
+
+void APU::clockLengthAndSweep() {
+	pulse1.clockLength();
+	pulse2.clockLength();
+	triangle.clockLength();
+	noise.clockLength();
+	pulse1.clockSweep();
+	pulse2.clockSweep();
 }
