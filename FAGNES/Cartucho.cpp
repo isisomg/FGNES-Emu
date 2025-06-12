@@ -5,9 +5,7 @@
 #include "Bus.h"
 #include "Mapper3.h"
 
-MirroringSelect mirroringselect = MirroringSelect::Horizontal;
-
-void Cartucho::init(const std::string& path) {
+void Cartucho::init(const std::string& path, PPU* ppu) {
 	std::ifstream arquivo(path, std::ios::binary);
 	mapper = nullptr;
 	if (!arquivo) { // Erro ao carregar ROM
@@ -31,13 +29,13 @@ void Cartucho::init(const std::string& path) {
 	Byte flags6 = header[6];
 	if (flags6 & 0x08) {
 		mirroringselect = MirroringSelect::FourScreen;
-		std::cout << "Mirroring: Vertical (setado pelo header)" << std::endl;
+		std::cout << "Mirroring: FourScreen (setado pelo header)" << std::endl;
 	}
-	if (flags6 & 0x01) { // Checa o Bit 0 para espelhamento Vertical
+	else if (flags6 & 0x01) {
 		mirroringselect = MirroringSelect::Vertical;
 		std::cout << "Mirroring: Vertical (setado pelo header)" << std::endl;
 	}
-	else { // Se o Bit 0 é 0, eh espelhamento Horizontal
+	else {
 		mirroringselect = MirroringSelect::Horizontal;
 		std::cout << "Mirroring: Horizontal (setado pelo header)" << std::endl;
 	}
@@ -72,7 +70,7 @@ void Cartucho::init(const std::string& path) {
 	// Criar o Mapper correto
 	switch (valorMapper) {
 	case 0:
-		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM); //NROM MAPPER 0
+		mapper = std::make_unique<Mapper0>(prgBanks, chrBanks, prgROM, chrROM, mirroringselect, ppu); //NROM MAPPER 0
 		if (prgBanks == 1) {
 			// 16KB banco: endereço espelhado no vetor
 			adrPCinicial = prgROM[0x3FFC] | (prgROM[0x3FFD] << 8);
@@ -83,11 +81,11 @@ void Cartucho::init(const std::string& path) {
 		}
 		break;
 	case 1:
-		mapper = std::make_unique<Mapper1>(prgBanks, chrBanks, prgROM, chrROM); // MMC1 MAPPER1
+		mapper = std::make_unique<Mapper1>(prgBanks, chrBanks, prgROM, chrROM, mirroringselect, ppu); // MMC1 MAPPER1
 		adrPCinicial = readPRG(0xFFFC) | (readPRG(0xFFFD) << 8);
 		break;
 	case 2:
-		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM); // UxROM MAPPER2
+		mapper = std::make_unique<Mapper2>(prgBanks, chrBanks, prgROM, chrROM, mirroringselect, ppu); // UxROM MAPPER2
 		adrPCinicial = mapper->cpuRead(0xFFFC) | (mapper->cpuRead(0xFFFD) << 8);
 		break;
 	case 3: 

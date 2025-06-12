@@ -1,10 +1,14 @@
 #include "Mapper0.h"
+#include "PPU.h"
 
-Mapper0::Mapper0(Byte prg_Banks, Byte chr_Banks, const std::vector<Byte>& prg, const std::vector<Byte>& chr) {
+Mapper0::Mapper0(Byte prg_Banks, Byte chr_Banks, const std::vector<Byte>& prg, const std::vector<Byte>& chr, MirroringSelect mirroringselect, PPU* ppu) {
+	this->mirroringselect = mirroringselect;
 	this->prgBanks = prg_Banks;
 	this->chrBanks = chr_Banks;
 	this->prgROM = prg;
 	this->chrROM = chr;
+	this->ppu = ppu;
+	ppu->setMirroring(mirroringselect);
 }
 
 Byte Mapper0::cpuRead(DWord addr) {

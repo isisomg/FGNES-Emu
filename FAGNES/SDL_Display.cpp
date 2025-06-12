@@ -244,7 +244,7 @@ void SDL_Display::renderizar() {
 					}
 					cartucho = new Cartucho();
 
-					cartucho->init(arquivoROM);
+					cartucho->init(arquivoROM, ppu);
 					inicializarAudio();
 					jogoRodando = true;
 					reset = true;

@@ -1,8 +1,10 @@
+#pragma once
 #include <cstdint>
 #include "Tipos.h"
 #include "Cores.h"
 #include <vector>
-#include "Cartucho.h"
+
+class Cartucho;
 
 struct PPUCTRL {
 	Byte control = 0;
@@ -124,6 +126,10 @@ struct PPU {
 	Byte cpuRead(DWord addr);
 
 	void (*nmiCallback)() = nullptr;
+
+	MirroringSelect mirroringselect = MirroringSelect::Horizontal;
+	MirroringSelect getMirroring() const { return mirroringselect; }
+	void setMirroring(MirroringSelect tipo) { mirroringselect = tipo; }
 };
 
 //////////////////////////////////////////////////////
@@ -131,10 +137,5 @@ struct PPU {
 //////////////////////////////////////////////////////
 // https://www.nesdev.org/wiki/Mirroring
 
-enum struct MirroringSelect {
-	Horizontal,
-	Vertical,
-	FourScreen // NAO IMPLEMENTTADO MEDONHO
-};
 
-extern MirroringSelect mirroringselect; //tive que fazer esse extern pq tava dando um problema com a APU.
+

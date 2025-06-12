@@ -6,6 +6,7 @@
 #include <fstream>
 #include "Mapper.h"
 #include "Mapper0.h"
+#include "PPU.h"
 
 class Cartucho {
 private:
@@ -17,9 +18,10 @@ private:
 	std::unique_ptr<Mapper> mapper;
 	
 public:
+	MirroringSelect mirroringselect;
 	std::vector<Byte> chrROM;
 	DWord adrPCinicial = 0x0000;
-	void init(const std::string& pathROM); // Define valores padroes e carrega a rom
+	void init(const std::string& path, PPU* ppu); // Define valores padroes e carrega a rom
 	Byte readPRG(DWord adr);
 	void writePRG(DWord adr, Byte dado);
 	Byte readCHR(DWord adr);

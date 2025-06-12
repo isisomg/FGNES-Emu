@@ -1,5 +1,6 @@
 ﻿#include "PPU.h"
 #include "Tipos.h"
+#include "Cartucho.h"
 
 //Somente pra testes, descomentar se nao for testar!!
 #include <iostream>
@@ -183,6 +184,7 @@ void PPUMASK::write(Byte value) {
 //MirroringSelect mirroringselect = MirroringSelect::Horizontal; // DEFINIDO PELO CARTUCHO AGORA
 
 DWord PPU::mirrorAddress(DWord address) {
+
 	address = (address - 0x2000) % 0x1000; // Só parte da nametable (0x2000~0x2FFF)
 
 	DWord table = address / 0x400; // 0, 1, 2, 3 (nametable lógica)

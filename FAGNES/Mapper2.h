@@ -3,11 +3,12 @@
 #include "Tipos.h"
 #include <vector>
 #include <iostream>
+#include "PPU.h"
 
 class Mapper2 : public Mapper {
 public:
-    Mapper2(Byte prgBanks, Byte chrBanks, const std::vector<Byte>& prgROM, const std::vector<Byte>& chrROM)
-        : prgROM(prgROM), chrROM(chrROM), numPRGBanks(prgBanks), numCHRBanks(chrBanks)
+    Mapper2(Byte prgBanks, Byte chrBanks, const std::vector<Byte>& prgROM, const std::vector<Byte>& chrROM, MirroringSelect mirroringselect, PPU* ppu)
+        : prgROM(prgROM), chrROM(chrROM), numPRGBanks(prgBanks), numCHRBanks(chrBanks), mirroringselect(mirroringselect), ppu(ppu)
     {
         if (chrROM.empty()) {
             // CHR-RAM: aloca 8 KB
@@ -19,6 +20,8 @@ public:
         }
         // Começa com banco 0 selecionado
         selectedBank = 0;
+
+        ppu->setMirroring(mirroringselect);
     }
 
     Byte cpuRead(DWord addr) override {
@@ -81,6 +84,8 @@ public:
     Byte numPRGBanks = 1;
 
 private:
+    PPU* ppu;
+    MirroringSelect mirroringselect;
     bool useChrRAM = true;
     std::vector<Byte> chrRAM;
     std::vector<Byte> prgROM;

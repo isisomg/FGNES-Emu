@@ -3,16 +3,18 @@
 #include "Tipos.h"
 #include <vector>
 #include <iostream>
+#include "PPU.h"
 
 class Mapper1 : public Mapper {
 public:
-    Mapper1(Byte prgBanks, Byte chrBanks, const std::vector<Byte>& prgROM, const std::vector<Byte>& chrROM)
-        : prgROM(prgROM), chrROM(chrROM), numPRGBanks(prgBanks), numCHRBanks(chrBanks) {
+    Mapper1(Byte prgBanks, Byte chrBanks, const std::vector<Byte>& prgROM, const std::vector<Byte>& chrROM, MirroringSelect mirroringselect, PPU* ppu)
+        : prgROM(prgROM), chrROM(chrROM), numPRGBanks(prgBanks), numCHRBanks(chrBanks), mirroringselect(mirroringselect), ppu(ppu){
         shiftRegister = 0x10; // valor inicial com bit 4 setado
         control = 0x0C;       // PRG mode = fixar último banco
         chrBank0 = 0;
         chrBank1 = 0;
         prgBank = 0;
+        ppu->setMirroring(mirroringselect);
     }
 
     void cpuWrite(DWord addr, Byte data) override {
@@ -99,9 +101,29 @@ public:
     }
 
 private:
+    PPU* ppu;
+    MirroringSelect mirroringselect;
     void applyRegister(DWord addr, Byte value) {
         if (addr >= 0x8000 && addr <= 0x9FFF) {
             control = value;
+
+            // Bits 0-1: controle de mirroring
+            Byte mirror = control & 0b11;
+
+            switch (mirror) {
+            case 0:
+                ppu->setMirroring(MirroringSelect::OneScreenLower);
+                break;
+            case 1:
+                ppu->setMirroring(MirroringSelect::OneScreenUpper);
+                break;
+            case 2:
+                ppu->setMirroring(MirroringSelect::Vertical);
+                break;
+            case 3:
+                ppu->setMirroring(MirroringSelect::Horizontal);
+                break;
+            }
         }
         else if (addr >= 0xA000 && addr <= 0xBFFF) {
             chrBank0 = value;
@@ -113,6 +135,7 @@ private:
             prgBank = value & 0x0F;
         }
     }
+
 
     std::vector<Byte> prgROM;
     std::vector<Byte> chrROM;
