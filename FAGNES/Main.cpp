@@ -107,6 +107,7 @@ int main(int argc, char* argv[]) {
 
 		if (display.jogoRodando) {
 			if (cpu.iniciou == false || display.reset == true) { // inicializacoes necessarias para o jogo
+				apu.reset(); // reseta a APU para n sobrescrever o audio
 				cartucho = display.getCartuho();
 				ppu.reset();
 				cpu.inicializar(bus);

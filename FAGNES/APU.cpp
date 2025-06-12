@@ -482,3 +482,20 @@ void APU::clockLengthAndSweep() {
 	pulse1.clockSweep();
 	pulse2.clockSweep();
 }
+
+void APU::reset() {
+	writeRegister(0x4015, 0x00);
+
+	frameSequencerCounter = 0;
+	frameSequencerStep = 0;
+
+	pulse1 = {};
+	pulse2 = {};
+	triangle = {};
+	noise = {};
+	dmc = {};
+
+	dmc.bus = this->bus;
+
+	noise.shiftRegister = 1;
+}

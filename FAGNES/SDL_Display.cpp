@@ -391,6 +391,16 @@ void SDL_Display::renderizar() {
 								result.OnCompletion(
 									[](const firebase::Future<firebase::auth::AuthResult>& future, void* user_data) {
 										SDL_Display::CallbackLogin(&future, user_data);
+
+										if (future.error() != firebase::auth::kAuthErrorNone) {
+											mensagemErroLogin = u8"Usuário e/ou senha incorretos!";
+											exibirMensagemErroLogin = true;
+										}
+										else {
+											mensagemErroLogin.clear();
+											exibirMensagemErroLogin = false;
+											SDL_Display::CallbackLogin(&future, user_data); // ou seu código de sucesso
+										}
 									}, this);
 							}
 
@@ -408,10 +418,9 @@ void SDL_Display::renderizar() {
 							}
 							memset(passwordBuffer, 0, sizeof(passwordBuffer));
 						}
-						ImGui::Spacing();
 
 						if (exibirMensagemErroLogin) {
-							ImGui::Separator();
+							ImGui::Spacing();
 							ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), mensagemErroLogin.c_str());
 						}
 						break;
@@ -457,14 +466,14 @@ void SDL_Display::renderizar() {
 								erroCadastro = u8"As senhas não coincidem.";
 								exibirErroCadastro = true;
 							}
-							/*else if (firebase::auth::kAuthErrorEmailAlreadyInUse) {
-								erroCadastro = u8"E-mail já está em uso.";
-								exibirErroCadastro = true;
-							}*/
 							else if (strlen(newUser) < 3 || strlen(newPass) < 6) {
 								erroCadastro = u8"Usuário precisa de 3+ letras e senha 6+.";
 								exibirErroCadastro = true;
 							}
+							/*else if (firebase::auth::kAuthErrorEmailAlreadyInUse) {
+								erroCadastro = u8"Insira um e-mail válido.";
+								exibirErroCadastro = true;
+							}*/
 							else if (firebaseAuth) {
 								firebase::Future<firebase::auth::AuthResult> result =
 									firebaseAuth->CreateUserWithEmailAndPassword(newUser, newPass);

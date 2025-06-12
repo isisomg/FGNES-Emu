@@ -7,6 +7,7 @@ class Bus;
 
 class APU {
 public:
+    void reset();
     bool irq() {
         bool status = irqFlag;
         irqFlag = false;
