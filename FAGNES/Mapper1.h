@@ -14,6 +14,9 @@ public:
         chrBank0 = 0;
         chrBank1 = 0;
         prgBank = 0;
+        if (chrROM.empty()) {
+            chrRAM.resize(8192); // 8KB de CHR-RAM
+        }
         ppu->setMirroring(mirroringselect);
     }
 
@@ -74,22 +77,28 @@ public:
 
     Byte ppuRead(DWord addr) override {
         if (addr < 0x2000) {
+            uint32_t offset;
+
             if (control & 0x10) {
                 // CHR mode 1: dois bancos de 4KB
                 if (addr < 0x1000) {
-                    uint32_t offset = (chrBank0 * 0x1000) + addr;
-                    return chrROM[offset % chrROM.size()];
+                    offset = (chrBank0 * 0x1000) + addr;
                 }
                 else {
-                    uint32_t offset = (chrBank1 * 0x1000) + (addr - 0x1000);
-                    return chrROM[offset % chrROM.size()];
+                    offset = (chrBank1 * 0x1000) + (addr - 0x1000);
                 }
             }
             else {
                 // CHR mode 0: um banco de 8KB
                 uint32_t bank = (chrBank0 & 0x1E);
-                uint32_t offset = (bank * 0x1000) + addr;
+                offset = (bank * 0x1000) + addr;
+            }
+
+            if (!chrROM.empty()) {
                 return chrROM[offset % chrROM.size()];
+            }
+            else {
+                return chrRAM[offset % chrRAM.size()];
             }
         }
 
@@ -97,10 +106,28 @@ public:
     }
 
     void ppuWrite(DWord addr, Byte data) override {
-        // CHR-RAM pode escrever aqui — adicionar depois, se necessário
+        if (addr < 0x2000 && chrROM.empty()) {
+            uint32_t offset;
+
+            if (control & 0x10) {
+                if (addr < 0x1000) {
+                    offset = (chrBank0 * 0x1000) + addr;
+                }
+                else {
+                    offset = (chrBank1 * 0x1000) + (addr - 0x1000);
+                }
+            }
+            else {
+                uint32_t bank = (chrBank0 & 0x1E);
+                offset = (bank * 0x1000) + addr;
+            }
+
+            chrRAM[offset % chrRAM.size()] = data;
+        }
     }
 
 private:
+    std::vector<Byte> chrRAM;
     PPU* ppu;
     MirroringSelect mirroringselect;
     void applyRegister(DWord addr, Byte value) {
