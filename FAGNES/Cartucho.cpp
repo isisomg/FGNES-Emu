@@ -9,7 +9,7 @@ MirroringSelect mirroringselect = MirroringSelect::Horizontal;
 
 void Cartucho::init(const std::string& path) {
 	std::ifstream arquivo(path, std::ios::binary);
-
+	mapper = nullptr;
 	if (!arquivo) { // Erro ao carregar ROM
 		std::cerr << "Erro ao carregar arquivo .nes" << std::endl;
 		exit(1);

@@ -60,9 +60,6 @@
     <ClCompile Include="teste_vblank.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
-    <ClCompile Include="Mapper1.cpp">
-      <Filter>Arquivos de Origem</Filter>
-    </ClCompile>
     <ClCompile Include="Mapper24.cpp">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>

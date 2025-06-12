@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	Bus* bus = new Bus();
-	Cartucho cartucho;
+	Cartucho* cartucho = nullptr;
 
 	std::string execDir = getExecutableDir();
 	std::string caminhoP1 = execDir + "\\controles_p1.json";
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 	CPU cpu;
 	PPU ppu;
 	APU apu;
-	display.init(bus, &cartucho, &ppu);
+	display.init(bus, cartucho, &ppu);
 	display.setAPU(&apu);
 	apu.setBus(bus);
 
@@ -107,10 +107,13 @@ int main(int argc, char* argv[]) {
 
 		if (display.jogoRodando) {
 			if (cpu.iniciou == false || display.reset == true) { // inicializacoes necessarias para o jogo
+				cartucho = display.getCartuho();
+				ppu.reset();
 				cpu.inicializar(bus);
-				cpu.PC = cartucho.adrPCinicial;
-				bus->setCartucho(&cartucho);
-				ppu.carregarCHR(cartucho.chrROM);
+				cpu.PC = cartucho->adrPCinicial;
+				bus->setCartucho(cartucho);
+				ppu.carregarCHR(cartucho->chrROM);
+				ppu.setCartucho(cartucho);
 				display.reset = false;
 			}
 

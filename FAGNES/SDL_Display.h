@@ -67,6 +67,8 @@ private:
     firebase::database::Database* firebaseDatabase = nullptr;
 
 public:
+    void setCartucho(Cartucho* c) { cartucho = c; }
+    Cartucho* getCartuho() { return cartucho; }
     void setAPU(APU* ap) { apu = ap; }
     bool jogoRodando = false;
     bool reset = false;

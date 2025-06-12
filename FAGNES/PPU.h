@@ -2,6 +2,7 @@
 #include "Tipos.h"
 #include "Cores.h"
 #include <vector>
+#include "Cartucho.h"
 
 struct PPUCTRL {
 	Byte control = 0;
@@ -39,6 +40,17 @@ struct PPU {
 	PPUCTRL ctrl;
 	PPUMASK mask;
 	PPUSTATUS status;
+	Cartucho* cartucho;
+	void setCartucho(Cartucho* cart) { cartucho = cart; }
+
+
+	void reset() {
+		std::fill(std::begin(nametableVRAM), std::end(nametableVRAM), 0);
+		std::fill(std::begin(paletteRAM), std::end(paletteRAM), 0);
+		std::fill(std::begin(patternTable), std::end(patternTable), 0);
+		std::fill(std::begin(framebuffer), std::end(framebuffer), 0);
+		scanline = 0;
+	}
 
 	// Aqui PRECISA MESMO MESMO EMESMO de um background buffer paralelo, com informações de opacidade do background para que o sprite zero hit funcione corretamente.
 	Byte backgroundBuffer[256 * 240]; // 1 byte por pixel, só pra saber se é transparente ou não

@@ -9,6 +9,14 @@ public:
     Mapper2(Byte prgBanks, Byte chrBanks, const std::vector<Byte>& prgROM, const std::vector<Byte>& chrROM)
         : prgROM(prgROM), chrROM(chrROM), numPRGBanks(prgBanks), numCHRBanks(chrBanks)
     {
+        if (chrROM.empty()) {
+            // CHR-RAM: aloca 8 KB
+            useChrRAM = true;
+            chrRAM.resize(8192, 0);
+        }
+        else {
+            this->chrROM = chrROM;
+        }
         // Começa com banco 0 selecionado
         selectedBank = 0;
     }
@@ -54,7 +62,12 @@ public:
 
     Byte ppuRead(DWord addr) override {
         if (addr < 0x2000) {
-            return chrROM[addr % chrROM.size()];
+            if (useChrRAM) {
+                return chrRAM[addr];
+            }
+            else {
+                return chrROM[addr % chrROM.size()];
+            }
         }
         return 0xFF;
     }
@@ -62,12 +75,14 @@ public:
     void ppuWrite(DWord addr, Byte data) override {
         // Só permite escrita se for CHR-RAM (tamanho == 0 ou não fornecido)
         if (addr < 0x2000 && chrROM.size() == 0) {
-            // Exemplo: chrRAM[addr] = data;
+            chrRAM[addr] = data;
         }
     }
     Byte numPRGBanks = 1;
 
 private:
+    bool useChrRAM = true;
+    std::vector<Byte> chrRAM;
     std::vector<Byte> prgROM;
     std::vector<Byte> chrROM;
     Byte selectedBank = 0;

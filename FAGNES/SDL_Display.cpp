@@ -238,6 +238,12 @@ void SDL_Display::renderizar() {
 			if (ImGui::MenuItem("Carregar")) {
 				std::string arquivoROM = AbrirArquivo();
 				if (!arquivoROM.empty()) {
+					if (cartucho != nullptr) {
+						delete cartucho;
+						cartucho = nullptr;
+					}
+					cartucho = new Cartucho();
+
 					cartucho->init(arquivoROM);
 					inicializarAudio();
 					jogoRodando = true;

@@ -76,28 +76,33 @@ Byte PPU::read(DWord address) {
 	address &= 0x3FFF;
 
 	if (address >= 0x2000 && address <= 0x3EFF) {
-		// Nossas lindas e maravilhosas nametables (com espelhamento)
+		// Nametables com espelhamento
 		DWord mirroredAddress = mirrorAddress(address);
 		return nametableVRAM[mirroredAddress];
 	}
 
 	if (address < 0x2000) {
-		// Pattern Tables
-		return patternTable[address];
+		// Pattern Tables via cartucho (Mapper)
+		if (cartucho)
+			return cartucho->readCHR(address);
+		else
+			return 0xFF;  // fallback, caso não tenha cartucho
 	}
 
 	if (address >= 0x3F00 && address <= 0x3FFF) {
 		// Paleta
 		DWord paletteAddress = (address - 0x3F00) % 32;
-		// espelhamento
-		if (paletteAddress == 0x10) { paletteAddress = 0x00; }
-		else if (paletteAddress == 0x14) { paletteAddress = 0x04; }
-		else if (paletteAddress == 0x18) { paletteAddress = 0x08; }
-		else if (paletteAddress == 0x1C) { paletteAddress = 0x0C; }
+		// Espelhamento de paleta
+		if (paletteAddress == 0x10) paletteAddress = 0x00;
+		else if (paletteAddress == 0x14) paletteAddress = 0x04;
+		else if (paletteAddress == 0x18) paletteAddress = 0x08;
+		else if (paletteAddress == 0x1C) paletteAddress = 0x0C;
 		return paletteRAM[paletteAddress];
 	}
+
 	return 0x00;
 }
+
 
 void PPU::carregarCHR(const std::vector<Byte>& chrData) {
 	/*if (chrData.size() > sizeof(patternTable)) {
@@ -113,8 +118,14 @@ void PPU::write(DWord address, Byte value) {
 	address &= 0x3FFF;
 
 	if (address < 0x2000) {
-		// Pattern tables
-		patternTable[address] = value;
+		// Pattern tables via cartucho (CHR-RAM)
+		if (cartucho) {
+			cartucho->writeCHR(address, value);
+		}
+		else {
+			// fallback se não tem cartucho (ex: CHR-RAM local)
+			patternTable[address] = value;
+		}
 	}
 	else if (address >= 0x2000 && address <= 0x3EFF) {
 		// Nametables (com espelhamento)
@@ -124,23 +135,16 @@ void PPU::write(DWord address, Byte value) {
 	else if (address >= 0x3F00 && address <= 0x3FFF) {
 		// Paleta
 		DWord paletteAddress = (address - 0x3F00) % 32;
-		// Trata os espelhamentos de $3F10, $3F14, $3F18, $3F1C
-		if (paletteAddress == 0x10) { // $3F10
-			paletteAddress = 0x00;    // Espelha para $3F00
-		}
-		else if (paletteAddress == 0x14) { // $3F14
-			paletteAddress = 0x04;    // Espelha para $3F04
-		}
-		else if (paletteAddress == 0x18) { // $3F18
-			paletteAddress = 0x08;    // Espelha para $3F08
-		}
-		else if (paletteAddress == 0x1C) { // $3F1C
-			paletteAddress = 0x0C;    // Espelha para $3F0C
-		}
+		// Espelhamentos especiais
+		if (paletteAddress == 0x10) paletteAddress = 0x00;
+		else if (paletteAddress == 0x14) paletteAddress = 0x04;
+		else if (paletteAddress == 0x18) paletteAddress = 0x08;
+		else if (paletteAddress == 0x1C) paletteAddress = 0x0C;
 
 		paletteRAM[paletteAddress] = value;
 	}
 }
+
 
 
 //////////////////////////////////////////////////////
