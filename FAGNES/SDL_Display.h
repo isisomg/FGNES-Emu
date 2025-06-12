@@ -67,6 +67,7 @@ private:
     firebase::database::Database* firebaseDatabase = nullptr;
 
 public:
+    void setAPU(APU* ap) { apu = ap; }
     bool jogoRodando = false;
     bool reset = false;
     SDL_Renderer* RENDERER;

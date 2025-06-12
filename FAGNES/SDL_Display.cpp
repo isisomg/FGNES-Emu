@@ -868,12 +868,12 @@ void SDL_Display::destroy() {
 		audioDevice = 0;
 	}
 
-	if (apu) {
-		delete apu;
-		apu = nullptr;
-	}
+	//if (apu) {
+		//delete apu;
+		//apu = nullptr;
+	//}
 	// Shutdown do ImGui
-	ImGui_ImplSDLRenderer2_Shutdown();
+	//ImGui_ImplSDLRenderer2_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 
@@ -907,12 +907,12 @@ void SDL_Display::inicializarAudio() {
 		audioDevice = 0;
 	}
 	// Libera a APU anterior, se existir
-	if (apu) {
-		delete apu;
-		apu = nullptr;
-	}
-	// Cria nova APU e configura
-	apu = new APU();
+	//if (apu) {
+	//	delete apu;
+	//	apu = nullptr;
+	//}
+	//// Cria nova APU e configura
+	//apu = new APU();
 	//apu->setFrequency(44100.0f, 4);
 	apu->setEnabled(true);
 	bus->setAPU(apu);

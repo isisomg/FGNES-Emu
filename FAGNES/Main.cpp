@@ -82,6 +82,8 @@ int main(int argc, char* argv[]) {
 	PPU ppu;
 	APU apu;
 	display.init(bus, &cartucho, &ppu);
+	display.setAPU(&apu);
+	apu.setBus(bus);
 
 	bus->setPPU(&ppu);
 	// Ativa NMI
